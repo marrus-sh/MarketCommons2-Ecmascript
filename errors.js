@@ -1,9 +1,16 @@
-//  @ Market Commons ⅠⅠ – Ecmascript :: errors.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: errors.js
+//  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
+
+/**
+ *  Market Commons ⅠⅠ error types.
+ *
+ *  @module MarketCommons2/errors
+ */
 
 /**
  *  A generic Market Commons ⅠⅠ error.

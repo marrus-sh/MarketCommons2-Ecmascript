@@ -1,4 +1,5 @@
-//  @ Market Commons ⅠⅠ – Ecmascript :: names.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: names.js
+//  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
 //
