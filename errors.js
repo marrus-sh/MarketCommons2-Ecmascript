@@ -76,24 +76,24 @@ export class SigilResolutionError extends MarketCommonsⅠⅠError {
 
 	/**
 	 *  Create a `SigilResolutionError` at the provided `index` and
-	 *    with the provided `level` and `path`.
+	 *    with the provided `nodeType` and `path`.
 	 *
 	 *  @argument {number} index
-	 *  @argument {symbol} level
+	 *  @argument {symbol} nodeType
 	 *  @argument {string} path
 	 */
-	constructor ( index, level, path, ...additionalArguments ) {
-		if ( typeof level != "symbol" ) {
+	constructor ( index, nodeType, path, ...additionalArguments ) {
+		if ( typeof nodeType != "symbol" ) {
 			throw new TypeError (
-				`Expected a symbol but got a ${ typeof level }.`
+				`Expected a symbol but got a ${ typeof nodeType }.`
 			)
 		}
 		super (
 			index,
-			`Unable to resolve ${ level.description } sigil path "${ path }"`,
+			`Unable to resolve ${ nodeType.description } sigil path "${ path }"`,
 			...additionalArguments
 		)
-		this.level = level
+		this.nodeType = nodeType
 		this.path = String(path)
 	}
 
