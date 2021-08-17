@@ -99,6 +99,10 @@ export function resolve ( nodeType, path, jargon, options ) {
 									//    appear in paths anyway!
 									/[.+\-?^${}()|[\]\\]/gu, "\\$&"
 								).replace(
+									//  Any number of same‐type nodes
+									//    may precede the path.
+									/^/u, "(?:*/)?"
+								).replace(
 									//  Space adds an optional asterisk
 									//    to the end of what precedes
 									//    and the beginning of what

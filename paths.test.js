@@ -169,3 +169,11 @@ Deno.test({
 		"different‐type ancestor and parent"
 	),
 })
+
+Deno.test({
+	name: "allows top‐level to not be root",
+	fn: ( ) => assertEquals(
+		resolve(myNodeType, "&#6;/&#5;/&#0;>&#0;/&#4;>&#1;", myJargon),
+		"different‐type parent and ancestor"
+	),
+})
