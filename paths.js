@@ -57,7 +57,7 @@ export function resolve ( nodeType, path, jargon, options ) {
 		//    `SigilResolutionError` will be thrown.
 		//  Otherwise, a value will be returned before this block
 		//    completes.
-		const nodeMap = jargon.get(nodeType)
+		const nodeMap = jargon[nodeType]
 		if ( typeof nodeType != "symbol" ) {
 			//  Error:
 			//  The provided `nodeType` is not a symbol.

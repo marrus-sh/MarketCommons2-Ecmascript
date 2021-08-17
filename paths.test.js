@@ -29,37 +29,34 @@ Deno.test({
 
 const myBadNodeType = Symbol("my bad node type")
 const myNodeType = Symbol("my node type")
-const myJargon = new Map ([
-	[myBadNodeType, { }],
-	[
-		myNodeType,
-		new Map ([
-			["&#0;", "bad sigil"],
-			[
-				"&#1;", new Map (
+const myJargon = {
+	[myBadNodeType]: { },
+	[myNodeType]: new Map ([
+		["&#0;", "bad sigil"],
+		[
+			"&#1;", new Map (
+				[
+					["* * &#1;", "just the sigil"],
+					["* * &#2;/&#1;", "same‐type parent"],
+					["* * &#2;//&#1;", "same‐type ancestor"],
+					["* * &#3;/&#2;/&#1;", "multiple parents"],
+					["* * &#3;//&#2;/&#1;", "parent and ancestor"],
+					["* * &#3;/&#2;//&#1;", "ancestor and parent"],
+					["* &#4;>&#1;", "different‐type parent"],
+					["* &#4; &#1;", "different‐type ancestor"],
 					[
-						["* * &#1;", "just the sigil"],
-						["* * &#2;/&#1;", "same‐type parent"],
-						["* * &#2;//&#1;", "same‐type ancestor"],
-						["* * &#3;/&#2;/&#1;", "multiple parents"],
-						["* * &#3;//&#2;/&#1;", "parent and ancestor"],
-						["* * &#3;/&#2;//&#1;", "ancestor and parent"],
-						["* &#4;>&#1;", "different‐type parent"],
-						["* &#4; &#1;", "different‐type ancestor"],
-						[
-							"&#5; &#4;>&#1;",
-							"different‐type parent and ancestor",
-						],
-						[
-							"&#5;>&#4; &#1;",
-							"different‐type ancestor and parent",
-						],
-					]
-				)
-			]
-		]),
-	]
-])
+						"&#5; &#4;>&#1;",
+						"different‐type parent and ancestor",
+					],
+					[
+						"&#5;>&#4; &#1;",
+						"different‐type ancestor and parent",
+					],
+				]
+			)
+		]
+	]),
+}
 
 Deno.test({
 	name: "can’t resolve nonsymbol nodeType",
