@@ -302,18 +302,14 @@ Deno.test({
 				textTo,
 			} = attributes[subpath]
 			assert($ != null)
-			assert(Array.prototype.every.call(
-				$, $$ => $$.nodeType == NODE_TYPE.ATTRIBUTE
+			assert(Array.from($).every(
+				$$ => $$.nodeType == NODE_TYPE.ATTRIBUTE
 			))
-			assert(Array.prototype.every.call(
-				$, $$ => $$.contentModel == CONTENT_MODEL.TEXT
+			assert(Array.from($).every(
+				$$ => $$.contentModel == CONTENT_MODEL.TEXT
 			))
-			assert(Array.prototype.every.call(
-				$, $$ => $$.sigil == sigil
-			))
-			assert(Array.prototype.every.call(
-				$, $$ => $$.path == path
-			))
+			assert(Array.from($).every($$ => $$.sigil == sigil))
+			assert(Array.from($).every($$ => $$.path == path))
 			assertEquals(
 				new Set (Array.from($).map($$ => $$.qualifiedName)),
 				new Set ([ ].concat(qualifiedName))
