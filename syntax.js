@@ -570,50 +570,21 @@ const AttributeD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  For all sigils in the section sigil path (if present), there
- *        must be a previous section declaration which defines the
+ *   +  [🆐I‐1] For all sigils in the section sigil path (if present),
+ *        there must be a previous section declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐I‐2] For all sigils in the block sigil path (if present),
+ *        there must be a previous block declaration which defines the
  *        sigil (in the context of any further preceding sigils).
  *
- *   +  For all sigils in the block sigil path (if present), there must
- *        be a previous block declaration which defines the sigil (in
- *        the context of any further preceding sigils).
- *
- *   +  For all sigils in the inline sigil path (if present), there
- *        must be a previous inline declaration which defines the
+ *   +  [🆐I‐3] For all sigils in the inline sigil path (if present),
+ *        there must be a previous inline declaration which defines the
  *        sigil (in the context of any further preceding sigils).
  */
 const AttributeD·J_RegExp = new RegExp (AttributeD·J, "u")
 export { AttributeD·J_RegExp as AttributeD·J }
 
-//  Declaraton of Jargon.
-//  When processing, the external declarations are loaded first, so internal declarations *can* refer to them.
-//  External Declarations of Jargon *may* themselves have a `SystemLiteral`, which must then be loaded.
-//
-//  Only `SystemLiteral`s which provide U·R·Ls are supported by this implementation.
-//  The U·R·L `tag:go.KIBI.family,2021:market/html` refers to the default (H·T·M·L) Declaration of Jargon.
-//  If no `SystemLiteral` is provided, no external declarations are loaded and internal declarations must be provided.
-//
-//      [🆐J] D·J            ::= '<?market-commons' S '2.0' (
-//                                 S SystemLiteral
-//                                 | (S SystemLiteral)? S '[' (
-//                                   S
-//                                   | DocumentD·J
-//                                   | SectionD·J
-//                                   | HeadingD·J
-//                                   | BlockD·J
-//                                   | InlineD·J
-//                                   | AttributeD·J
-//                                   | Comment
-//                                 )* ']'
-//                               ) S? '?>'
-//
-//  Capture groups:
-//  01. `externalName`: A system identifier for an external Declaration of Jargon, when no internal declarations are provided (optional).
-//  02. `externalSubset`: A system identifier for an external Declaration of Jargon, when internal declarations are also provided (optional).
-//  03. `internalDeclarations`: Internal declarations (optional).
-//
-//  Validation constraints:
-//   +  The system identifier must be resolvable to a Market Commons ⅠⅠ file which contains a Declaration of Jargon.
 const D·J =
 	String.raw `(?:<\?market-commons${ S }2\.0(?:${ S }(?<externalName>${ SystemLiteral })|(?:${ S }(?<externalSubset>${ SystemLiteral }))?${ S }\[(?<internalDeclarations>(?:${ S }|${ uncaptureNamedGroups(DocumentD·J) }|${ uncaptureNamedGroups(SectionD·J) }|${ uncaptureNamedGroups(HeadingD·J) }|${ uncaptureNamedGroups(BlockD·J) }|${ uncaptureNamedGroups(InlineD·J) }|${ uncaptureNamedGroups(AttributeD·J) }|${ Comment })*)\])${ S }?\?>\u{A})`
 /**
@@ -649,8 +620,11 @@ const D·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  The system identifier must be resolvable to a file which
- *        matches the `D·J` production.
+ *   +  [🆐J‐1] The system identifier must be resolvable to a file
+ *        which matches the `D·J` production and is welformed according
+ *        to the rules in this file.
+ *
+ *   +  [🆐J‐2] System identifiers must not recurse when resolving.
  */
 const D·J_RegExp = new RegExp (D·J, "u")
 export { D·J_RegExp as D·J }

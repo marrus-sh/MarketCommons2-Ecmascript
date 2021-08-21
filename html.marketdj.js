@@ -9,7 +9,7 @@
 import { deno_landXMarket, marketNamespace, x·h·t·m·lNamespace }
 	from "./names.js"
 
-export default `<?market-commons 2.0 [
+export default String.raw `<?market-commons 2.0 [
 <!--
 @ Market Commons ⅠⅠ Default (H·T·M·L) Declaration of Jargon @
 

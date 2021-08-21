@@ -22,6 +22,14 @@ import * as $ from "./syntax.js"
  */
 
 /**
+ *  A symbol used in options objects to provide a `Set` of document
+ *    identifiers which the current declaration is referenced from.
+ *  This is intentionally not exported; it should not be available to
+ *    users.
+ */
+const nestedWithin = Symbol("")
+
+/**
  *  Parses an attributes declaration into a `Map` of attribute names
  *    and values.
  *
@@ -585,9 +593,20 @@ export function process ( source, options = {
 			"Declaration of Jargon does not match expected grammar."
 		)
 	} else {
-		const externalName = parseResult.groups.externalName
+		const quotedExternalName = parseResult.groups.externalName
 			|| parseResult.groups.externalSubset
-		if ( externalName ) {
+		const externalName = quotedExternalName != null
+				? quotedExternalName.substring(
+					1, quotedExternalName.length - 1
+				)
+			: null
+		if ( options?.[nestedWithin]?.has(externalName) ?? false ) {
+			//  There is a recursive external reference [🆐J‐2].
+			throw new ParseError (
+				0,
+				`Recursive reference to "${ externalName }" in Declaration of Jargon.`
+			)
+		} else if ( externalName != null ) {
 			//  (Attempt to) handle the referenced external Declaration
 			//    of Jargon.
 			let externalD·J
@@ -600,15 +619,75 @@ export function process ( source, options = {
 					externalD·J = defaultSystemIdentifierMap
 						.get(externalName)
 				):
+					if ( externalName != `${ marketNamespace }/html`
+						&& externalD·J !=
+							defaultSystemIdentifierMap.get(
+								`${ marketNamespace }/html`
+							) ) {
+						//  D·J processing cannot yet detect all kinds
+						//    of nonwelformed Declarations of Jargon.
+						//  For now, only allow the default H·T·M·L
+						//    D·J, which is known to be welformed.
+						/*  TODO  */
+						throw new ParseError (
+							0,
+							"Only the default H·T·M·L Declaration of Jargon is supported at this time."
+						)
+					}
 					break
 				default:
 					//  (Attempt to) fetch the system identifier.
 					/*  TODO  */
+					throw new ParseError (
+						0,
+						"Fetching external Declarations of Jargon is not yet supported."
+					)
+			}
+			try {
+				//  Attempt to process the external Declaration of
+				//    Jargon and replace `jargon` with that of the
+				//    result
+				const externalResult = process(externalD·J, {
+					...options,
+					[nestedWithin]: new Set (
+						options?.[nestedWithin] ?? []
+					).add(externalName)
+				})
+				if ( externalResult == null
+					|| externalResult.lastIndex !=
+						externalD·J.length ) {
+					//  External Declarations of Jargon must consist of
+					//    *only* and *exactly* one `D·J`.
+					throw new ParseError (0, "Not welformed.")
+				}
+				jargon = externalResult.jargon
+			} catch ( error ) {
+				//  The external Declaration of Jargon does not match
+				//    the `D·J` production [🆐J‐2].
+				throw new ParseError (
+					0,
+					`The external Declaration of Jargon "${ externalName }" is not welformed.`
+				)
 			}
 		}
 		const internalDeclarations =
 			parseResult.groups.internalDeclarations
 		if ( internalDeclarations ) {
+			if ( !(
+				options?.[nestedWithin]?.has(
+					`${ marketNamespace}/html`
+				) && options[nestedWithin].size == 1
+			) ) {
+				//  D·J processing cannot yet detect all kinds of
+				//    nonwelformed Declarations of Jargon.
+				//  For now, only allow the default H·T·M·L D·J, which
+				//    is known to be welformed.
+				/*  TODO  */
+				throw new ParseError (
+					0,
+					"Only the default H·T·M·L Declaration of Jargon is supported at this time."
+				)
+			}
 			//  Iterate over each internal declaration.
 			let index =
 				parseResult.indices.groups.internalDeclarations[0]

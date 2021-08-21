@@ -1,12 +1,15 @@
 import "./fauxbrowser/mod.js"
 import { process } from "./dj.js"
 import htmlD·J from "./html.marketdj.js"
-import { deno_landXMarket } from "./names.js"
+import { deno_landXMarket, marketNamespace } from "./names.js"
 import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
 import { assert, assertEquals, assertThrows } from
 	"https://deno.land/std@0.105.0/testing/asserts.ts"
 
-const result = process(htmlD·J)
+const D·J =
+//	htmlD·J
+	`<?market-commons 2.0 "${ marketNamespace }/html"?>\n`
+const result = process(D·J)
 const jargon = result.jargon
 
 Deno.test({
@@ -16,7 +19,7 @@ Deno.test({
 
 Deno.test({
 	name: "H·T·M·L D·J processing consumed entire string.",
-	fn: ( ) => assertEquals(result.lastIndex, htmlD·J.length),
+	fn: ( ) => assertEquals(result.lastIndex, D·J.length),
 })
 
 Deno.test({
