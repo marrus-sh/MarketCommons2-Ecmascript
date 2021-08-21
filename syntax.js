@@ -7,6 +7,8 @@
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
 /**
+ *  Market Commons ⅠⅠ syntax regular expressions.
+ *
  *  This module contains a number of regular expressions important for
  *    Market Commons ⅠⅠ processing.
  *  Internally (within this file), they are defined as strings (using
@@ -215,8 +217,8 @@ const AttributesD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  The same attribute name must not appear twice in a single
- *        attributes declaration.
+ *   +  [🆐A‐1] The same attribute name must not appear twice in a
+ *        single attributes declaration.
  */
 const AttributesD·J_RegExp = new RegExp (AttributesD·J, "u")
 export { AttributesD·J_RegExp as AttributesD·J }
@@ -230,8 +232,8 @@ const SigilD·J = String.raw `(?:${ CharRef }+)`
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  The character referenced by CharRef must not match `S` or
- *        `'|'`.
+ *   +  [🆐B‐1] The character referenced by CharRef must not match `S`
+ *        or `'|'`.
  */
 const SigilD·J_RegExp = new RegExp (SigilD·J, "u")
 export { SigilD·J_RegExp as SigilD·J }
@@ -269,10 +271,10 @@ const DocumentD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  Template contents must be welformed X·M·L documents.
+ *   +  [🆐D‐1] Template contents must be welformed X·M·L documents.
  *
- *   +  Template contents must contain exactly one of each of the
- *        following:
+ *   +  [🆐D‐2] Template contents must contain exactly one of each of
+ *        the following:
  *
  *       +  An empty element with local name `preamble` and namespace
  *            `tag:go.KIBI.family,2021:market`.
@@ -280,14 +282,14 @@ const DocumentD·J =
  *       +  An empty element with local name `content` and namespace
  *            `tag:go.KIBI.family,2021:market`.
  *
- *   +  Template contents must not contain any other elements in the
- *        namespace `tag:go.KIBI.family,2021:market`.
+ *   +  [🆐D‐3] Template contents must not contain any other elements
+ *        in the namespace `tag:go.KIBI.family,2021:market`.
  */
 const DocumentD·J_RegExp = new RegExp (DocumentD·J, "u")
 export { DocumentD·J_RegExp as DocumentD·J }
 
 const SectionD·J =
-	String.raw `(?:<!SECTION${ S }(?<sectionPath>${ SigilD·JPath })${ S }(?<sectionName>${ Name })(?:${ S }(?<sectionAttributes>${ AttributesD·J }))?${ S }(?<sectionHeadingName>${ Name })(?:${ S }(?<sectionHeadingAttributes>${ AttributesD·J }))?${ S }?>)`
+	String.raw `(?:<!SECTION${ S }(?<sectionPath>${ SigilD·JPath })${ S }(?<sectionName>${ Name })(?:${ S }(?<sectionAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<sectionCountTo>${ Name }(?:${ S }${ Name })*))?(?:${ S }\|${ S }(?<sectionHeadingName>${ Name })(?:${ S }(?<sectionHeadingAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<sectionHeadingCountTo>${ Name }(?:${ S }${ Name })*))?|${ S }TEXTTO${ S }(?<sectionTextTo>${ Name }(?:${ S }${ Name })*))?${ S }?>)`
 /**
  *  Section declaration.
  *
@@ -295,9 +297,13 @@ const SectionD·J =
  *    may be used to begin the section.
  *
  *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·JPath
- *                               S Name (S AttributesD·J)?
- *                               S Name (S AttributesD·J)?
- *                               S? '>'
+ *                               S Name (S AttributesD·J)? (
+ *                                 S 'COUNTTO' (S Name)+
+ *                               )? (
+ *                                 S '|' S Name (S AttributesD·J)? (
+ *                                   S 'COUNTTO' (S Name)+
+ *                                 )? | S 'TEXTTO' (S Name)+
+ *                               ) S? '>'
  *
  *
  *  ##  Capture groups  ##
@@ -308,17 +314,26 @@ const SectionD·J =
  *
  *  03. `sectionAttributes` (optional): Section attributes declaration.
  *
- *  04. `sectionHeadingName`: Heading X·M·L element name.
+ *  04. `sectionCountTo` (optional): One or more attribute names to
+ *        send the section level/count to.
  *
- *  05. `sectionHeadingAttributes` (optional): Heading attributes
+ *  05. `sectionHeadingName` (optional): Heading X·M·L element name.
+ *
+ *  06. `sectionHeadingAttributes` (optional): Heading attributes
  *        declaration.
+ *
+ *  07. `sectionHeadingCountTo` (optional): One or more attribute
+ *        names to send the heading level/count to.
+ *
+ *  08. `sectionTextTo` (optional): One or more attribute names to
+ *        send (heading) text to, if no heading element is supported.
  *
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  For all nonfinal sigils in the section sigil path, there must
- *        be a previous section declaration which defines the sigil
- *        (in the context of any further preceding sigils).
+ *   +  [🆐E‐1] For all nonfinal sigils in the section sigil path,
+ *        there must be a previous section declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
  */
 const SectionD·J_RegExp = new RegExp (SectionD·J, "u")
 export { SectionD·J_RegExp as SectionD·J }
@@ -355,15 +370,15 @@ const HeadingD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  For all sigils in the section sigil path (if present), there
- *        must be a previous section declaration which defines the
- *        sigil (in the context of any further preceding sigils).
+ *   +  [🆐F‐1] For all sigils in the section sigil path (if present),
+ *        there must be a previous section declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
  */
 const HeadingD·J_RegExp = new RegExp (HeadingD·J, "u")
 export { HeadingD·J_RegExp as HeadingD·J }
 
 const BlockD·J =
-	String.raw `(?:<!BLOCK(?:${ S }(?<blockSectionPath>${ SigilD·JPath })(?:${ S }(?<blockSectionStrict>>))?)?${ S }(?:(?<blockPath>${ SigilD·JPath })|DEFAULT${ S }(?<blockSigil>${ SigilD·J }))${ S }(?:(?<blockName>${ Name })(?:${ S }(?<blockAttributes>${ AttributesD·J }))?(?:${ S }INLIST${ S }(?<blockListName>${ Name })(?:${ S }(?<blockListAttributes>${ AttributesD·J }))?)?|#${ S }(?<blockSpecial>COMMENT|LITERAL))${ S }?>)`
+	String.raw `(?:<!BLOCK(?:${ S }(?<blockSectionPath>${ SigilD·JPath })(?:${ S }(?<blockSectionStrict>>))?)?${ S }(?:(?<blockPath>${ SigilD·JPath })|DEFAULT${ S }(?<blockSigil>${ SigilD·J }))${ S }(?:(?<blockName>${ Name })(?:${ S }(?<blockAttributes>${ AttributesD·J }))?(?:${ S }(?<blockFinal>FINAL))?(?:${ S }INLIST${ S }(?<blockListName>${ Name })(?:${ S }(?<blockListAttributes>${ AttributesD·J }))?)?|#${ S }(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
 /**
  *  Block declaration.
  *
@@ -373,10 +388,15 @@ const BlockD·J =
  *                                 SigilD·JPath | 'DEFAULT' S SigilD·J
  *                               ) S (
  *                                 Name (S AttributesD·J)? (
+ *                                   S 'FINAL'
+ *                                 )? (
  *                                   S 'INLIST'
  *                                   S Name (S AttributesD·J)?
- *                                 )?
- *                                 | '#' S ('COMMENT' | 'LITERAL')
+ *                                 )? | '#' S (
+ *                                   'TRANSPARENT'
+ *                                   | 'COMMENT'
+ *                                   | 'LITERAL'
+ *                                 )
  *                               ) S? '>'
  *
  *
@@ -397,33 +417,34 @@ const BlockD·J =
  *
  *  06. `blockAttributes` (optional): Block attributes declaration.
  *
- *  07. `blockListName` (optional): List X·M·L element name.
+ *  07. `blockFinal` (optional): `FINAL` if this block cannot contain
+ *        child blocks.
  *
- *  08. `blockListAttributes` (optional): List attributes declaration.
+ *  08. `blockListName` (optional): List X·M·L element name.
  *
- *  09. `blockSpecial` (optional): `COMMENT` if this sigil defines a
+ *  09. `blockListAttributes` (optional): List attributes declaration.
+ *
+ *  10. `blockSpecial` (optional): `TRANSPARENT` if this sigil defines
+ *        a transparent block, `COMMENT` if this sigil defines a
  *        comment block, or `LITERAL` if this sigil defines a literal
  *        block.
  *
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  For all sigils in the section sigil path (if present), there
- *        must be a previous section declaration which defines the
- *        sigil (in the context of any further preceding sigils).
+ *   +  [🆐G‐1] For all sigils in the section sigil path (if present),
+ *        there must be a previous section declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
  *
- *   +  For all nonfinal sigils in the block sigil path, there must be
- *        a previous block declaration which defines the sigil (in the
- *        context of any further preceding sigils).
- *
- *   +  There must only be one `DEFAULT` block sigil for a given
- *        section sigil path with a given strictness.
+ *   +  [🆐G‐2] For all nonfinal sigils in the block sigil path, there
+ *        must be a previous block declaration which defines the sigil
+ *        (in the context of any further preceding sigils).
  */
 const BlockD·J_RegExp = new RegExp (BlockD·J, "u")
 export { BlockD·J_RegExp as BlockD·J }
 
 const InlineD·J =
-	String.raw `(?:<!INLINE(?:${ S }(?<inlineSectionOrBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineSectionOrBlockStrict>>))?(?:${ S }(?:(?<inlineBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${ S }(?<inlinePath>${ SigilD·JPath })${S}(?:(?<inlineName>${ Name })(?:${ S }(?<inlineAttributes>${ AttributesD·J }))?(?:${ S }TEXTFROM${ S }(?<inlineTextFrom>${ Name })|${ S }TEXTTO${ S }(?<inlineTextTo>${ Name }(?:${ S }${ Name })*))?|#${ S }(?<inlineSpecial>COMMENT|LITERAL))${ S }?>)`
+	String.raw `(?:<!INLINE(?:${ S }(?<inlineSectionOrBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineSectionOrBlockStrict>>))?(?:${ S }(?:(?<inlineBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${ S }(?<inlinePath>${ SigilD·JPath })${S}(?:(?<inlineName>${ Name })(?:${ S }(?<inlineAttributes>${ AttributesD·J }))?(?:${ S }(?<inlineFinal>FINAL)|${ S }TEXTFROM${ S }(?<inlineTextFrom>${ Name })|${ S }TEXTTO${ S }(?<inlineTextTo>${ Name }(?:${ S }${ Name })*))?|#${ S }(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
 /**
  *  Inline declaration.
  *
@@ -434,10 +455,14 @@ const InlineD·J =
  *                               )? S SigilD·JPath
  *                               S (
  *                                 Name (S AttributesD·J)? (
- *                                   S 'TEXTFROM' S Name
+ *                                   S 'FINAL'
+ *                                   | S 'TEXTFROM' S Name
  *                                   | S 'TEXTTO' (S Name)+
- *                                 )?
- *                                 | '#' S ('COMMENT' | 'LITERAL')
+ *                                 )? | '#' S (
+ *                                   'TRANSPARENT'
+ *                                   | 'COMMENT'
+ *                                   | 'LITERAL'
+ *                                 )
  *                               ) S? '>'
  *
  *
@@ -464,36 +489,41 @@ const InlineD·J =
  *
  *  08. `inlineAttributes` (optional): Inline attributes declaration.
  *
- *  09. `inlineTextFrom` (optional): An attribute name to pull text
+ *  09. `inlineFinal` (optional): `FINAL` if this inline cannot contain
+ *        child inlines.
+ *
+ *  10. `inlineTextFrom` (optional): An attribute name to pull text
  *        from.
  *
- *  10. `inlineTextTo` (optional): One or more attribute names to
+ *  11. `inlineTextTo` (optional): One or more attribute names to
  *        send text to.
+ *      This implies a `FINAL` inline.
  *
- *  11. `inlineSpecial` (optional): `COMMENT` if this sigil defines a
- *        comment block, or `LITERAL` if this sigil defines a literal
- *        block.
+ *  12. `inlineSpecial` (optional): `TRANSPARENT` if this sigil defines
+ *        a transparent inline, `COMMENT` if this sigil defines a
+ *        comment inline, or `LITERAL` if this sigil defines a literal
+ *        inline.
  *
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  For all sigils in the section sigil path (if present), there
- *        must be a previous section declaration which defines the
+ *   +  [🆐H‐1] For all sigils in the section sigil path (if present),
+ *        there must be a previous section declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐H‐2] For all sigils in the block sigil path (if present),
+ *        there must be a previous block declaration which defines the
  *        sigil (in the context of any further preceding sigils).
  *
- *   +  For all sigils in the block sigil path (if present), there must
- *        be a previous block declaration which defines the sigil (in
- *        the context of any further preceding sigils).
- *
- *   +  For all nonfinal sigils in the inline sigil path, there must be
- *        a previous inline declaration which defines the sigil (in the
- *        context of any further preceding sigils).
+ *   +  [🆐H‐3] For all nonfinal sigils in the inline sigil path, there
+ *        must be a previous inline declaration which defines the sigil
+ *        (in the context of any further preceding sigils).
  */
 const InlineD·J_RegExp = new RegExp (InlineD·J, "u")
 export { InlineD·J_RegExp as InlineD·J }
 
 const AttributeD·J =
-	String.raw `(?:<!ATTRIBUTE(?:${ S }(?<attributeSectionOrBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${ S }(?:(?<attributeBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${ S }(?:(?<attributeInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${ S }(?<attributeSigil>${ SigilD·J })${ S }(?<attributeName>${ Name })${ S }?>)`
+	String.raw `(?:<!ATTRIBUTE(?:${ S }(?<attributeSectionOrBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${ S }(?:(?<attributeBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${ S }(?:(?<attributeInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${ S }(?<attributeSigil>${ SigilD·J })${ S }(?<attributeNames>${ Name }(?:${ S }${ Name })*)${ S }?>)`
 /**
  *  Attribute declaration.
  *
@@ -535,7 +565,7 @@ const AttributeD·J =
  *
  *  09. `attibuteSigil`: Attribute sigil.
  *
- *  10. `attributeName`: Attribute X·M·L element name.
+ *  10. `attributeNames`: Attribute X·M·L element name(s).
  *
  *
  *  ##  Welformedness constraints  ##

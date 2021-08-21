@@ -10,7 +10,7 @@
  *  Default values used when configuring the Market Commons ⅠⅠ
  *    processor.
  *
- *  @module MarketCommons2/symbols
+ *  @module MarketCommons2/defaults
  */
 
 import htmlD·J from "./html.marketdj.js"

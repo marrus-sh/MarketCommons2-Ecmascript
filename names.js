@@ -13,6 +13,11 @@
  */
 
 /**
+ *  The deno.land/x URL for this implementation.
+ */
+export const deno_landXMarket = "https://deno.land/x/market@v0.1.0"
+
+/**
  *  The X·H·T·M·L Namespace, used by H·T·M·L and others.
  */
 export const x·h·t·m·lNamespace = "http://www.w3.org/1999/xhtml"
