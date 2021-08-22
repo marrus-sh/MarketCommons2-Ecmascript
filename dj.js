@@ -14,6 +14,7 @@ import { marketNamespace, parsererrorNamespace } from "./names.js"
 import { normalizeReferences, resolve } from "./paths.js"
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js"
 import * as $ from "./syntax.js"
+import { prepareAsX·M·L } from "./text.js"
 
 /**
  *  Declaration of Jargon processing.
@@ -585,14 +586,15 @@ export function process ( source, options = {
 		: new Map (Object.entries(options?.systemIdentifier ?? { }))
 	const regExp = new RegExp ($.D·J.source, "duy")
 
-	//  Parse the Declaration of Jargon.
-	const parseResult = regExp.exec(source)
+	const parseResult = regExp.exec(prepareAsX·M·L(source))
 	if ( !parseResult ) {
+		//  Declarations of Jargon must match the `D·J` production.
 		throw new ParseError (
 			0,
 			"Declaration of Jargon does not match expected grammar."
 		)
 	} else {
+		//  Process the parsed Declaration of Jargon.
 		const quotedExternalName = parseResult.groups.externalName
 			|| parseResult.groups.externalSubset
 		const externalName = quotedExternalName != null
