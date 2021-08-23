@@ -35,6 +35,40 @@ export function normalizeReferences ( path ) {
 }
 
 /**
+ *  Builds a regular expression from the provided `glob` for matching
+ *    (completely specified) paths.
+ *
+ *  @argument {string} glob
+ *  @returns {RegExp}
+ */
+export function globRegExp ( glob ) {
+	return new RegExp (
+		"^" + String(glob).replace(
+			//  Escape regular expression special characters except for
+			//    asterisk, which has a special meaning in paths and
+			//    will be handled later.
+			//  These characters shouldn’t ever appear in paths anyway!
+			/[.+\-?^${}()|[\]\\]/gu, "\\$&"
+		).replace(
+			//  Any number of same‐type nodes may precede the path.
+			/^/u, "(?:*/)?"
+		).replace(
+			//  Space adds an optional asterisk to the end of what
+			//    precedes and the beginning of what follows.
+			/ /gu, "(?:/*)?>(?:*/)?"
+		).replace(
+			//  Double slash becomes a plain slash optionally followed
+			//    by an asterisk slash.
+			/\/\//gu, "/(?:*/)?"
+		).replace(
+			//  Asterisks match some number of sigils, separated by
+			//    slashes.
+			/\*/gu, `${ SigilD·J.source }(?:/${ SigilD·J.source })*`
+		) + "$"
+	)
+}
+
+/**
  *  Resolves the provided `path` for the provided `nodeType` and
  *    `jargon`, and returns the corresponding definition.
  *
@@ -88,38 +122,7 @@ export function resolve ( nodeType, path, jargon, options ) {
 						( [ index, [ key, value ] ] ) =>
 							//  Build a regular expression from the key
 							//    and test `path` against it.
-							new RegExp (
-								"^" + String(key).replace(
-									//  Escape regular expression
-									//    special characters except for
-									//    asterisk, which has a special
-									//    meaning in paths and will be
-									//    handled later.
-									//  These characters shouldn’t ever
-									//    appear in paths anyway!
-									/[.+\-?^${}()|[\]\\]/gu, "\\$&"
-								).replace(
-									//  Any number of same‐type nodes
-									//    may precede the path.
-									/^/u, "(?:*/)?"
-								).replace(
-									//  Space adds an optional asterisk
-									//    to the end of what precedes
-									//    and the beginning of what
-									//    follows.
-									/ /gu, "(?:/*)?>(?:*/)?"
-								).replace(
-									//  Double slash becomes a plain
-									//    slash optionally followed by
-									//    an asterisk slash.
-									/\/\//gu, "/(?:*/)?"
-								).replace(
-									//  Asterisks match some number of
-									//    sigils, separated by slashes.
-									/\*/gu,
-									`${ SigilD·J.source }(?:/${ SigilD·J.source })*`
-								) + "$"
-							).test(path)
+							globRegExp(key).test(path)
 						).sort(
 							(
 								[ indexA, [ keyA, valueA ] ],
