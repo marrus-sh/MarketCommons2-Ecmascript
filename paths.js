@@ -69,6 +69,29 @@ export function globRegExp ( glob ) {
 }
 
 /**
+ *  Returns a `Set` of all the keys in `sigilMap` which can match
+ *    the provided `path` in at least some fashion.
+ *
+ *  @argument {string} path
+ *  @argument {Map} sigilMap
+ *  @returns {Set}
+ */
+export function sigilsInScope ( path, sigilMap ) {
+	const result = new Set
+	checkingSigils: for ( const [ sigil, pathMap ] of sigilMap ) {
+		const pathWithSigil = />$/u.test(path) ? `${ path }${ sigil }`
+			: `${ path }/${ sigil }`
+		for ( const [ glob, jargon ] of pathMap ) {
+			if ( globRegExp(glob).test(pathWithSigil) ) {
+				result.add(sigil)
+				continue checkingSigils
+			}
+		}
+	}
+	return result
+}
+
+/**
  *  Resolves the provided `path` for the provided `nodeType` and
  *    `jargon`, and returns the corresponding definition.
  *
