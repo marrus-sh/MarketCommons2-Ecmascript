@@ -13,7 +13,7 @@
  */
 
 import { ParseError } from "./errors.js"
-import { Char, RestrictedChar } from "./syntax.js"
+import { RestrictedChar, S } from "./syntax.js"
 
 /**
  *  Normalizes line endings in the provided `text` according to X·M·L
@@ -25,6 +25,9 @@ import { Char, RestrictedChar } from "./syntax.js"
  *    `Char`s; this requires an additional pass since it requires
  *    handling surrogate pairs.
  *  However, it does catch U+0000, U+FFFE, and U+FFFF.
+ *
+ *  @argument {string} text
+ *  @returns {string}
  */
 export function prepareAsX·M·L ( text ) {
 	//  It’s okay to treat strings as arrays here because the
@@ -39,7 +42,25 @@ export function prepareAsX·M·L ( text ) {
 				)
 			} else if ( /\x0D[\x0A\x85]?|\x85|\u2028/u.test($) ) {
 				return "\n"
-			} else { return $ }
+			} else {
+				return $
+			}
 		}
 	).join("")
+}
+
+/**
+ *  Trims X·M·L whitespace from the beginning and end of the provided
+ *    `text` and returns the result.
+ *
+ *  This differs from `String.prototype.trim()`, which has a more
+ *    expansive definition of “whitespace”.
+ *
+ *  @argument {string} text
+ *  @returns {string}
+ */
+export function trim ( text ) {
+	return new RegExp (
+		`^${ S.source }?([^]*?)${ S.source }?$`, "u"
+	).exec(text)?.[1] ?? ""
 }
