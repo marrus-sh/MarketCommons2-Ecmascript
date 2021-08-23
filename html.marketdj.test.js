@@ -114,7 +114,7 @@ Deno.test({
 			const { qualifiedName } = headings[sigil]
 			assert($ != null)
 			assertEquals($.nodeType, NODE_TYPE.HEADING)
-			assertEquals($.contentModel, CONTENT_MODEL.MIXED)
+			assertEquals($.contentModel, CONTENT_MODEL.INLINE)
 			assertEquals($.sigil, sigil)
 			assertEquals($.path, path)
 			assertEquals($.qualifiedName, qualifiedName)
@@ -132,7 +132,7 @@ Deno.test({
 			"&#43;": { qualifiedName: "li", inList: "ul" },
 			"&#44;": { qualifiedName: "dd", inList: "dl" },
 			"&#46;": {
-				contentModel: CONTENT_MODEL.TEXT,
+				contentModel: CONTENT_MODEL.INLINE,
 				qualifiedName: "p",
 				isDefault: true,
 			},
@@ -261,7 +261,7 @@ Deno.test({
 			assert($ != null)
 			assertEquals($.nodeType, NODE_TYPE.INLINE)
 			assertEquals(
-				$.contentModel, contentModel ?? CONTENT_MODEL.MIXED
+				$.contentModel, contentModel ?? CONTENT_MODEL.INLINE
 			)
 			assertEquals($.sigil, sigil)
 			assertEquals($.path, path)

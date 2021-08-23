@@ -285,7 +285,7 @@ function processHeading ( source, index ) {
 		return {
 			jargon: {
 				nodeType: NODE_TYPE.HEADING,
-				contentModel: CONTENT_MODEL.MIXED,
+				contentModel: CONTENT_MODEL.INLINE,
 				sigil: normalizeReferences(headingSigil),
 				path: normalizeReferences(
 					[
@@ -339,7 +339,7 @@ function processBlock ( source, index ) {
 		return {
 			jargon: {
 				nodeType: NODE_TYPE.BLOCK,
-				contentModel: blockFinal != null ? CONTENT_MODEL.TEXT
+				contentModel: blockFinal != null ? CONTENT_MODEL.INLINE
 					: blockSpecial != null
 						? CONTENT_MODEL[blockSpecial]
 					: CONTENT_MODEL.MIXED,
@@ -416,7 +416,7 @@ function processInline ( source, index ) {
 						? CONTENT_MODEL.TEXT
 					: inlineSpecial != null
 						? CONTENT_MODEL[inlineSpecial]
-					: CONTENT_MODEL.MIXED,
+					: CONTENT_MODEL.INLINE,
 				sigil: normalizeReferences(
 					inlinePath.substring(
 						inlinePath.lastIndexOf("/") + 1

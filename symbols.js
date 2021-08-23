@@ -78,6 +78,12 @@ export const CONTENT_MODEL = Object.freeze(
 			value: Symbol("transparent"),
 			writable: false,
 		},
+		INLINE: {
+			configurable: false,
+			enumerable: true,
+			value: Symbol("inline"),
+			writable: false,
+		},
 		TEXT: {
 			configurable: false,
 			enumerable: true,
