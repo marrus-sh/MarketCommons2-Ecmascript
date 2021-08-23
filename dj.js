@@ -6,21 +6,20 @@
 //  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-import {
-	systemIdentifierMap as defaultSystemIdentifierMap
-} from "./defaults.js"
+/**
+ *  Declaration of Jargon processing.
+ *
+ *  @module MarketCommons2/dj
+ */
+
+import { systemIdentifierMap as defaultSystemIdentifierMap }
+	from "./defaults.js"
 import { ConfigurationError, ParseError } from "./errors.js"
 import { marketNamespace, parsererrorNamespace } from "./names.js"
 import { normalizeReferences, resolve } from "./paths.js"
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js"
 import * as $ from "./syntax.js"
 import { prepareAsX·M·L } from "./text.js"
-
-/**
- *  Declaration of Jargon processing.
- *
- *  @module MarketCommons2/dj
- */
 
 /**
  *  A symbol used in options objects to provide a `Set` of document
@@ -577,16 +576,17 @@ export function process ( source, options = {
 
 	//  Handle options.
 	const DOMParser = options?.DOMParser ?? globalThis?.DOMParser
-	if ( !DOMParser ) {
+	if ( typeof DOMParser != "function" ) {
 		throw new ConfigurationError (
 			"No D·O·M Parser constructor supplied."
 		)
 	}
 	const systemIdentifierMap = options instanceof Map ? options
 		: new Map (Object.entries(options?.systemIdentifier ?? { }))
-	const regExp = new RegExp ($.D·J.source, "duy")
 
-	const parseResult = regExp.exec(prepareAsX·M·L(source))
+	//  Parse and process.
+	const regExp = new RegExp ($.D·J.source, "duy")
+	const parseResult = regExp.exec(source)
 	if ( !parseResult ) {
 		//  Declarations of Jargon must match the `D·J` production.
 		throw new ParseError (
@@ -648,7 +648,8 @@ export function process ( source, options = {
 			try {
 				//  Attempt to process the external Declaration of
 				//    Jargon and replace `jargon` with that of the
-				//    result
+				//    result.
+				externalD·J = prepareAsX·M·L(externalD·J)
 				const externalResult = process(externalD·J, {
 					...options,
 					[nestedWithin]: new Set (
