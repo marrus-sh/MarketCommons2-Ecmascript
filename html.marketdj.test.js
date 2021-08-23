@@ -3,7 +3,7 @@ import { process } from "./dj.js"
 import htmlD·J from "./html.marketdj.js"
 import { deno_landXMarket, marketNamespace } from "./names.js"
 import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
-import { assert, assertEquals, assertThrows } from
+import { assert, assertEquals, assertStrictEquals, assertThrows } from
 	"https://deno.land/std@0.105.0/testing/asserts.ts"
 
 const D·J =
@@ -185,6 +185,17 @@ Deno.test({
 				assertEquals(list.attributes, new Map)
 			}
 		}
+	},
+})
+
+Deno.test({
+	name: "H·T·M·L D·J block defaults process correctly.",
+	fn: ( ) => {
+		assertEquals(jargon[NODE_TYPE.BLOCK].defaults.size, 1)
+		assertStrictEquals(
+			jargon[NODE_TYPE.BLOCK].defaults.get("*"),
+			jargon[NODE_TYPE.BLOCK].get("&#46;").get("* &#46;")
+		)
 	},
 })
 

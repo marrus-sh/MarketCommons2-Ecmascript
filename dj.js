@@ -573,6 +573,7 @@ export function process ( source, options = {
 		[NODE_TYPE.INLINE]: new Map,     //  [sigil:[path:inline]]
 		[NODE_TYPE.ATTRIBUTE]: new Map,  //  [sigil:[path:{attribute}]]
 	}
+	jargon[NODE_TYPE.BLOCK].defaults = new Map
 
 	//  Handle options.
 	const DOMParser = options?.DOMParser ?? globalThis?.DOMParser
@@ -745,6 +746,19 @@ export function process ( source, options = {
 								//  Ensure sigils in the path are
 								//    properly declared.
 								/*  TODO  */
+							}
+							const value = result.jargon
+							if ( value.isDefault ) {
+								//  This is a default block
+								//    declaration.
+								//  Record it in the defaults map!
+								jargon[NODE_TYPE.BLOCK].defaults.set(
+									value.path.substring(
+										0, /[ >][^ >]*$/u.exec(
+											value.path
+										)?.index ?? undefined
+									), value
+								)
 							}
 							break
 						case !(result = processInline(source, index)):
