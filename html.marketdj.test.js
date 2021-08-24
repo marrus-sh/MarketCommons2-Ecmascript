@@ -12,9 +12,7 @@ import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
 import { assert, assertEquals, assertStrictEquals, assertThrows } from
 	"https://deno.land/std@0.105.0/testing/asserts.ts"
 
-const D·J =
-//	htmlD·J
-	`<?market-commons 2.0 "${ marketNamespace }/html"?>\n`
+const D·J = htmlD·J
 const result = process(D·J)
 const jargon = result.jargon
 

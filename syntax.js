@@ -453,10 +453,6 @@ const SectionD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐E‐1] For all nonfinal sigils in the section sigil path,
- *        there *must* be a previous section declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
  *   +  [🆐E‐2] Section and heading names and attributes *must not*
  *        match the `NSAttName` production.
  */
@@ -494,10 +490,6 @@ const HeadingD·J =
  *
  *
  *  ##  Welformedness constraints  ##
- *
- *   +  [🆐F‐1] For all sigils in the section sigil path (if present),
- *        there *must* be a previous section declaration which defines
- *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐F‐2] Heading names and attributes *must not* match the 
  *        `NSAttName` production.
@@ -559,14 +551,6 @@ const BlockD·J =
  *
  *
  *  ##  Welformedness constraints  ##
- *
- *   +  [🆐G‐1] For all sigils in the section sigil path (if present),
- *        there *must* be a previous section declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
- *   +  [🆐G‐2] For all nonfinal sigils in the block sigil path, there
- *        *must* be a previous block declaration which defines the
- *        sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐G‐3] Block and list names and attributes *must not* match
  *        the `NSAttName` production.
@@ -638,18 +622,6 @@ const InlineD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐H‐1] For all sigils in the section sigil path (if present),
- *        there *must* be a previous section declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
- *   +  [🆐H‐2] For all sigils in the block sigil path (if present),
- *        there *must* be a previous block declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
- *   +  [🆐H‐3] For all nonfinal sigils in the inline sigil path, there
- *        *must* be a previous inline declaration which defines the
- *        sigil (in the context of any further preceding sigils).
- *
  *   +  [🆐H‐4] Inline names and attributes *must not* match the
  *        `NSAttName` production
  */
@@ -703,18 +675,6 @@ const AttributeD·J =
  *
  *
  *  ##  Welformedness constraints  ##
- *
- *   +  [🆐I‐1] For all sigils in the section sigil path (if present),
- *        there *must* be a previous section declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
- *   +  [🆐I‐2] For all sigils in the block sigil path (if present),
- *        there *must* be a previous block declaration which defines
- *        the sigil (in the context of any further preceding sigils).
- *
- *   +  [🆐I‐3] For all sigils in the inline sigil path (if present),
- *        there *must* be a previous inline declaration which defines
- *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐I‐4] Attribute names *must not* match the `NSAttName`
  *        production.

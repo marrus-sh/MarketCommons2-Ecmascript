@@ -762,21 +762,6 @@ export function process ( source, options = {
 					externalD·J = defaultSystemIdentifierMap
 						.get(externalName)
 				):
-					if ( externalName != `${ marketNamespace }/html`
-						&& externalD·J !=
-							defaultSystemIdentifierMap.get(
-								`${ marketNamespace }/html`
-							) ) {
-						//  D·J processing cannot yet detect all kinds
-						//    of nonwelformed Declarations of Jargon.
-						//  For now, only allow the default H·T·M·L
-						//    D·J, which is known to be welformed.
-						/*  TODO  */
-						throw new ParseError (
-							0,
-							"Only the default H·T·M·L Declaration of Jargon is supported at this time."
-						)
-					}
 					break
 				default:
 					//  (Attempt to) fetch the system identifier.
@@ -818,21 +803,6 @@ export function process ( source, options = {
 		const internalDeclarations =
 			parseResult.groups.internalDeclarations
 		if ( internalDeclarations ) {
-			if ( !(
-				options?.[nestedWithin]?.has(
-					`${ marketNamespace}/html`
-				) && options[nestedWithin].size == 1
-			) ) {
-				//  D·J processing cannot yet detect all kinds of
-				//    nonwelformed Declarations of Jargon.
-				//  For now, only allow the default H·T·M·L D·J, which
-				//    is known to be welformed.
-				/*  TODO  */
-				throw new ParseError (
-					0,
-					"Only the default H·T·M·L Declaration of Jargon is supported at this time."
-				)
-			}
 			//  Iterate over each internal declaration.
 			let index =
 				parseResult.indices.groups.internalDeclarations[0]
@@ -873,27 +843,12 @@ export function process ( source, options = {
 							break processingDeclaration
 						case !(result = processSection(source, index)):
 							//  See below.
-							{
-								//  Ensure sigils in the path are
-								//    properly declared.
-								/*  TODO  */
-							}
 							break
 						case !(result = processHeading(source, index)):
 							//  See below.
-							{
-								//  Ensure sigils in the path are
-								//    properly declared.
-								/*  TODO  */
-							}
 							break
 						case !(result = processBlock(source, index)):
 							//  See below.
-							{
-								//  Ensure sigils in the path are
-								//    properly declared.
-								/*  TODO  */
-							}
 							const value = result.jargon
 							if ( value.isDefault ) {
 								//  This is a default block
@@ -910,11 +865,6 @@ export function process ( source, options = {
 							break
 						case !(result = processInline(source, index)):
 							//  See below.
-							{
-								//  Ensure sigils in the path are
-								//    properly declared.
-								/*  TODO  */
-							}
 							break
 						case !(
 							result = processAttribute(source, index)
@@ -922,23 +872,6 @@ export function process ( source, options = {
 							//  This code is more complicated than the
 							//    generic case because the same sigil
 							//    can signify multiple attributes.
-							if ( result.jargon.length == 0 ) {
-								//  Ought to be unreachable;
-								//    implies an attribute
-								//    declaration which defines
-								//    nothing.
-								//  But, there’s no harm in
-								//    ignoring such a case.
-								break processingDeclaration
-							} else {
-								//  Ensure sigils in the path are
-								//    properly declared.
-								//  All jargons produced by a single
-								//    attribute definition will have
-								//    the same path.
-								const path = result.jargon[0].path
-								/*  TODO  */
-							}
 							for ( const value of result.jargon ) {
 								const { nodeType, path, sigil } = value
 								const jargons = jargon[nodeType]
