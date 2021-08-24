@@ -35,8 +35,8 @@ import { prepareAsX·M·L } from "./text.js"
 const nestedWithin = Symbol()
 
 /**
- *  Throws an error if the provided `qualifiedName` is not welformed,
- *    otherwise simply returns it.
+ *  Throws an error if the provided `qualifiedName` is not welformed;
+ *    otherwise, simply returns it.
  *
  *  @argument {string} qualifiedName
  *  @argument {{index:number}} options
@@ -56,6 +56,33 @@ function welformedName ( qualifiedName, options ) {
 		//  Simply return the name.
 		return qualifiedName
 	}
+}
+
+/**
+ *  Throws an error if the provided `path` is not welformed; otherwise,
+ *    returns the normalized form.
+ *
+ *  @argument {string} sigil
+ *  @argument {{index:number}} options
+ *  @returns {string}
+ */
+function welformedSigils ( path, options ) {
+	const normalizedPath = normalizeReferences(path)
+	for ( const charRef of normalizedPath.matchAll(
+		new RegExp ($.CharRef.source, "g")
+	) ) {
+		if ( /^(?:&#32;|&#9;|&#10;|&#13;|&#124;)$/u.test(charRef) ) {
+			//  A sigil may not contain a character indicating `S` or
+			//    `'|'`.
+			throw new ParseError (
+				options?.index,
+				`Whitespace and "|" characters are not allowed in sigils.`
+			)
+		} else {
+			continue
+		}
+	}
+	return normalizedPath
 }
 
 /**
@@ -299,7 +326,7 @@ function processSection ( source, index ) {
 			sectionCountTo,
 			sectionTextTo,
 		} = parseResult.groups
-		const path = normalizeReferences(sectionPath)
+		const path = welformedSigils(sectionPath)
 		const sigil = path.substring(path.lastIndexOf("/") + 1)
 		return {
 			jargon: {
@@ -384,8 +411,8 @@ function processHeading ( source, index ) {
 			jargon: {
 				nodeType: NODE_TYPE.HEADING,
 				contentModel: CONTENT_MODEL.INLINE,
-				sigil: normalizeReferences(headingSigil),
-				path: normalizeReferences(
+				sigil: welformedSigils(headingSigil),
+				path: welformedSigils(
 					[
 						headingSectionPath ?? "*",
 						headingSectionStrict ?? " ",
@@ -443,12 +470,12 @@ function processBlock ( source, index ) {
 					: blockSpecial != null
 						? CONTENT_MODEL[blockSpecial]
 					: CONTENT_MODEL.MIXED,
-				sigil: normalizeReferences(
+				sigil: welformedSigils(
 					blockSigil ?? blockPath.substring(
 						blockPath.lastIndexOf("/") + 1
 					)
 				),
-				path: normalizeReferences(
+				path: welformedSigils(
 					[
 						blockSectionPath ?? "*",
 						blockSectionStrict ?? " ",
@@ -520,12 +547,12 @@ function processInline ( source, index ) {
 					: inlineSpecial != null
 						? CONTENT_MODEL[inlineSpecial]
 					: CONTENT_MODEL.INLINE,
-				sigil: normalizeReferences(
+				sigil: welformedSigils(
 					inlinePath.substring(
 						inlinePath.lastIndexOf("/") + 1
 					)
 				),
-				path: normalizeReferences(
+				path: welformedSigils(
 					[
 						sectionDefined
 								? inlineSectionOrBlockPath ?? "*"
@@ -595,7 +622,7 @@ function processAttribute ( source, index ) {
 			attributeInlinePath != null || attributeInlineAny != null
 		const blockDefined = attributeBlockOrInlinePath != null
 				|| attributeBlockOrInlineAny != null
-		const path = normalizeReferences(
+		const path = welformedSigils(
 			[
 				sectionDefined
 						? attributeSectionOrBlockOrInlinePath ?? "*"
@@ -630,7 +657,7 @@ function processAttribute ( source, index ) {
 			jargon: attributeNames.split($.S).map(name => ({
 				nodeType: NODE_TYPE.ATTRIBUTE,
 				contentModel: CONTENT_MODEL.TEXT,
-				sigil: normalizeReferences(attributeSigil),
+				sigil: welformedSigils(attributeSigil),
 				path,
 				qualifiedName: welformedName(name, { index }),
 			})),
@@ -781,6 +808,7 @@ export function process ( source, options = {
 			} catch ( error ) {
 				//  The external Declaration of Jargon does not match
 				//    the `D·J` production [🆐J‐2].
+				throw error
 				throw new ParseError (
 					0,
 					`The external Declaration of Jargon "${ externalName }" is not welformed.`

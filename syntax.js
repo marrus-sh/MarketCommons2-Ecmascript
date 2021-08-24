@@ -320,7 +320,7 @@ const SigilD·J = String.raw `(?:${ CharRef }+)`
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐B‐1] The character referenced by CharRef *must not* match
+ *   +  [🆐B‐1] Each character referenced by CharRef *must not* match
  *        `S` or `'|'`.
  */
 const SigilD·J_RegExp = new RegExp (SigilD·J, "u")
