@@ -66,7 +66,7 @@ function welformedName ( qualifiedName, options ) {
  */
 function parseAttributes ( attributesDeclaration, options ) {
 	const regExp = new RegExp (
-		`(?<name>${ $.QName })${ $.Eq }(?<attValue>${ $.AttValue })`,
+		`(?<name>${ $.QName.source })${ $.Eq.source }(?<attValue>${ $.AttValue.source })`,
 		"gu"
 	)
 	const result = new Map
@@ -77,7 +77,7 @@ function parseAttributes ( attributesDeclaration, options ) {
 		let attribute = null
 		while ( attribute = regExp.exec(attributesDeclaration) ) {
 			const { name, attValue } = attribute.groups
-			if ( new RegExp (`^${ $.NSAttName }$`, "u").test(name) ) {
+			if ( new RegExp (`^${ $.NSAttName.source }$`, "u").test(name) ) {
 				//  An attributes declaration must not declare an
 				//    attribute name which is a `NSAttName` [🆐A‐2].
 				throw new ParseError (
