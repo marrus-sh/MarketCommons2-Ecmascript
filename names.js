@@ -23,6 +23,16 @@ export const deno_landXMarket = "https://deno.land/x/market@v0.1.0"
 export const x·h·t·m·lNamespace = "http://www.w3.org/1999/xhtml"
 
 /**
+ *  The X·M·L Namespace, defined by Namespaces in X·M·L.
+ */
+export const x·m·lNamespace = "http://www.w3.org/XML/1998/namespace"
+
+/**
+ *  The X·M·L·N·S Namespace, defined by Namespaces in X·M·L.
+ */
+export const x·m·l·n·sNamespace = "http://www.w3.org/2000/xmlns/"
+
+/**
  *  The Market Commons namespace, used by Market Commons ⅠⅠ.
  *
  *  Although the original Market Commons markup language was created in

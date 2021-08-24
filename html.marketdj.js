@@ -19,6 +19,9 @@ It can be manually specified with the following ~| SystemLiteral |~:
 	~| "tag:go.KIBI.family,2021:market/html" |~.
 -->
 
+<!-- Namespaces -->
+<!NAMESPACE "${ x·h·t·m·lNamespace }">
+
 <!-- Document Template -->
 <!DOCUMENT [[<!DOCTYPE html>
 <html xmlns="${ x·h·t·m·lNamespace }">

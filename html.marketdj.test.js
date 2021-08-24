@@ -1,7 +1,13 @@
 import "./fauxbrowser/mod.js"
 import { process } from "./dj.js"
 import htmlD·J from "./html.marketdj.js"
-import { deno_landXMarket, marketNamespace } from "./names.js"
+import {
+	deno_landXMarket,
+	marketNamespace,
+	x·h·t·m·lNamespace,
+	x·m·lNamespace,
+	x·m·l·n·sNamespace,
+} from "./names.js"
 import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
 import { assert, assertEquals, assertStrictEquals, assertThrows } from
 	"https://deno.land/std@0.105.0/testing/asserts.ts"
@@ -20,6 +26,15 @@ Deno.test({
 Deno.test({
 	name: "H·T·M·L D·J processing consumed entire string.",
 	fn: ( ) => assertEquals(result.lastIndex, D·J.length),
+})
+
+Deno.test({
+	name: "H·T·M·L D·J namespace declarations process correctly.",
+	fn: ( ) => assertEquals(jargon.namespaces, new Map ([
+		[ null, x·h·t·m·lNamespace ],
+		[ "xml", x·m·lNamespace ],
+		[ "xmlns", x·m·l·n·sNamespace ],
+	])),
 })
 
 Deno.test({

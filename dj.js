@@ -15,7 +15,12 @@
 import { systemIdentifierMap as defaultSystemIdentifierMap }
 	from "./defaults.js"
 import { ConfigurationError, ParseError } from "./errors.js"
-import { marketNamespace, parsererrorNamespace } from "./names.js"
+import {
+	marketNamespace,
+	parsererrorNamespace,
+	x·m·lNamespace,
+	x·m·l·n·sNamespace,
+} from "./names.js"
 import { normalizeReferences, resolve } from "./paths.js"
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js"
 import * as $ from "./syntax.js"
@@ -27,7 +32,29 @@ import { prepareAsX·M·L } from "./text.js"
  *  This is intentionally not exported; it should not be available to
  *    users.
  */
-const nestedWithin = Symbol("")
+const nestedWithin = Symbol()
+
+/**
+ *  Throws an error if the provided `qualifiedName` is not welformed,
+ *    otherwise simply returns it.
+ *
+ *  @argument {string} qualifiedName
+ *  @argument {{index:number}} options
+ *  @returns {string}
+ */
+function welformedName ( qualifiedName, options ) {
+	if ( /^xmlns:/.test(qualifiedName) ) {
+		//  Names cannot have the prefix `xmlns` [🆐E‐2][🆐F‐2][🆐G‐3]
+		//    [🆐H‐4][🆐I‐4].
+		throw new ParseError (
+			options?.index,
+			`"${ qualifiedName }" cannot be used as a qualified name.`
+		)
+	} else {
+		//  Simply return the name.
+		return qualifiedName
+	}
+}
 
 /**
  *  Parses an attributes declaration into a `Map` of attribute names
@@ -39,7 +66,7 @@ const nestedWithin = Symbol("")
  */
 function parseAttributes ( attributesDeclaration, options ) {
 	const regExp = new RegExp (
-		`(?<name>${ $.Name })${ $.Eq }(?<attValue>${ $.AttValue })`,
+		`(?<name>${ $.QName })${ $.Eq }(?<attValue>${ $.AttValue })`,
 		"gu"
 	)
 	const result = new Map
@@ -50,19 +77,28 @@ function parseAttributes ( attributesDeclaration, options ) {
 		let attribute = null
 		while ( attribute = regExp.exec(attributesDeclaration) ) {
 			const { name, attValue } = attribute.groups
-			if ( result.has(name) ) {
+			if ( new RegExp (`^${ $.NSAttName }$`, "u").test(name) ) {
+				//  An attributes declaration must not declare an
+				//    attribute name which is a `NSAttName` [🆐A‐2].
+				throw new ParseError (
+					options?.index,
+					`@${ name } cannot be declared as an attribute.`
+				)
+			} else if ( result.has(name) ) {
 				//  An attributes declaration must not declare
 				//    the same attribute name twice [🆐A‐1].
 				throw new ParseError (
 					options?.index,
 					`Attribute @${ name } declared twice.`
 				)
+			} else {
+				//  Set the attribute.
+				result.set(
+					welformedName(name, options),
+					//  Trim quotes.
+					attValue.substring(1, attValue.length - 1)
+				)
 			}
-			result.set(
-				name,
-				//  Trim quotes.
-				attValue.substring(1, attValue.length - 1)
-			)
 		}
 	}
 	return result
@@ -80,6 +116,66 @@ function processS ( source, index ) {
 	const regExp = new RegExp ($.S.source, "uy")
 	regExp.lastIndex = index
 	return regExp.test(source) ? { lastIndex: regExp.lastIndex } : null
+}
+
+/**
+ *  Extracts a `NamespaceD·J` from `source` at `index`, and returns an
+ *    object containing the `lastIndex`, `prefix`, and `literal` of
+ *    the match.
+ *
+ *  @argument {string} source
+ *  @argument {number} index
+ *  @returns {?{lastIndex:number}}
+ */
+function processNamespace ( source, index ) {
+	const regExp = new RegExp ($.NamespaceD·J.source, "uy")
+	regExp.lastIndex = index
+	const parseResult = regExp.exec(source)
+	if ( parseResult == null ) {
+		//  There is not a namespace declaration at `index` in
+		//    `source`.
+		return null
+	} else {
+		//  Process the namespace declaration.
+		const {
+			namespacePrefix,
+			namespaceLiteral,
+		} = parseResult.groups
+		const prefix = namespacePrefix ?? null
+		const literal = namespaceLiteral.substring(
+			1, namespaceLiteral.length - 1
+		)
+		if ( prefix == "xmlns" ) {
+			//  `xmlns` is not usable as a prefix [🆐K‐1].
+			throw new ParseError (
+				index,
+				`"${ prefix }" cannot be used as a namespace prefix.`
+			)
+		} else if ( prefix == "xml" && literal != x·m·lNamespace ) {
+			//  The prefix `xml` can only be assigned to the X·M·L
+			//    namespace [🆐K‐2].
+			throw new ParseError (
+				index,
+				`"${ prefix }" cannot be assigned to any namespace other than "${ x·m·lNamespace }".`
+			)
+		} else if ( prefix != "xml" && literal == x·m·lNamespace ) {
+			//  The X·M·L namespace can only be assigned to the prefix
+			//    `xml` [🆐K‐3].
+			throw new ParseError (
+				index,
+				`The namespace "${ literal }" can only be assigned to the prefix "xml".`
+			)
+		} else if ( literal == x·m·l·n·sNamespace ) {
+			//  The X·M·L·N·S namespace cannot be assigned [🆐K‐3].
+			throw new ParseError (
+				index,
+				`The namespace "${ literal }" cannot be assigned.`
+			)
+		} else {
+			//  Return the processed prefix and literal.
+			return { prefix, literal, lastIndex: regExp.lastIndex }
+		}
+	}
 }
 
 /**
@@ -218,14 +314,18 @@ function processSection ( source, index ) {
 						: CONTENT_MODEL.MIXED,
 				sigil,
 				path,
-				qualifiedName: sectionName,
+				qualifiedName: welformedName(sectionName, { index }),
 				attributes:
 					parseAttributes(sectionAttributes, { index }),
 				countTo: sectionCountTo != null ? new Set (
-					sectionCountTo.split($.S)
+					sectionCountTo.split($.S).map(
+						name => welformedName(name, { index })
+					)
 				) : null,
 				textTo: sectionTextTo != null ? new Set (
-					sectionTextTo.split($.S)
+					sectionTextTo.split($.S).map(
+						name => welformedName(name, { index })
+					)
 				) : null,
 				heading: sectionHeadingName != null ? {
 					nodeType: NODE_TYPE.HEADING,
@@ -242,12 +342,15 @@ function processSection ( source, index ) {
 						new RegExp (`^(${ $.SigilD·J.source })$`, "u"),
 						"* $1"
 					),
-					qualifiedName: sectionHeadingName,
+					qualifiedName:
+						welformedName(sectionHeadingName, { index }),
 					attributes: parseAttributes(
 						sectionHeadingAttributes, { index }
 					),
 					countTo: sectionHeadingCountTo != null ? new Set (
-						sectionHeadingCountTo.split($.S)
+						sectionHeadingCountTo.split($.S).map(
+							name => welformedName(name, { index })
+						)
 					) : null,
 				} : null,
 			},
@@ -294,11 +397,13 @@ function processHeading ( source, index ) {
 						headingSigil,
 					].join("")
 				),
-				qualifiedName: headingName,
+				qualifiedName: welformedName(headingName, { index }),
 				attributes:
 					parseAttributes(headingAttributes, { index }),
 				countTo: headingCountTo != null ? new Set (
-					headingCountTo.split($.S)
+					headingCountTo.split($.S).map(
+						name => welformedName(name, { index })
+					)
 				) : null,
 			},
 			lastIndex: regExp.lastIndex,
@@ -355,7 +460,9 @@ function processBlock ( source, index ) {
 						blockPath ?? blockSigil,
 					].join("")
 				),
-				qualifiedName: blockName ?? null,
+				qualifiedName: blockName != null
+						? welformedName(blockName, { index })
+					: null,
 				attributes:
 					parseAttributes(blockAttributes, { index }),
 				isDefault: blockSigil != null,
@@ -364,7 +471,8 @@ function processBlock ( source, index ) {
 					contentModel: CONTENT_MODEL.MIXED,
 					sigil: null,
 					path: null,
-					qualifiedName: blockListName,
+					qualifiedName:
+						welformedName(blockListName, { index }),
 					attributes: parseAttributes(
 						blockListAttributes, { index }
 					),
@@ -437,12 +545,18 @@ function processInline ( source, index ) {
 						inlinePath,
 					].join("")
 				),
-				qualifiedName: inlineName ?? null,
+				qualifiedName: inlineName != null
+						? welformedName(inlineName, { index })
+					: null,
 				attributes:
 					parseAttributes(inlineAttributes, { index }),
-				textFrom: inlineTextFrom ?? null,
+				textFrom: inlineTextFrom != null
+						? welformedName(inlineTextFrom, { index })
+					: null,
 				textTo: inlineTextTo != null ? new Set (
-					inlineTextTo.split($.S)
+					inlineTextTo.split($.S).map(
+						name => welformedName(name, { index })
+					)
 				) : null,
 			},
 			lastIndex: regExp.lastIndex,
@@ -518,12 +632,12 @@ function processAttribute ( source, index ) {
 			].join("")
 		)
 		return {
-			jargon: attributeNames.split($.S).map(qualifiedName => ({
+			jargon: attributeNames.split($.S).map(name => ({
 				nodeType: NODE_TYPE.ATTRIBUTE,
 				contentModel: CONTENT_MODEL.TEXT,
 				sigil: normalizeReferences(attributeSigil),
 				path,
-				qualifiedName,
+				qualifiedName: welformedName(name, { index }),
 			})),
 			lastIndex: regExp.lastIndex,
 		}
@@ -566,6 +680,10 @@ export function process ( source, options = {
 
 	//  Set up data storage.
 	let jargon = {
+		namespaces: new Map ([           //  [prefix:literal]
+			[ "xml", x·m·lNamespace ],
+			[ "xmlns", x·m·l·n·sNamespace ],
+		]),
 		[NODE_TYPE.DOCUMENT]: null,      //  `XMLDocument`
 		[NODE_TYPE.SECTION]: new Map,    //  [sigil:[path:section]]
 		[NODE_TYPE.HEADING]: new Map,    //  [sigil:[path:heading]]
@@ -573,7 +691,7 @@ export function process ( source, options = {
 		[NODE_TYPE.INLINE]: new Map,     //  [sigil:[path:inline]]
 		[NODE_TYPE.ATTRIBUTE]: new Map,  //  [sigil:[path:{attribute}]]
 	}
-	jargon[NODE_TYPE.BLOCK].defaults = new Map
+	jargon[NODE_TYPE.BLOCK].defaults = new Map  //  [path:block]
 
 	//  Handle options.
 	const DOMParser = options?.DOMParser ?? globalThis?.DOMParser
@@ -714,6 +832,12 @@ export function process ( source, options = {
 						//    cases must match.
 						case !(result = processS(source, index)):
 							//  Whitespace is ignored.
+							break processingDeclaration
+						case !(
+							result = processNamespace(source, index)
+						):
+							const { prefix, literal } = result
+							jargon.namespaces.set(prefix, literal)
 							break processingDeclaration
 						case !(
 							result = processDocument(

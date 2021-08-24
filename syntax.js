@@ -193,9 +193,94 @@ const Eq = String.raw `(?:${ S }?=${ S }?)`
 const Eq_RegExp = new RegExp (Eq, "u")
 export { Eq_RegExp as Eq }
 
-const Attribute = String.raw `(?:${ Name }${ Eq }${ AttValue })`
+/*
+The following are regular expressions defined by the Namespaces in
+  X·M·L 1.1 specification.
+*/
+
+const DefaultAttName = String.raw `(?:xmlns)`
 /**
- *      [41]  Attribute      ::= Name Eq AttValue
+ *      [3]   DefaultAttName  ::= 'xmlns'
+ */
+const DefaultAttName_RegExp = new RegExp (DefaultAttName, "u")
+export { DefaultAttName_RegExp as DefaultAttName }
+
+const NCNameChar = String.raw `(?:(?!:)${ NameChar })`
+/**
+ *      [5]   NCNameChar      ::= NameChar - ':'
+ */
+const NCNameChar_RegExp = new RegExp (NCNameChar, "u")
+export { NCNameChar_RegExp as NCNameChar }
+
+const NCNameStartChar = String.raw `(?:(?!:)${ NameStartChar })`
+/**
+ *      [6]   NCNameStartChar ::= NameStartChar - ':'
+ */
+const NCNameStartChar_RegExp = new RegExp (NCNameStartChar, "u")
+export { NCNameStartChar_RegExp as NCNameStartChar }
+
+const NCName = String.raw `(?:${ NCNameStartChar }${ NCNameChar }*)`
+/**
+ *      [4]   NCName          ::= NCNameStartChar NCNameChar*
+ */
+const NCName_RegExp = new RegExp (NCName, "u")
+export { NCName_RegExp as NCName }
+
+const PrefixedAttName = String.raw `(?:xmlns:${ NCName })`
+/**
+ *      [2]   PrefixedAttName ::= 'xmlns:' NCName
+ */
+const PrefixedAttName_RegExp = new RegExp (PrefixedAttName, "u")
+export { PrefixedAttName_RegExp as PrefixedAttName }
+
+const NSAttName =
+	String.raw `(?:${ PrefixedAttName }|${ DefaultAttName })`
+/**
+ *      [1]   NSAttName       ::= PrefixedAttName | DefaultAttName
+ */
+const NSAttName_RegExp = new RegExp (NSAttName, "u")
+export { NSAttName_RegExp as NSAttName }
+
+const Prefix = String.raw `${ NCName }`
+/**
+ *      [10]  Prefix          ::= NCName
+ */
+const Prefix_RegExp = new RegExp (Prefix, "u")
+export { Prefix_RegExp as Prefix }
+
+const LocalPart = String.raw `${ NCName }`
+/**
+ *      [11]  LocalPart       ::= NCName
+ */
+const LocalPart_RegExp = new RegExp (LocalPart, "u")
+export { LocalPart_RegExp as LocalPart }
+
+const PrefixedName = String.raw `(?:${ Prefix }:${ LocalPart })`
+/**
+ *      [8]   PrefixedName    ::= Prefix ':' LocalPart
+ */
+const PrefixedName_RegExp = new RegExp (PrefixedName, "u")
+export { PrefixedName_RegExp as PrefixedName }
+
+const UnprefixedName = String.raw `${ LocalPart }`
+/**
+ *      [9]   UnprefixedName  ::= LocalPart
+ */
+const UnprefixedName_RegExp = new RegExp (UnprefixedName, "u")
+export { UnprefixedName_RegExp as UnprefixedName }
+
+const QName = String.raw `(?:${ PrefixedName }|${ UnprefixedName })`
+/**
+ *      [7]   QName           ::= PrefixedName | UnprefixedName
+ */
+const QName_RegExp = new RegExp (QName, "u")
+export { QName_RegExp as QName }
+
+const Attribute =
+	String.raw `(?:${ NSAttName }${ Eq }${ AttValue }|${ QName }${ Eq }${ AttValue })`
+/**
+ *      [15]  Attribute       ::= NSAttName Eq AttValue
+ *                                | QName Eq AttValue
  */
 const Attribute_RegExp = new RegExp (Attribute, "u")
 export { Attribute_RegExp as Attribute }
@@ -219,6 +304,9 @@ const AttributesD·J =
  *
  *   +  [🆐A‐1] The same attribute name must not appear twice in a
  *        single attributes declaration.
+ *
+ *   +  [🆐A‐2] The attribute name must not match the `NSAttName`
+ *        production.
  */
 const AttributesD·J_RegExp = new RegExp (AttributesD·J, "u")
 export { AttributesD·J_RegExp as AttributesD·J }
@@ -251,6 +339,39 @@ const SigilD·JPath =
 const SigilD·JPath_RegExp = new RegExp (SigilD·JPath, "u")
 export { SigilD·JPath_RegExp as SigilD·JPath }
 
+const NamespaceD·J =
+	String.raw `(?:<!NAMESPACE(?:${ S }(?<namespacePrefix>${ Prefix }):)?${ S }(?<namespaceLiteral>${ SystemLiteral })${ S }?>)`
+/**
+ *  Namespace declaration.
+ *
+ *      [🆐K] NamespaceD·J   ::= '<!NAMESPACE' (S Prefix)?
+ *                               S SystemLiteral S? '>'
+ *
+ *
+ *  ##  Capture groups  ##
+ *
+ *  01. `namespacePrefix`: The namespace prefix.
+ *
+ *  02. `namespaceLiteral`: The `SystemLiteral` of the namespace
+ *        (including quotes).
+ *
+ *
+ *  ##  Welformedness constraints  ##
+ *
+ *   +  [🆐K‐1] The namespace prefix *must not* be `xmlns`.
+ *
+ *   +  [🆐K‐2] The namespace prefix `xml` *must* only be assigned to
+ *        the literal `"http://www.w3.org/XML/1998/namespace"` (any
+ *        quotes).
+ *
+ *   +  [🆐K‐3] Other prefixes, including the null prefix, *must not*
+ *         be assigned to the literals
+ *         `"http://www.w3.org/XML/1998/namespace"` or
+ *         `"http://www.w3.org/2000/xmlns/"` (any quotes).
+ */
+const NamespaceD·J_RegExp = new RegExp (NamespaceD·J, "u")
+export { NamespaceD·J_RegExp as NamespaceD·J }
+
 const DocumentD·J =
 	String.raw `(?:<!DOCUMENT${ S }\[\[(?<documentTemplate>${ CData })${ CDEnd })`
 /**
@@ -271,9 +392,10 @@ const DocumentD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐D‐1] Template contents must be welformed X·M·L documents.
+ *   +  [🆐D‐1] Template contents *must* be namespace‐welformed X·M·L
+ *        documents.
  *
- *   +  [🆐D‐2] Template contents must contain exactly one of each of
+ *   +  [🆐D‐2] Template contents *must* contain exactly one of each of
  *        the following:
  *
  *       +  An empty element with local name `preamble` and namespace
@@ -282,7 +404,7 @@ const DocumentD·J =
  *       +  An empty element with local name `content` and namespace
  *            `tag:go.KIBI.family,2021:market`.
  *
- *   +  [🆐D‐3] Template contents must not contain any other elements
+ *   +  [🆐D‐3] Template contents *must not* contain any other elements
  *        in the namespace `tag:go.KIBI.family,2021:market`.
  */
 const DocumentD·J_RegExp = new RegExp (DocumentD·J, "u")
@@ -297,12 +419,12 @@ const SectionD·J =
  *    may be used to begin the section.
  *
  *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·JPath
- *                               S Name (S AttributesD·J)? (
- *                                 S 'COUNTTO' (S Name)+
+ *                               S QName (S AttributesD·J)? (
+ *                                 S 'COUNTTO' (S QName)+
  *                               )? (
  *                                 S '|' S Name (S AttributesD·J)? (
- *                                   S 'COUNTTO' (S Name)+
- *                                 )? | S 'TEXTTO' (S Name)+
+ *                                   S 'COUNTTO' (S QName)+
+ *                                 )? | S 'TEXTTO' (S QName)+
  *                               ) S? '>'
  *
  *
@@ -332,22 +454,25 @@ const SectionD·J =
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐E‐1] For all nonfinal sigils in the section sigil path,
- *        there must be a previous section declaration which defines
+ *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐E‐2] Section and heading names and attributes *must not*
+ *        have the prefix `xmlns`.
  */
 const SectionD·J_RegExp = new RegExp (SectionD·J, "u")
 export { SectionD·J_RegExp as SectionD·J }
 
 const HeadingD·J =
-	String.raw `(?:<!HEADING(?:${ S }(?<headingSectionPath>${ SigilD·JPath })(?:${ S }(?<headingSectionStrict>>))?)?${ S }(?<headingSigil>${ SigilD·J })${ S }(?<headingName>${ Name })(?:${ S }(?<headingAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<headingCountTo>${ Name }(?:${ S }${ Name })*))?${ S }?>)`
+	String.raw `(?:<!HEADING(?:${ S }(?<headingSectionPath>${ SigilD·JPath })(?:${ S }(?<headingSectionStrict>>))?)?${ S }(?<headingSigil>${ SigilD·J })${ S }(?<headingName>${ QName })(?:${ S }(?<headingAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<headingCountTo>${ QName }(?:${ S }${ QName })*))?${ S }?>)`
 /**
  *  Heading declaration.
  *
  *      [🆐F] HeadingD·J     ::= '<!HEADING' (
  *                                 S SigilD·JPath (S '>')?
  *                               )? S SigilD·J
- *                               S Name (S AttributesD·J)? (
- *                                 S 'COUNTTO' (S Name)+
+ *                               S QName (S AttributesD·J)? (
+ *                                 S 'COUNTTO' (S QName)+
  *                               )? S? '>'
  *
  *
@@ -371,14 +496,17 @@ const HeadingD·J =
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐F‐1] For all sigils in the section sigil path (if present),
- *        there must be a previous section declaration which defines
+ *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐F‐2] Heading names and attributes *must not* have the prefix
+ *        `xmlns`.
  */
 const HeadingD·J_RegExp = new RegExp (HeadingD·J, "u")
 export { HeadingD·J_RegExp as HeadingD·J }
 
 const BlockD·J =
-	String.raw `(?:<!BLOCK(?:${ S }(?<blockSectionPath>${ SigilD·JPath })(?:${ S }(?<blockSectionStrict>>))?)?${ S }(?:(?<blockPath>${ SigilD·JPath })|DEFAULT${ S }(?<blockSigil>${ SigilD·J }))${ S }(?:(?<blockName>${ Name })(?:${ S }(?<blockAttributes>${ AttributesD·J }))?(?:${ S }(?<blockFinal>FINAL))?(?:${ S }INLIST${ S }(?<blockListName>${ Name })(?:${ S }(?<blockListAttributes>${ AttributesD·J }))?)?|#${ S }(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
+	String.raw `(?:<!BLOCK(?:${ S }(?<blockSectionPath>${ SigilD·JPath })(?:${ S }(?<blockSectionStrict>>))?)?${ S }(?:(?<blockPath>${ SigilD·JPath })|DEFAULT${ S }(?<blockSigil>${ SigilD·J }))${ S }(?:(?<blockName>${ QName })(?:${ S }(?<blockAttributes>${ AttributesD·J }))?(?:${ S }(?<blockFinal>FINAL))?(?:${ S }INLIST${ S }(?<blockListName>${ QName })(?:${ S }(?<blockListAttributes>${ AttributesD·J }))?)?|#${ S }(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
 /**
  *  Block declaration.
  *
@@ -387,11 +515,11 @@ const BlockD·J =
  *                               )? S (
  *                                 SigilD·JPath | 'DEFAULT' S SigilD·J
  *                               ) S (
- *                                 Name (S AttributesD·J)? (
+ *                                 QName (S AttributesD·J)? (
  *                                   S 'FINAL'
  *                                 )? (
  *                                   S 'INLIST'
- *                                   S Name (S AttributesD·J)?
+ *                                   S QName (S AttributesD·J)?
  *                                 )? | '#' S (
  *                                   'TRANSPARENT'
  *                                   | 'COMMENT'
@@ -433,18 +561,21 @@ const BlockD·J =
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐G‐1] For all sigils in the section sigil path (if present),
- *        there must be a previous section declaration which defines
+ *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐G‐2] For all nonfinal sigils in the block sigil path, there
- *        must be a previous block declaration which defines the sigil
- *        (in the context of any further preceding sigils).
+ *        *must* be a previous block declaration which defines the
+ *        sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐G‐3] Block and list names and attributes *must not* have the
+ *        prefix `xmlns`.
  */
 const BlockD·J_RegExp = new RegExp (BlockD·J, "u")
 export { BlockD·J_RegExp as BlockD·J }
 
 const InlineD·J =
-	String.raw `(?:<!INLINE(?:${ S }(?<inlineSectionOrBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineSectionOrBlockStrict>>))?(?:${ S }(?:(?<inlineBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${ S }(?<inlinePath>${ SigilD·JPath })${S}(?:(?<inlineName>${ Name })(?:${ S }(?<inlineAttributes>${ AttributesD·J }))?(?:${ S }(?<inlineFinal>FINAL)|${ S }TEXTFROM${ S }(?<inlineTextFrom>${ Name })|${ S }TEXTTO${ S }(?<inlineTextTo>${ Name }(?:${ S }${ Name })*))?|#${ S }(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
+	String.raw `(?:<!INLINE(?:${ S }(?<inlineSectionOrBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineSectionOrBlockStrict>>))?(?:${ S }(?:(?<inlineBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${ S }(?<inlinePath>${ SigilD·JPath })${S}(?:(?<inlineName>${ QName })(?:${ S }(?<inlineAttributes>${ AttributesD·J }))?(?:${ S }(?<inlineFinal>FINAL)|${ S }TEXTFROM${ S }(?<inlineTextFrom>${ QName })|${ S }TEXTTO${ S }(?<inlineTextTo>${ QName }(?:${ S }${ QName })*))?|#${ S }(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
 /**
  *  Inline declaration.
  *
@@ -454,10 +585,10 @@ const InlineD·J =
  *                                 )?
  *                               )? S SigilD·JPath
  *                               S (
- *                                 Name (S AttributesD·J)? (
+ *                                 QName (S AttributesD·J)? (
  *                                   S 'FINAL'
- *                                   | S 'TEXTFROM' S Name
- *                                   | S 'TEXTTO' (S Name)+
+ *                                   | S 'TEXTFROM' S QName
+ *                                   | S 'TEXTTO' (S QName)+
  *                                 )? | '#' S (
  *                                   'TRANSPARENT'
  *                                   | 'COMMENT'
@@ -508,22 +639,25 @@ const InlineD·J =
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐H‐1] For all sigils in the section sigil path (if present),
- *        there must be a previous section declaration which defines
+ *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐H‐2] For all sigils in the block sigil path (if present),
- *        there must be a previous block declaration which defines the
- *        sigil (in the context of any further preceding sigils).
+ *        there *must* be a previous block declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐H‐3] For all nonfinal sigils in the inline sigil path, there
- *        must be a previous inline declaration which defines the sigil
- *        (in the context of any further preceding sigils).
+ *        *must* be a previous inline declaration which defines the
+ *        sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐H‐4] Inline names and attributes *must not* have the prefix
+ *        `xmlns`.
  */
 const InlineD·J_RegExp = new RegExp (InlineD·J, "u")
 export { InlineD·J_RegExp as InlineD·J }
 
 const AttributeD·J =
-	String.raw `(?:<!ATTRIBUTE(?:${ S }(?<attributeSectionOrBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${ S }(?:(?<attributeBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${ S }(?:(?<attributeInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${ S }(?<attributeSigil>${ SigilD·J })${ S }(?<attributeNames>${ Name }(?:${ S }${ Name })*)${ S }?>)`
+	String.raw `(?:<!ATTRIBUTE(?:${ S }(?<attributeSectionOrBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${ S }(?:(?<attributeBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${ S }(?:(?<attributeInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${ S }(?<attributeSigil>${ SigilD·J })${ S }(?<attributeNames>${ QName }(?:${ S }${ QName })*)${ S }?>)`
 /**
  *  Attribute declaration.
  *
@@ -533,7 +667,7 @@ const AttributeD·J =
  *                                     S (SigilD·JPath (S '>')? | '*')
  *                                   )?
  *                                 )?
- *                               )? S SigilD·J (S Name)+ S? '>'
+ *                               )? S SigilD·J (S QName)+ S? '>'
  *
  *
  *  ##  Capture groups  ##
@@ -571,29 +705,48 @@ const AttributeD·J =
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐I‐1] For all sigils in the section sigil path (if present),
- *        there must be a previous section declaration which defines
+ *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐I‐2] For all sigils in the block sigil path (if present),
- *        there must be a previous block declaration which defines the
- *        sigil (in the context of any further preceding sigils).
+ *        there *must* be a previous block declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐I‐3] For all sigils in the inline sigil path (if present),
- *        there must be a previous inline declaration which defines the
- *        sigil (in the context of any further preceding sigils).
+ *        there *must* be a previous inline declaration which defines
+ *        the sigil (in the context of any further preceding sigils).
+ *
+ *   +  [🆐I‐4] Attribute names *must not* have the prefix `xmlns`.
  */
 const AttributeD·J_RegExp = new RegExp (AttributeD·J, "u")
 export { AttributeD·J_RegExp as AttributeD·J }
 
 const D·J =
-	String.raw `(?:<\?market-commons${ S }2\.0(?:${ S }(?<externalName>${ SystemLiteral })|(?:${ S }(?<externalSubset>${ SystemLiteral }))?${ S }\[(?<internalDeclarations>(?:${ S }|${ uncaptureNamedGroups(DocumentD·J) }|${ uncaptureNamedGroups(SectionD·J) }|${ uncaptureNamedGroups(HeadingD·J) }|${ uncaptureNamedGroups(BlockD·J) }|${ uncaptureNamedGroups(InlineD·J) }|${ uncaptureNamedGroups(AttributeD·J) }|${ Comment })*)\])${ S }?\?>\u{A})`
+	String.raw `(?:<\?market-commons${ S }2\.0(?:${ S }(?<externalName>${ SystemLiteral })|(?:${ S }(?<externalSubset>${ SystemLiteral }))?${ S }\[(?<internalDeclarations>(?:${ S }|${ uncaptureNamedGroups(NamespaceD·J) }|${ uncaptureNamedGroups(DocumentD·J) }|${ uncaptureNamedGroups(SectionD·J) }|${ uncaptureNamedGroups(HeadingD·J) }|${ uncaptureNamedGroups(BlockD·J) }|${ uncaptureNamedGroups(InlineD·J) }|${ uncaptureNamedGroups(AttributeD·J) }|${ Comment })*)\])${ S }?\?>\u{A})`
 /**
  *  Declaration of Jargon.
+ *
+ *  It does not make a Declaration of Jargon nonwelformed to fail to
+ *    include a document declaration, but such a Declaration of Jargon
+ *    cannot be used.
+ *  (It *may* be imported by other Declarations of Jargon.)
+ *
+ *  It does not make a Declaration of Jargon nonwelformed to define a
+ *    `PrefixedName` corresponding to an undefined `Prefix`, but it is
+ *    an error if such a declaration is ever referenced in a document.
+ *  A Declaration of Jargon could (for example) conceivably define :—
+ *
+ *      <!ATTRIBUTE &#x23; xml:id local:id>
+ *
+ *  —: and remain welformed even if `local` is never defined.
+ *  Other Declarations of Jargon could import this Declaration of
+ *    Jargon by `SystemLiteral`, defining the namespace themselves.
  *
  *      [🆐J] D·J            ::= '<?market-commons' S '2.0' (
  *                                 S SystemLiteral
  *                                 | (S SystemLiteral)? S '[' (
  *                                   S
+ *                                   | NamespaceD·J
  *                                   | DocumentD·J
  *                                   | SectionD·J
  *                                   | HeadingD·J
@@ -620,11 +773,11 @@ const D·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐J‐1] The system identifier must be resolvable to a file
+ *   +  [🆐J‐1] The system identifier *must* be resolvable to a file
  *        which matches the `D·J` production and is welformed according
  *        to the rules in this file.
  *
- *   +  [🆐J‐2] System identifiers must not recurse when resolving.
+ *   +  [🆐J‐2] System identifiers *must not* recurse when resolving.
  */
 const D·J_RegExp = new RegExp (D·J, "u")
 export { D·J_RegExp as D·J }
