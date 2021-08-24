@@ -43,9 +43,11 @@ const nestedWithin = Symbol()
  *  @returns {string}
  */
 function welformedName ( qualifiedName, options ) {
-	if ( /^xmlns:/.test(qualifiedName) ) {
-		//  Names cannot have the prefix `xmlns` [🆐E‐2][🆐F‐2][🆐G‐3]
-		//    [🆐H‐4][🆐I‐4].
+	if ( new RegExp (
+		`^${ $.NSAttName.source }$`, "u"
+	).test(qualifiedName) ) {
+		//  Names cannot match the `NSAttName` production [🆐A‐2]
+		//    [🆐E‐2][🆐F‐2][🆐G‐3][🆐H‐4][🆐I‐4].
 		throw new ParseError (
 			options?.index,
 			`"${ qualifiedName }" cannot be used as a qualified name.`
@@ -77,14 +79,7 @@ function parseAttributes ( attributesDeclaration, options ) {
 		let attribute = null
 		while ( attribute = regExp.exec(attributesDeclaration) ) {
 			const { name, attValue } = attribute.groups
-			if ( new RegExp (`^${ $.NSAttName.source }$`, "u").test(name) ) {
-				//  An attributes declaration must not declare an
-				//    attribute name which is a `NSAttName` [🆐A‐2].
-				throw new ParseError (
-					options?.index,
-					`@${ name } cannot be declared as an attribute.`
-				)
-			} else if ( result.has(name) ) {
+			if ( result.has(name) ) {
 				//  An attributes declaration must not declare
 				//    the same attribute name twice [🆐A‐1].
 				throw new ParseError (

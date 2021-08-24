@@ -302,10 +302,10 @@ const AttributesD·J =
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐A‐1] The same attribute name must not appear twice in a
+ *   +  [🆐A‐1] The same attribute name *must not* appear twice in a
  *        single attributes declaration.
  *
- *   +  [🆐A‐2] The attribute name must not match the `NSAttName`
+ *   +  [🆐A‐2] The attribute name *must not* match the `NSAttName`
  *        production.
  */
 const AttributesD·J_RegExp = new RegExp (AttributesD·J, "u")
@@ -320,8 +320,8 @@ const SigilD·J = String.raw `(?:${ CharRef }+)`
  *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐B‐1] The character referenced by CharRef must not match `S`
- *        or `'|'`.
+ *   +  [🆐B‐1] The character referenced by CharRef *must not* match
+ *        `S` or `'|'`.
  */
 const SigilD·J_RegExp = new RegExp (SigilD·J, "u")
 export { SigilD·J_RegExp as SigilD·J }
@@ -458,7 +458,7 @@ const SectionD·J =
  *        the sigil (in the context of any further preceding sigils).
  *
  *   +  [🆐E‐2] Section and heading names and attributes *must not*
- *        have the prefix `xmlns`.
+ *        match the `NSAttName` production.
  */
 const SectionD·J_RegExp = new RegExp (SectionD·J, "u")
 export { SectionD·J_RegExp as SectionD·J }
@@ -499,8 +499,8 @@ const HeadingD·J =
  *        there *must* be a previous section declaration which defines
  *        the sigil (in the context of any further preceding sigils).
  *
- *   +  [🆐F‐2] Heading names and attributes *must not* have the prefix
- *        `xmlns`.
+ *   +  [🆐F‐2] Heading names and attributes *must not* match the 
+ *        `NSAttName` production.
  */
 const HeadingD·J_RegExp = new RegExp (HeadingD·J, "u")
 export { HeadingD·J_RegExp as HeadingD·J }
@@ -568,8 +568,8 @@ const BlockD·J =
  *        *must* be a previous block declaration which defines the
  *        sigil (in the context of any further preceding sigils).
  *
- *   +  [🆐G‐3] Block and list names and attributes *must not* have the
- *        prefix `xmlns`.
+ *   +  [🆐G‐3] Block and list names and attributes *must not* match
+ *        the `NSAttName` production.
  */
 const BlockD·J_RegExp = new RegExp (BlockD·J, "u")
 export { BlockD·J_RegExp as BlockD·J }
@@ -650,8 +650,8 @@ const InlineD·J =
  *        *must* be a previous inline declaration which defines the
  *        sigil (in the context of any further preceding sigils).
  *
- *   +  [🆐H‐4] Inline names and attributes *must not* have the prefix
- *        `xmlns`.
+ *   +  [🆐H‐4] Inline names and attributes *must not* match the
+ *        `NSAttName` production
  */
 const InlineD·J_RegExp = new RegExp (InlineD·J, "u")
 export { InlineD·J_RegExp as InlineD·J }
@@ -716,7 +716,8 @@ const AttributeD·J =
  *        there *must* be a previous inline declaration which defines
  *        the sigil (in the context of any further preceding sigils).
  *
- *   +  [🆐I‐4] Attribute names *must not* have the prefix `xmlns`.
+ *   +  [🆐I‐4] Attribute names *must not* match the `NSAttName`
+ *        production.
  */
 const AttributeD·J_RegExp = new RegExp (AttributeD·J, "u")
 export { AttributeD·J_RegExp as AttributeD·J }
