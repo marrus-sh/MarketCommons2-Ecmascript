@@ -74,6 +74,12 @@ Deno.test({
 		const sections = {
 			"&#36;": { qualifiedName: "section" },
 			"&#37;": { qualifiedName: "nav" },
+			"&#47;": {
+				contentModel: CONTENT_MODEL.TEXT,
+				qualifiedName: "div",
+				textTo: new Set ([ "data-title" ]),
+				heading: null
+			},
 			"&#58;": { qualifiedName: "div" },
 			"&#60;": { qualifiedName: "aside" },
 			"&#62;": { qualifiedName: "blockquote" },
@@ -89,25 +95,32 @@ Deno.test({
 			assertEquals(jargon[NODE_TYPE.SECTION].get(sigil).size, 1)
 			const path = sigil
 			const $ = jargon[NODE_TYPE.SECTION].get(sigil).get(path)
-			const { qualifiedName } = sections[sigil]
+			const {
+				contentModel,
+				heading,
+				qualifiedName,
+				textTo,
+			} = sections[sigil]
 			assert($ != null)
 			assertEquals($.nodeType, NODE_TYPE.SECTION)
-			assertEquals($.contentModel, CONTENT_MODEL.MIXED)
+			assertEquals(
+				$.contentModel, contentModel ?? CONTENT_MODEL.MIXED
+			)
 			assertEquals($.sigil, sigil)
 			assertEquals($.path, path)
 			assertEquals($.qualifiedName, qualifiedName)
 			assertEquals($.attributes, new Map)
 			assertEquals($.countTo, null)
-			assertEquals($.textTo, null)
-			assertEquals($.heading, {
+			assertEquals($.textTo, textTo ?? null)
+			assertEquals($.heading, heading === undefined ? {
 				nodeType: NODE_TYPE.HEADING,
-				contentModel: CONTENT_MODEL.MIXED,
+				contentModel: CONTENT_MODEL.INLINE,
 				sigil: sigil,
 				path: `* ${ sigil }`,
 				qualifiedName: "h1",
 				attributes: new Map,
 				countTo: new Set ([ "aria-level" ]),
-			})
+			} : heading)
 		}
 	},
 })

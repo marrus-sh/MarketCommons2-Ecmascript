@@ -351,7 +351,7 @@ function processSection ( source, index ) {
 				) : null,
 				heading: sectionHeadingName != null ? {
 					nodeType: NODE_TYPE.HEADING,
-					contentModel: CONTENT_MODEL.MIXED,
+					contentModel: CONTENT_MODEL.INLINE,
 					sigil,
 					path: path.replace(
 						new RegExp (

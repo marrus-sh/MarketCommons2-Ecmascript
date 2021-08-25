@@ -69,7 +69,7 @@ export const CONTENT_MODEL = Object.freeze(
 		MIXED: {
 			configurable: false,
 			enumerable: true,
-			value: Symbol("parent"),
+			value: Symbol("mixed"),
 			writable: false,
 		},
 		TRANSPARENT: {

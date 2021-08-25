@@ -48,6 +48,9 @@ It can be manually specified with the following ~| SystemLiteral |~:
 <!-- @ --><!SECTION &#x40; article    | h1 COUNTTO aria-level>
 <!-- ^ --><!SECTION &#x5E; header     | h1 COUNTTO aria-level>
 <!-- _ --><!SECTION &#x5F; footer     | h1 COUNTTO aria-level>
+	
+<!-- For (semi)backcompat with the original Market Commons: -->
+<!-- / --><!SECTION &#x2F; div TEXTTO data-title>
 
 <!-- Headings -->
 <!-- - --><!HEADING &#x2D; h1 COUNTTO aria-level>
