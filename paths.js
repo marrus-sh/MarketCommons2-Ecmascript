@@ -26,10 +26,12 @@ export function normalizeReferences ( path ) {
 	return String(path).replace(
 		//  Fix character reference with leading zeroes.
 		/&#(0[0-9]+);/gu,
+		//deno-lint-ignore no-unused-vars
 		( match, decimal ) => `&#${ parseInt(decimal) };`
 	).replace(
 		//  Fix character reference with hexadecimal.
 		/&#x([0-9A-Fa-f]+);/gu,
+		//deno-lint-ignore no-unused-vars
 		( match, hex ) => `&#${ parseInt(hex, 16) };`
 	)
 }
@@ -81,7 +83,10 @@ export function sigilsInScope ( path, sigilMap ) {
 	checkingSigils: for ( const [ sigil, pathMap ] of sigilMap ) {
 		const pathWithSigil = />$/u.test(path) ? `${ path }${ sigil }`
 			: `${ path }/${ sigil }`
-		for ( const [ glob, jargon ] of pathMap ) {
+		for (
+			// deno-lint-ignore no-unused-vars
+			const [ glob, jargon ] of pathMap
+		) {
 			if ( globRegExp(glob).test(pathWithSigil) ) {
 				result.add(sigil)
 				continue checkingSigils
@@ -142,13 +147,16 @@ export function resolve ( nodeType, path, jargon, options ) {
 					Object.entries(
 						Array.from(pathMap.entries())
 					).filter(
+						//deno-lint-ignore no-unused-vars
 						( [ index, [ key, value ] ] ) =>
 							//  Build a regular expression from the key
 							//    and test `path` against it.
 							globRegExp(key).test(path)
 						).sort(
 							(
+								//deno-lint-ignore no-unused-vars
 								[ indexA, [ keyA, valueA ] ],
+								//deno-lint-ignore no-unused-vars
 								[ indexB, [ keyB, valueB ] ]
 							) => {
 								//  Sort the matching keys by accuracy,
@@ -210,7 +218,7 @@ export function resolve ( nodeType, path, jargon, options ) {
 										.split(
 											/(?=\/(?=\/))|\/(?!\/)/gu
 										).reverse()
-									for ( let sigil of splitLevel ) {
+									for ( const sigil of splitLevel ) {
 										//  Iterate over each sigil in
 										//    the level and check for
 										//    a match from one key or
@@ -316,7 +324,10 @@ export function resolve ( nodeType, path, jargon, options ) {
 										: 0
 								)
 							}
-						).map(( [ index, [ key, value ] ] ) => value)
+						).map(
+							//deno-lint-ignore no-unused-vars
+							( [ index, [ key, value ] ] ) => value
+						)
 				if ( sortedMatchingDefinitions.length > 0 ) {
 					//  There is a final result; return it.
 					return sortedMatchingDefinitions.pop()
@@ -333,6 +344,7 @@ export function resolve ( nodeType, path, jargon, options ) {
 			//    defined for the provided `nodeType`.
 			break resolving
 		}
+		//deno-lint-ignore no-unreachable
 		throw new Error ("Block was supposed to break, but didn’t.")
 	}
 	throw new SigilResolutionError (options?.index, nodeType, path)

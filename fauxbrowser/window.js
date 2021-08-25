@@ -24,7 +24,7 @@ import { DOMParser, XMLSerializer }
 const window = globalThis
 window.DOMParser = DOMParser
 window.XMLSerializer = XMLSerializer
-const document = window.document =
+window.document =
 	//  A blank X·H·T·M·L page.
 	(new DOMParser).parseFromString(
 		`<html xmlns="${ x·h·t·m·lNamespace }"><head/><body/></html>`,

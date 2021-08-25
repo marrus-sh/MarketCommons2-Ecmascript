@@ -6,8 +6,12 @@
 //  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
-import { deno_landXMarket, marketNamespace, x·h·t·m·lNamespace }
-	from "./names.js"
+import {
+	//deno-lint-ignore camelcase
+	deno_landXMarket,
+	marketNamespace,
+	x·h·t·m·lNamespace
+} from "./names.js"
 
 export default String.raw `<?market-commons 2.0 [
 <!--

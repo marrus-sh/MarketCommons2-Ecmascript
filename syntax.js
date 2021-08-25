@@ -30,6 +30,8 @@
  *  @module MarketCommons2/syntax
  */
 
+//deno-lint-ignore-file camelcase
+
 /**
  *  Replaces each `(?<…>` named capture group in the provided
  *    `stringRegExp` with `(?:`, to convert it into a noncapturing
@@ -695,11 +697,11 @@ const D·J =
  *  It does not make a Declaration of Jargon nonwelformed to define a
  *    `PrefixedName` corresponding to an undefined `Prefix`, but it is
  *    an error if such a declaration is ever referenced in a document.
- *  A Declaration of Jargon could (for example) conceivably define :—
+ *  A Declaration of Jargon could (for example) conceivably define:—
  *
  *      <!ATTRIBUTE &#x23; xml:id local:id>
  *
- *  —: and remain welformed even if `local` is never defined.
+ *  —:and remain welformed even if `local` is never defined.
  *  Other Declarations of Jargon could import this Declaration of
  *    Jargon by `SystemLiteral`, defining the namespace themselves.
  *

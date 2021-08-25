@@ -21,7 +21,7 @@ import {
 	x·m·lNamespace,
 	x·m·l·n·sNamespace,
 } from "./names.js"
-import { normalizeReferences, resolve } from "./paths.js"
+import { normalizeReferences } from "./paths.js"
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js"
 import * as $ from "./syntax.js"
 import { prepareAsX·M·L } from "./text.js"
@@ -104,7 +104,7 @@ function parseAttributes ( attributesDeclaration, options ) {
 		//    and extract its Name and AttValue, then assign these in
 		//    the result `Map`.
 		let attribute = null
-		while ( attribute = regExp.exec(attributesDeclaration) ) {
+		while ( (attribute = regExp.exec(attributesDeclaration)) ) {
 			const { name, attValue } = attribute.groups
 			if ( result.has(name) ) {
 				//  An attributes declaration must not declare
@@ -223,10 +223,23 @@ function processDocument ( source, index, DOMParser ) {
 			parseResult.groups.documentTemplate, "application/xml"
 		)
 		const root = document.documentElement
-		const marketNodes = document[marketNamespace] = {
-			preamble: null,
-			content: null,
-		}
+		const marketNodes = document[marketNamespace] = Object.create(
+			null,
+			{
+				preamble: {
+					configurable: true,
+					enumerable: true,
+					value: null,
+					writable: false,
+				},
+				content: {
+					configurable: true,
+					enumerable: true,
+					value: null,
+					writable: false,
+				},
+			}
+		)
 		if ( root.localName == "parsererror"
 				&& root.namespaceURI == parsererrorNamespace ) {
 			//  The document template must be a welformed X·M·L
@@ -264,7 +277,7 @@ function processDocument ( source, index, DOMParser ) {
 						index,
 						`Document template contains nonempty ${ name } element in the "${ marketNamespace }" namespace.`
 					)
-				} else if ( !marketNodes.hasOwnProperty(name) ) {
+				} else if ( !(name in marketNodes) ) {
 					//  The element is not recognized [🆐D‐3].
 					throw new ParseError (
 						index,
@@ -273,7 +286,9 @@ function processDocument ( source, index, DOMParser ) {
 				} else {
 					//  The element is recognized and has not been
 					//    encountered before.
-					marketNodes[name] = node
+					Object.defineProperty(
+						marketNodes, name, { value: node }
+					)
 				}
 			}
 			for ( const name of [ "preamble", "content" ] ) {
@@ -757,19 +772,23 @@ export function process ( source, options = {
 				//  Resolve the system identifier.
 				case !(
 					externalD·J = systemIdentifierMap.get(externalName)
-				):
+				): {
+					break
+				}
 				case !(
 					externalD·J = defaultSystemIdentifierMap
 						.get(externalName)
-				):
+				): {
 					break
-				default:
+				}
+				default: {
 					//  (Attempt to) fetch the system identifier.
 					/*  TODO  */
 					throw new ParseError (
 						0,
 						"Fetching external Declarations of Jargon is not yet supported."
 					)
+				}
 			}
 			try {
 				//  Attempt to process the external Declaration of
@@ -790,10 +809,9 @@ export function process ( source, options = {
 					throw new ParseError (0, "Not welformed.")
 				}
 				jargon = externalResult.jargon
-			} catch ( error ) {
+			} catch {
 				//  The external Declaration of Jargon does not match
 				//    the `D·J` production [🆐J‐2].
-				throw error
 				throw new ParseError (
 					0,
 					`The external Declaration of Jargon "${ externalName }" is not welformed.`
@@ -823,31 +841,40 @@ export function process ( source, options = {
 						//    process it into `result`.
 						//  This switch is exhaustive; one of these
 						//    cases must match.
-						case !(result = processS(source, index)):
+						case !(result = processS(source, index)): {
 							//  Whitespace is ignored.
 							break processingDeclaration
+						}
 						case !(
 							result = processNamespace(source, index)
-						):
+						): {
 							const { prefix, literal } = result
 							jargon.namespaces.set(prefix, literal)
 							break processingDeclaration
+						}
 						case !(
 							result = processDocument(
 								source, index, DOMParser
 							)
-						):
+						): {
 							//  Overwrites any previous document
 							//    declaration.
 							jargon[NODE_TYPE.DOCUMENT] = result.jargon
 							break processingDeclaration
-						case !(result = processSection(source, index)):
+						}
+						case !(
+							result = processSection(source, index)
+						): {
 							//  See below.
 							break
-						case !(result = processHeading(source, index)):
+						}
+						case !(
+							result = processHeading(source, index)
+						): {
 							//  See below.
 							break
-						case !(result = processBlock(source, index)):
+						}
+						case !(result = processBlock(source, index)): {
 							//  See below.
 							const value = result.jargon
 							if ( value.isDefault ) {
@@ -863,12 +890,16 @@ export function process ( source, options = {
 								)
 							}
 							break
-						case !(result = processInline(source, index)):
+						}
+						case !(
+							result = processInline(source, index)
+						): {
 							//  See below.
 							break
+						}
 						case !(
 							result = processAttribute(source, index)
-						):
+						): {
 							//  This code is more complicated than the
 							//    generic case because the same sigil
 							//    can signify multiple attributes.
@@ -906,15 +937,20 @@ export function process ( source, options = {
 								}
 							}
 							break processingDeclaration
-						case !(result = processComment(source, index)):
+						}
+						case !(
+							result = processComment(source, index)
+						): {
 							//  Comments are ignored.
 							break processingDeclaration
-						default:
+						}
+						default: {
 							//  Ought to be unreachable.
 							throw new ParseError (
 								index,
 								"Unexpected syntax in Declaration of Jargon."
 							)
+						}
 					}
 					const value = result.jargon
 					const { nodeType, path, sigil } = value

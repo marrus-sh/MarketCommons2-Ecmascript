@@ -35,12 +35,16 @@ export function prepareAsX·M·L ( text ) {
 	return Array.prototype.map.call(text,
 		($, ℹ) => {
 			if ( RestrictedChar.test($)
+					//deno-lint-ignore no-control-regex
 					|| /[\x00\uFFFE\uFFFF]/u.test($) ) {
 				throw new ParseError (
 					ℹ,
 					`#x${ $.charCodeAt(0).toString(16).toUpperCase() } is restricted from appearing literally in documents.`
 				)
-			} else if ( /\x0D[\x0A\x85]?|\x85|\u2028/u.test($) ) {
+			} else if (
+				//deno-lint-ignore no-control-regex
+				/\x0D[\x0A\x85]?|\x85|\u2028/u.test($)
+			) {
 				return "\n"
 			} else {
 				return $

@@ -2,15 +2,15 @@ import "./fauxbrowser/mod.js"
 import { process } from "./dj.js"
 import htmlD·J from "./html.marketdj.js"
 import {
+	//deno-lint-ignore camelcase
 	deno_landXMarket,
-	marketNamespace,
 	x·h·t·m·lNamespace,
 	x·m·lNamespace,
 	x·m·l·n·sNamespace,
 } from "./names.js"
 import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
-import { assert, assertEquals, assertStrictEquals, assertThrows } from
-	"https://deno.land/std@0.105.0/testing/asserts.ts"
+import { assert, assertEquals, assertStrictEquals }
+	from "https://deno.land/std@0.105.0/testing/asserts.ts"
 
 const D·J = htmlD·J
 const result = process(D·J)
@@ -335,12 +335,7 @@ Deno.test({
 			)
 			const path = `* * * ${ subpath }`
 			const $ = jargon[NODE_TYPE.ATTRIBUTE].get(sigil).get(path)
-			const {
-				contentModel,
-				qualifiedName,
-				textFrom,
-				textTo,
-			} = attributes[subpath]
+			const { qualifiedName } = attributes[subpath]
 			assert($ != null)
 			assert(Array.from($).every(
 				$$ => $$.nodeType == NODE_TYPE.ATTRIBUTE

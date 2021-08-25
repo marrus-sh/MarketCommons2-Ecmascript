@@ -38,7 +38,7 @@ export class MarketCommonsⅠⅠError extends Error {
 	 */
 	toString ( ) {
 		return this.index != null
-			? `Market Commons ⅠⅠ (@ ${this.index}): ${this.constructor.name}: ${this.message}`
+				? `Market Commons ⅠⅠ (@ ${this.index}): ${this.constructor.name}: ${this.message}`
 			: `Market Commons ⅠⅠ: ${this.constructor.name}: ${this.message}`
 	}
 
