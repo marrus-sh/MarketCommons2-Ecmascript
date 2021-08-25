@@ -9,7 +9,7 @@ Market Commons ⅠⅠ is a sort of “extensible Markdown for X·M·L”; an
 
 ```market
 <?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
-    <!-- 🌈: <mark class="RAINBOW"> -->
+	<!-- 🌈: <mark class="RAINBOW"> -->
 	<!INLINE &#x1F308; mark { class="RAINBOW" }>
 ]?>
 <title lang="en" xml:lang="en">My Market Commons ⅠⅠ Document</title>
@@ -287,13 +287,13 @@ Implementations which need to distinguish between Market Commons and
   be advised.
 
 Market Commons [ⅠⅠ] documents are usually given a `.market` extension.
-A `.marketdj` extension is recommended for external Declaration of
+A `.marketdj` extension is *recommended* for external Declaration of
   Jargon documents.
 
 Make your source files available!
 Including a `<link>` element in the preamble of your document will help
   others find the original Market Commons ⅠⅠ source.
-The following is an example:
+The following is an example :—
 
 ```xml
 <link rel="alternate" type="application/x.market" href="index.market"/>

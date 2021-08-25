@@ -5,30 +5,45 @@ The following is a list of known incompatibilities between documents
   processor.
 
  +  Market Commons ⅠⅠ occasionally throws errors!
-
+    
     **Rationale:** Sometimes this is better!
 
  +  Spaces are now allowed between any two line‐initial sigils,
       including in section and heading chunks.
-
-    **Rationale:** It is simpler to keep this behaviour consistent, and
+    
+    **Rationale:**
+    It is simpler to keep this behaviour consistent, and
       the old behaviour allowed for the easy specification of empty
       headings (which is not something which should be easy).
+    Also and importantly, this allows for the use of sigils which
+      repeat a single character multiple times.
+
+ +  Literals are now processed differently :—
+    
+     +  Literal contents must now be welformed X·M·L `content`.
+    
+     +  Newlines are not allowed in inline literals.
+    
+    **Rationale:**
+    This makes literal behaviour more predictable and better conform to
+      expectations.
 
  +  Support for media elements has changed and been reduced; for
       simplicity, Market Commons ⅠⅠ only supports `<img>` and not
       `<video>` or multiple sources.
     Use inline or block literals if you need this functionality.
-
-    **Rationale:** The way media was handled was pretty magic and
-      difficult to generalize in an extensible manner.
+    
+    **Rationale:**
+    The way media was handled was pretty magic and difficult to
+      generalize in an extensible manner.
 
  +  Ruby support has been modified to work like other inline elements.
     Instead of `.| base | text |.`, write `.| base }| text |} |.` (or
       `.| {| base |{}| text |} |.`).
-
-    **Rationale:** The original ruby implementation was always finicky
-      and may have had bugs.
+    
+    **Rationale:**
+    The original ruby implementation was always finicky and may have
+      had bugs.
 
  +  Market Commons ⅠⅠ preserves references (like `&this;`) instead of
       escaping the ampersand.
@@ -38,10 +53,11 @@ The following is a list of known incompatibilities between documents
       to define reusable components for documents.
     Backslash‐escapes like ` \U+2764\ ` are no longer supported; use
       character references like `&#x2764;` instead.
-
-    **Rationale:** Entity references are a powerful capability of X·M·L
-      and form a better solution for re·usable content than anything
-      Market Commons could offer.
+    
+    **Rationale:**
+    Entity references are a powerful capability of X·M·L and form a
+      better solution for re·usable content than anything Market
+      Commons could offer.
     There’s no point in maintaining two ways of escaping characters;
       if X·M·L references are supported, then they should be used.
     This frees up ` \ ` as a potential sigil and makes inserting
@@ -49,29 +65,36 @@ The following is a list of known incompatibilities between documents
 
  +  Empty inline elements can now be specified using a `#` surrounded
       by sigils.
-
-    **Rationale:** Having a distinct empty element syntax makes it
-      clearer when a lack of content is intentional.
+    
+    **Rationale:**
+    Having a distinct empty element syntax makes it clearer when a
+      lack of content is intentional.
 
  +  `||` is no longer supported as a way of specifying linebreaks.
     Instead, use ` \#\ ` or ` \||\ `.
-
-    **Rationale:** Having a special syntax for just one kind of empty
-      element is silly.
+    
+    **Rationale:**
+    Having a special syntax for just one kind of empty element is
+      silly.
     `||` was always kind of a weird special case in processing anyway.
 
  +  Sections are now closed by some number of `|` pipe characters,
       instead of `/` solidi.
-
-    **Rationale:** This frees up `/` as an ordinary sigil instead of
-      making it a special case.
+    For *some* backwards‐compatibility, `/` has been defined as a
+      `<div>` whose title will be sent to the `data-title` property
+      in the default Declaration of Jargon.
+    
+    **Rationale:**
+    This frees up `/` as an ordinary sigil instead of making it a
+      special case.
     Importantly, `/| |/` was already being used as an inline tag.
 
  +  Whitespace behaviour has been made more sensible, which means that
       whitespace output may differ in some cases.
-
-    **Rationale:** The original behaviour was just “what is easy to
-      program in Racket”.
+    
+    **Rationale:**
+    The original behaviour was just “what is easy to program in
+      Racket”.
 
  +  Various changes in the formatting of output (which should not
       affect the rendered result).
