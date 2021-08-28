@@ -33,21 +33,33 @@ export function prepareAsX·M·L ( text ) {
 	//  It’s okay to treat strings as arrays here because the
 	//    codepoints we are checking are all in the B·M·P.
 	return Array.prototype.map.call(text,
-		($, ℹ) => {
-			if ( RestrictedChar.test($)
-					//deno-lint-ignore no-control-regex
-					|| /[\x00\uFFFE\uFFFF]/u.test($) ) {
+		( $, index ) => {
+			if ( RestrictedChar.test($) ) {
+				//  `RestrictedChar`s are not allowed to appear
+				//    literally.
 				throw new ParseError (
-					ℹ,
-					`#x${ $.charCodeAt(0).toString(16).toUpperCase() } is restricted from appearing literally in documents.`
+					`#x${ $.charCodeAt(0).toString(16).toUpperCase() } is restricted from appearing literally in documents.`,
+					{ index }
 				)
 			} else if (
 				//deno-lint-ignore no-control-regex
-				/\x0D[\x0A\x85]?|\x85|\u2028/u.test($)
+				/[\u{0}\u{FFFE}\u{FFFF}]/u.test($)
 			) {
-				return "\n"
+				//  U+0000, U+FFFE, and U+FFFF are not allowed, period.
+				throw new ParseError (
+					`#x${ $.charCodeAt(0).toString(16).toUpperCase() } is not allowed in documents.`,
+					{ index }
+				)
 			} else {
-				return $
+				//  Normalize newlines, otherwise return the character.
+				if ( $ == "\u{D}" ) {
+					//  Carriage·return may be followed by a newline.
+					return "\u{A}\u{85}".includes(text[index + 1]) ? ""
+						: "\u{A}"
+				} else {
+					//  Normalize other newlines to U+000A.
+					return "\u{85}\u{2028}".includes($) ? "\u{A}" : $
+				}
 			}
 		}
 	).join("")
