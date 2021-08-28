@@ -2,7 +2,7 @@
 
 This repository provides an implementation of the Market Commons ⅠⅠ
   markup language into Ecmascript, usable with
-  [deno](https://deno.land/) (and in browsers).
+  [Deno](https://deno.land/) (and in browsers).
 
 Market Commons ⅠⅠ is a sort of “extensible Markdown for X·M·L”; an
   example follows :—
@@ -22,6 +22,28 @@ It is titled '|My Market Commons ⅠⅠ Document|' {.ARTICLE} and it is
 🌈|Wow!!|🌈
 ```
 
+##  Current Status  ##
+
+In development.
+Initial release (hopefully) in early September 2021.
+
+🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript is a reference implementation
+  written with the hope of being easy to understand and maintain.
+Faster algorithms for processing Market Commons ⅠⅠ documents likely
+  exist.
+
+
+##  Prerequisites  ##
+
+🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript requires a contemporary
+  Ecmascript environment with some additional D·O·M / Web A·P·Is.
+In Deno (1.13+), the missing pieces are suitably filled in by importing
+  `./fauxbrowser/mod.js` from this directory.
+On the other hand, in browsers, the piece most likely to be missing is
+  [`structuredClone()`][WindowOrWorkerGlobalScope.structuredClone].
+
+[WindowOrWorkerGlobalScope.structuredClone]: https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/structuredClone
+
 
 ##  Usage  ##
 
@@ -32,7 +54,7 @@ It is titled '|My Market Commons ⅠⅠ Document|' {.ARTICLE} and it is
 import { parse } from "https://deno.land/x/market@VERSION/mod.js"
 
 //  Provides `DOMParser`, `TreeWalker`, and `XMLSerializer`.
-//  Only necessary if you are in an environment (e.g., deno) which
+//  Only necessary if you are in an environment (e.g., Deno) which
 //    doesn’t already support those A·P·Is.
 import "https://deno.land/x/market@VERSION/fauxbrowser/mod.ts"
 
