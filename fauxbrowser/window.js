@@ -19,12 +19,12 @@
 
 import { x·h·t·m·lNamespace } from "../names.js"
 import { DOMParser, XMLSerializer }
-	from "https://esm.sh/@xmldom/xmldom@0.7.0"
+	from "https://esm.sh/@xmldom/xmldom@0.7.3"
 
-const window = globalThis
-window.DOMParser = DOMParser
-window.XMLSerializer = XMLSerializer
-window.document =
+globalThis.window ??= globalThis
+window.DOMParser ??= DOMParser
+window.XMLSerializer ??= XMLSerializer
+window.document ??=
 	//  A blank X·H·T·M·L page.
 	(new DOMParser).parseFromString(
 		`<html xmlns="${ x·h·t·m·lNamespace }"><head/><body/></html>`,
