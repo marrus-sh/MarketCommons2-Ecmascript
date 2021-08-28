@@ -25,10 +25,13 @@ export class MarketCommonsⅠⅠError extends Error {
 	 *  Create a `MarketCommonsⅠⅠError` from the provided `message`.
 	 *
 	 *  @argument {string} message
+	 *  @argument {{index:number,line:number}} options
 	 */
-	constructor ( message, ...additionalArguments ) {
+	constructor ( message, options, ...additionalArguments ) {
+		const { index, line } = options ?? { }
 		super (String(message), ...additionalArguments)
-		this.index = null
+		this.index = index == null ? null : index >>> 0
+		this.line = line == null ? null : line >>> 0
 	}
 
 	/**
@@ -38,7 +41,9 @@ export class MarketCommonsⅠⅠError extends Error {
 	 */
 	toString ( ) {
 		return this.index != null
-				? `Market Commons ⅠⅠ (@ ${this.index}): ${this.constructor.name}: ${this.message}`
+				? `Market Commons ⅠⅠ (@ ${ this.index }): ${ this.constructor.name }: ${ this.message }`
+			: this.line != null
+				? `Market Commons ⅠⅠ (line ${ this.line } of content): ${ this.constructor.name }: ${ this.message }`
 			: `Market Commons ⅠⅠ: ${this.constructor.name}: ${this.message}`
 	}
 
@@ -49,25 +54,15 @@ export class MarketCommonsⅠⅠError extends Error {
  */
 export class ConfigurationError extends MarketCommonsⅠⅠError { }
 
-
 /**
  *  A error pertaining to Market Commons ⅠⅠ parsing.
  */
-export class ParseError extends MarketCommonsⅠⅠError {
+export class ParseError extends MarketCommonsⅠⅠError { }
 
-	/**
-	 *  Create a `ParseError` at the provided `index` and with the
-	 *    provided `message`.
-	 *
-	 *  @argument {number} index
-	 *  @argument {string} message
-	 */
-	constructor ( index, message, ...additionalArguments ) {
-		super (message, ...additionalArguments)
-		this.index = index == null ? null : index >>> 0
-	}
-
-}
+/**
+ *  A error pertaining to Market Commons ⅠⅠ namespace processing.
+ */
+export class NamespaceError extends MarketCommonsⅠⅠError { }
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ sigil resolution.
@@ -75,22 +70,17 @@ export class ParseError extends MarketCommonsⅠⅠError {
 export class SigilResolutionError extends MarketCommonsⅠⅠError {
 
 	/**
-	 *  Create a `SigilResolutionError` at the provided `index` and
+	 *  Create a `SigilResolutionError` at the provided `line` and
 	 *    with the provided `nodeType` and `path`.
 	 *
-	 *  @argument {number} index
-	 *  @argument {symbol} nodeType
 	 *  @argument {string} path
+	 *  @argument {{line:number}} options
 	 */
-	constructor ( index, nodeType, path, ...additionalArguments ) {
-		if ( typeof nodeType != "symbol" ) {
-			throw new TypeError (
-				`Expected a symbol but got a ${ typeof nodeType }.`
-			)
-		}
+	constructor ( path, options, ...additionalArguments ) {
+		const nodeType = options?.nodeType ?? null
 		super (
-			index,
 			`Unable to resolve ${ nodeType.description } sigil path "${ path }"`,
+			options,
 			...additionalArguments
 		)
 		this.nodeType = nodeType

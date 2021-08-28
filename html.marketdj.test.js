@@ -10,7 +10,7 @@ import {
 } from "./names.js"
 import { NODE_TYPE, CONTENT_MODEL } from "./symbols.js"
 import { assert, assertEquals, assertStrictEquals }
-	from "https://deno.land/std@0.105.0/testing/asserts.ts"
+	from "https://deno.land/std@0.106.0/testing/asserts.ts"
 
 const D·J = htmlD·J
 const result = process(D·J)
@@ -172,7 +172,9 @@ Deno.test({
 			"&#96;": { contentModel: CONTENT_MODEL.LITERAL },
 		}
 		assertEquals(
-			jargon[NODE_TYPE.BLOCK].size,
+			Array.from(jargon[NODE_TYPE.BLOCK].keys()).filter(
+				$ => $ != "#DEFAULT"
+			).length,
 			Object.keys(blocks).length
 		)
 		for ( const subpath in blocks ) {
@@ -217,9 +219,9 @@ Deno.test({
 Deno.test({
 	name: "H·T·M·L D·J block defaults process correctly.",
 	fn: ( ) => {
-		assertEquals(jargon[NODE_TYPE.BLOCK].defaults.size, 1)
+		assertEquals(jargon[NODE_TYPE.BLOCK].get("#DEFAULT").size, 1)
 		assertStrictEquals(
-			jargon[NODE_TYPE.BLOCK].defaults.get("*"),
+			jargon[NODE_TYPE.BLOCK].get("#DEFAULT").get("*>#DEFAULT"),
 			jargon[NODE_TYPE.BLOCK].get("&#46;").get("* &#46;")
 		)
 	},

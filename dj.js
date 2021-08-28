@@ -15,6 +15,7 @@
 import { systemIdentifierMap as defaultSystemIdentifierMap }
 	from "./defaults.js"
 import { ConfigurationError, ParseError } from "./errors.js"
+import Jargon from "./jargon.js"
 import {
 	marketNamespace,
 	parsererrorNamespace,
@@ -49,8 +50,8 @@ function welformedName ( qualifiedName, options ) {
 		//  Names cannot match the `NSAttName` production [🆐A‐2]
 		//    [🆐E‐2][🆐F‐2][🆐G‐3][🆐H‐4][🆐I‐4].
 		throw new ParseError (
-			options?.index,
-			`"${ qualifiedName }" cannot be used as a qualified name.`
+			`"${ qualifiedName }" cannot be used as a qualified name.`,
+			{ index: options?.index }
 		)
 	} else {
 		//  Simply return the name.
@@ -75,8 +76,8 @@ function welformedSigils ( path, options ) {
 			//  A sigil may not contain a character indicating `S` or
 			//    `'|'`.
 			throw new ParseError (
-				options?.index,
-				`Whitespace and "|" characters are not allowed in sigils.`
+				`Whitespace and "|" characters are not allowed in sigils.`,
+				{ index: options?.index }
 			)
 		} else {
 			continue
@@ -110,8 +111,8 @@ function parseAttributes ( attributesDeclaration, options ) {
 				//  An attributes declaration must not declare
 				//    the same attribute name twice [🆐A‐1].
 				throw new ParseError (
-					options?.index,
-					`Attribute @${ name } declared twice.`
+					`Attribute @${ name } declared twice.`,
+					{ index: options?.index }
 				)
 			} else {
 				//  Set the attribute.
@@ -170,32 +171,36 @@ function processNamespace ( source, index ) {
 		if ( prefix == "xmlns" ) {
 			//  `xmlns` is not usable as a prefix [🆐K‐1].
 			throw new ParseError (
-				index,
-				`"${ prefix }" cannot be used as a namespace prefix.`
+				`"${ prefix }" cannot be used as a namespace prefix.`,
+				{ index }
 			)
 		} else if ( prefix == "xml" && literal != x·m·lNamespace ) {
 			//  The prefix `xml` can only be assigned to the X·M·L
 			//    namespace [🆐K‐2].
 			throw new ParseError (
-				index,
-				`"${ prefix }" cannot be assigned to any namespace other than "${ x·m·lNamespace }".`
+				`"${ prefix }" cannot be assigned to any namespace other than "${ x·m·lNamespace }".`,
+				{ index }
 			)
 		} else if ( prefix != "xml" && literal == x·m·lNamespace ) {
 			//  The X·M·L namespace can only be assigned to the prefix
 			//    `xml` [🆐K‐3].
 			throw new ParseError (
-				index,
-				`The namespace "${ literal }" can only be assigned to the prefix "xml".`
+				`The namespace "${ literal }" can only be assigned to the prefix "xml".`,
+				{ index }
 			)
 		} else if ( literal == x·m·l·n·sNamespace ) {
 			//  The X·M·L·N·S namespace cannot be assigned [🆐K‐3].
 			throw new ParseError (
-				index,
-				`The namespace "${ literal }" cannot be assigned.`
+				`The namespace "${ literal }" cannot be assigned.`,
+				{ index }
 			)
 		} else {
 			//  Return the processed prefix and literal.
-			return { prefix, literal, lastIndex: regExp.lastIndex }
+			return {
+				prefix,
+				literal: literal == "" ? null : literal,
+				lastIndex: regExp.lastIndex,
+			}
 		}
 	}
 }
@@ -245,8 +250,8 @@ function processDocument ( source, index, DOMParser ) {
 			//  The document template must be a welformed X·M·L
 			//    document [🆐D‐1].
 			throw new ParseError (
-				index,
-				`Document template not welformed: ${ root.textContent }`
+				`Document template not welformed: ${ root.textContent }`,
+				{ index }
 			)
 		} else {
 			//  Walk the X·M·L tree and process elements in the
@@ -268,20 +273,20 @@ function processDocument ( source, index, DOMParser ) {
 					//  An element with this name has already been
 					//    processed [🆐D‐2].
 					throw new ParseError (
-						index,
-						`Document template contains multiple ${ name } elements in the "${ marketNamespace }" namespace.`
+						`Document template contains multiple ${ name } elements in the "${ marketNamespace }" namespace.`,
+						{ index }
 					)
 				} else if ( node.childNodes.length != 0 ) {
 					//  The element is not empty [🆐D‐2].
 					throw new ParseError (
-						index,
-						`Document template contains nonempty ${ name } element in the "${ marketNamespace }" namespace.`
+						`Document template contains nonempty ${ name } element in the "${ marketNamespace }" namespace.`,
+						{ index }
 					)
 				} else if ( !(name in marketNodes) ) {
 					//  The element is not recognized [🆐D‐3].
 					throw new ParseError (
-						index,
-						`Document template contains unrecognized ${ name } element in the "${ marketNamespace }" namespace.`
+						`Document template contains unrecognized ${ name } element in the "${ marketNamespace }" namespace.`,
+						{ index }
 					)
 				} else {
 					//  The element is recognized and has not been
@@ -296,8 +301,8 @@ function processDocument ( source, index, DOMParser ) {
 					//  Both `<preamble>` and `<content>` are required
 					//    [🆐D‐2].
 					throw new ParseError (
-						index,
-						`Document template lacks a ${ name } element in the "${ marketNamespace }" namespace.`
+						`Document template lacks a ${ name } element in the "${ marketNamespace }" namespace.`,
+						{ index }
 					)
 				}
 			}
@@ -709,27 +714,15 @@ export function process ( source, options = {
 	DOMParser: globalThis.DOMParser,
 	systemIdentifiers: { }
 } ) {
-
+	
 	//  Ensure source begins with a Declaration of Jargon.
 	//  Otherwise, return early.
 	if ( !source.startsWith("<?market-commons") )
 		return { input: source, jargon: null, lastIndex: 0 }
-
+	
 	//  Set up data storage.
-	let jargon = {
-		namespaces: new Map ([           //  [prefix:literal]
-			[ "xml", x·m·lNamespace ],
-			[ "xmlns", x·m·l·n·sNamespace ],
-		]),
-		[NODE_TYPE.DOCUMENT]: null,      //  `XMLDocument`
-		[NODE_TYPE.SECTION]: new Map,    //  [sigil:[path:section]]
-		[NODE_TYPE.HEADING]: new Map,    //  [sigil:[path:heading]]
-		[NODE_TYPE.BLOCK]: new Map,      //  [sigil:[path:block]]
-		[NODE_TYPE.INLINE]: new Map,     //  [sigil:[path:inline]]
-		[NODE_TYPE.ATTRIBUTE]: new Map,  //  [sigil:[path:{attribute}]]
-	}
-	jargon[NODE_TYPE.BLOCK].defaults = new Map  //  [path:block]
-
+	let jargon = new Jargon
+	
 	//  Handle options.
 	const DOMParser = options?.DOMParser ?? globalThis?.DOMParser
 	if ( typeof DOMParser != "function" ) {
@@ -739,30 +732,32 @@ export function process ( source, options = {
 	}
 	const systemIdentifierMap = options instanceof Map ? options
 		: new Map (Object.entries(options?.systemIdentifier ?? { }))
-
+	
 	//  Parse and process.
 	const regExp = new RegExp ($.D·J.source, "duy")
 	const parseResult = regExp.exec(source)
 	if ( !parseResult ) {
 		//  Declarations of Jargon must match the `D·J` production.
 		throw new ParseError (
-			0,
-			"Declaration of Jargon does not match expected grammar."
+			"Declaration of Jargon does not match expected grammar.",
+			{ index: 0 }
 		)
 	} else {
 		//  Process the parsed Declaration of Jargon.
 		const quotedExternalName = parseResult.groups.externalName
-			|| parseResult.groups.externalSubset
+			?? parseResult.groups.externalSubset
 		const externalName = quotedExternalName != null
 				? quotedExternalName.substring(
 					1, quotedExternalName.length - 1
 				)
 			: null
+		const nameIndex = (parseResult.indices.groups.externalName ??
+			parseResult.indices.groups.externalSubset)
 		if ( options?.[nestedWithin]?.has(externalName) ?? false ) {
 			//  There is a recursive external reference [🆐J‐2].
 			throw new ParseError (
-				0,
-				`Recursive reference to "${ externalName }" in Declaration of Jargon.`
+				`Recursive reference to "${ externalName }" in Declaration of Jargon.`,
+				{ index: nameIndex }
 			)
 		} else if ( externalName != null ) {
 			//  (Attempt to) handle the referenced external Declaration
@@ -785,8 +780,8 @@ export function process ( source, options = {
 					//  (Attempt to) fetch the system identifier.
 					/*  TODO  */
 					throw new ParseError (
-						0,
-						"Fetching external Declarations of Jargon is not yet supported."
+						"Fetching external Declarations of Jargon is not yet supported.",
+						{ index: nameIndex }
 					)
 				}
 			}
@@ -806,15 +801,17 @@ export function process ( source, options = {
 						externalD·J.length ) {
 					//  External Declarations of Jargon must consist of
 					//    *only* and *exactly* one `D·J`.
-					throw new ParseError (0, "Not welformed.")
+					throw new ParseError (
+						"Not welformed.", { index: 0 }
+					)
 				}
 				jargon = externalResult.jargon
 			} catch {
 				//  The external Declaration of Jargon does not match
 				//    the `D·J` production [🆐J‐2].
 				throw new ParseError (
-					0,
-					`The external Declaration of Jargon "${ externalName }" is not welformed.`
+					`The external Declaration of Jargon "${ externalName }" is not welformed.`,
+					{ index: nameIndex }
 				)
 			}
 		}
@@ -859,7 +856,11 @@ export function process ( source, options = {
 						): {
 							//  Overwrites any previous document
 							//    declaration.
-							jargon[NODE_TYPE.DOCUMENT] = result.jargon
+							Object.defineProperty(
+								jargon, NODE_TYPE.DOCUMENT, {
+									value: result.jargon,
+								}
+							)
 							break processingDeclaration
 						}
 						case !(
@@ -881,13 +882,15 @@ export function process ( source, options = {
 								//  This is a default block
 								//    declaration.
 								//  Record it in the defaults map!
-								jargon[NODE_TYPE.BLOCK].defaults.set(
-									value.path.substring(
-										0, /[ >][^ >]*$/u.exec(
-											value.path
-										)?.index ?? undefined
-									), value
-								)
+								jargon[NODE_TYPE.BLOCK]
+									.get("#DEFAULT")
+									.set(
+										value.path.substring(
+											0, /[ >][^ >]*$/u.exec(
+												value.path
+											)?.index ?? undefined
+										) + ">#DEFAULT", value
+									)
 							}
 							break
 						}
@@ -947,8 +950,8 @@ export function process ( source, options = {
 						default: {
 							//  Ought to be unreachable.
 							throw new ParseError (
-								index,
-								"Unexpected syntax in Declaration of Jargon."
+								"Unexpected syntax in Declaration of Jargon.",
+								{ index }
 							)
 						}
 					}
@@ -973,8 +976,8 @@ export function process ( source, options = {
 			}
 		}
 	}
-
+	
 	//  Return.
 	return { input: source, jargon, lastIndex: regExp.lastIndex }
-
+	
 }
