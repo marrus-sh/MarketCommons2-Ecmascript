@@ -21,15 +21,54 @@ import {
 	x·m·lNamespace,
 	x·m·l·n·sNamespace,
 } from "./names.js"
-import { globRegExp } from "./paths.js"
+import { globRegExp, sigilsInScope } from "./paths.js"
 import { NODE_TYPE } from "./symbols.js"
 import { SigilD·J } from "./syntax.js"
+
+/**
+ *  Returns the number of consecutive provided `sigil`s that are in the
+ *    provided `string`, starting from the offset given by the provided
+ *    `lastIndex`.
+ *  The value will be clamped to `max` if provided.
+ *
+ *  @argument {string} string
+ *  @argument {string} sigil
+ *  @argument {number} lastIndex
+ *  @argument {number} max
+ *  @returns {number}
+ */
+function countSigils ( string, sigil, lastIndex = 0, max = Infinity ) {
+	let count = 0
+	let sigilRegExpSource = ""
+	for ( const charRef of
+			normalizeReferences(sigil).matchAll(CharRef) ) {
+		//  Build up a regular expression source from the character
+		//    references in `sigil`.
+		sigilRegExpSource += String.raw `\u{${
+			//  Drop the `&#` and convert to hexadecimal.
+			parseInt(charRef.substring(2)).toString(16)
+		}}`
+	}
+	const regExp = new RegExp (
+		String.raw `${ sigilRegExpSource }(?!\|)[ \t]*`, "uy"
+	)
+	regExp.lastIndex = lastIndex
+	while ( count < max && regExp.test(string) ) {
+		//  Increment `count` for as long as there is another sigil,
+		//    up to `max`.
+		++count
+	}
+	return count
+}
 
 /**
  *  The class of parsed Declaration of Jargon objects.
  */
 export default class Jargon extends null {
 	
+	/**
+	 *  Creates a new (empty) `Jargon` object.
+	 */
 	constructor ( ) {
 		return Object.create(
 			Jargon.prototype,
@@ -83,7 +122,108 @@ export default class Jargon extends null {
 			}
 		)
 	}
-
+	
+	/**
+	 *  Creates a “chunk” object from the provided `line` at the
+	 *    provided `path`.
+	 *
+	 *  @argument {string} path
+	 *  @argument {Line} line
+	 *  @returns {Object}
+	 */
+	makeChunk ( path, line ) {
+		if ( /^(?:\|[ \t]*)+$/.test(line) ) {
+			//  `line` is a section‐close mark.
+			const count = line.match(/\|/gu).length
+			const level = count - 1
+			return {
+				nodeType: NODE_TYPE.SECTION,
+				path: new RegExp (
+					`(?:(?:^|/)[^/]+){0,${ level }}`, "uy"
+				).exec(path)[0],
+				sigil: null,
+				count,
+				level,
+				lines: [ line ],
+			}
+		} else {
+			//  See if `line` begins with a section, heading, or block
+			//    sigil.
+			//  If it does, build the chunk accordingly.
+			//  If it doesn’t, the chunk is a default block.
+			for ( const nodeType of [
+				NODE_TYPE.SECTION,
+				NODE_TYPE.HEADING,
+				NODE_TYPE.BLOCK,
+			] ) {
+				//  Return the longest sigil of the current `nodeType`
+				//    which begins `line`, if one exists.
+				const possibilities = sigilsInScope(
+					nodeType == NODE_TYPE.SECTION ? path
+						: `${ path }>`,
+					this[nodeType]
+				)
+				const matches = Object.create(null)
+				for ( const sigil of possibilities ) {
+					//  Iterate over every possible sigil and see if it
+					//    begins the line.
+					//  For sections and headings, keep track of how
+					//    many times the sigil appears (the `count`).
+					//  For blocks, the count is limited to `1`.
+					const count = countSigils(
+						line, sigil, 0,
+						nodeType == NODE_TYPE.BLOCK ? 1 : Infinity
+					)
+					if ( count > 0 ) {
+						//  The sigil matches, so assign it to the
+						//    `matches` object.
+						//  The `level` of the chunk is the number of
+						//    sections in its path.
+						//  This is clamped to be one less than its
+						//    `count` for sections.
+						const level = nodeType == NODE_TYPE.SECTION
+								? count - 1
+							: path.match(/[^/]+/gu)?.length ?? 0
+						matches[sigil] = {
+							nodeType,
+							path: nodeType == NODE_TYPE.SECTION ? `${
+								new RegExp (
+									`(?:(?:^|/)[^/]+){0,${ level }}`,
+									"uy"
+								).exec(path)[0]
+							}/${ sigil }` : `${ path }>${ sigil }`,
+							sigil,
+							count,
+							level,
+							lines: [ line ],
+						}
+					} else {
+						//  The sigil does not match.
+						continue
+					}
+				}
+				const longestMatchingSigil =
+					Object.keys(matches).reduce(
+						(longest, current) =>
+							current.length > longest.length ? current
+								: longest,
+						""
+					)
+				if ( longestMatchingSigil != "" ) {
+					return matches[longestMatchingSigil]
+				}
+			}
+			return {
+				nodeType: NODE_TYPE.BLOCK,
+				path: `${ path }>#DEFAULT`,
+				sigil: "#DEFAULT",
+				count: 0,
+				level: path.match(/[^/]+/gu)?.length ?? 0,
+				lines: [ line ],
+			}
+		}
+	}
+	
 	/**
 	 *  Resolves the provided `path` for the provided `nodeType` using
 	 *    this `Jargon`, and returns the corresponding definition.
