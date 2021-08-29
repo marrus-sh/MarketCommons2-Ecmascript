@@ -80,15 +80,23 @@ export function globRegExp ( glob ) {
 export function sigilsInScope ( path, sigilMap ) {
 	const result = new Set
 	checkingSigils: for ( const [ sigil, pathMap ] of sigilMap ) {
-		const pathWithSigil = />$/u.test(path) ? `${ path }${ sigil }`
-			: `${ path }/${ sigil }`
-		for (
-			// deno-lint-ignore no-unused-vars
-			const [ glob, jargon ] of pathMap
-		) {
-			if ( globRegExp(glob).test(pathWithSigil) ) {
-				result.add(sigil)
-				continue checkingSigils
+		if ( sigil == "#DEFAULT" ) {
+			//  `#DEFAULT` is not a proper sigil and won’t be returned
+			//    by this function.
+			continue checkingSigils
+		} else {
+			//  `sigil` is ordinary and proper.
+			const pathWithSigil = />$/u.test(path)
+					? `${ path }${ sigil }`
+				: `${ path }/${ sigil }`
+			for (
+				// deno-lint-ignore no-unused-vars
+				const [ glob, jargon ] of pathMap
+			) {
+				if ( globRegExp(glob).test(pathWithSigil) ) {
+					result.add(sigil)
+					continue checkingSigils
+				}
 			}
 		}
 	}

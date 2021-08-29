@@ -1,4 +1,4 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: jargon.test.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: paths.test.js
 //  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
