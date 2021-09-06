@@ -70,57 +70,54 @@ export default class Jargon extends null {
 	 *  Creates a new (empty) `Jargon` object.
 	 */
 	constructor ( ) {
-		return Object.create(
-			Jargon.prototype,
-			{
-				namespaces: {             //  [prefix:literal]
-					configurable: true,
-					enumerable: false,
-					value: new Map ([
-						[ null, null ],
-						[ "xml", x·m·lNamespace ],
-						[ "xmlns", x·m·l·n·sNamespace ],
-					]),
-					writable: false,
-				},
-				[NODE_TYPE.DOCUMENT]: {   //  `XMLDocument`
-					configurable: true,
-					enumerable: false,
-					value: null,
-					writable: false,
-				},
-				[NODE_TYPE.SECTION]: {    //  [sigil:[path:section]]
-					configurable: true,
-					enumerable: false,
-					value: new Map,
-					writable: false,
-				},
-				[NODE_TYPE.HEADING]: {    //  [sigil:[path:section]]
-					configurable: true,
-					enumerable: false,
-					value: new Map,
-					writable: false,
-				},
-				[NODE_TYPE.BLOCK]: {      //  [sigil:[path:section]]
-					configurable: true,
-					enumerable: false,
-					value: new Map ([ ["#DEFAULT", new Map ] ]),
-					writable: false,
-				},
-				[NODE_TYPE.INLINE]: {     //  [sigil:[path:section]]
-					configurable: true,
-					enumerable: false,
-					value: new Map,
-					writable: false,
-				},
-				[NODE_TYPE.ATTRIBUTE]: {  //  [sigil:[path:section]]
-					configurable: true,
-					enumerable: false,
-					value: new Map,
-					writable: false,
-				},
-			}
-		)
+		return Object.create(Jargon.prototype, {
+			namespaces: {             //  [prefix:literal]
+				configurable: true,
+				enumerable: true,
+				value: new Map ([
+					[ null, null ],
+					[ "xml", x·m·lNamespace ],
+					[ "xmlns", x·m·l·n·sNamespace ],
+				]),
+				writable: false,
+			},
+			[NODE_TYPE.DOCUMENT]: {   //  `XMLDocument`
+				configurable: true,
+				enumerable: true,
+				value: null,
+				writable: false,
+			},
+			[NODE_TYPE.SECTION]: {    //  [sigil:[path:section]]
+				configurable: true,
+				enumerable: true,
+				value: new Map,
+				writable: false,
+			},
+			[NODE_TYPE.HEADING]: {    //  [sigil:[path:section]]
+				configurable: true,
+				enumerable: true,
+				value: new Map,
+				writable: false,
+			},
+			[NODE_TYPE.BLOCK]: {      //  [sigil:[path:section]]
+				configurable: true,
+				enumerable: true,
+				value: new Map ([ ["#DEFAULT", new Map ] ]),
+				writable: false,
+			},
+			[NODE_TYPE.INLINE]: {     //  [sigil:[path:section]]
+				configurable: true,
+				enumerable: true,
+				value: new Map,
+				writable: false,
+			},
+			[NODE_TYPE.ATTRIBUTE]: {  //  [sigil:[path:section]]
+				configurable: true,
+				enumerable: true,
+				value: new Map,
+				writable: false,
+			},
+		})
 	}
 	
 	/**
@@ -135,15 +132,15 @@ export default class Jargon extends null {
 		if ( /^(?:\|[ \t]*)+$/.test(line) ) {
 			//  `line` is a section‐close mark.
 			const count = line.match(/\|/gu).length
-			const level = count - 1
 			return {
+				jargon: this,
 				nodeType: NODE_TYPE.SECTION,
 				path: new RegExp (
-					`(?:(?:^|/)[^/]+){0,${ level }}`, "uy"
+					`(?:(?:^|/)[^/]+){0,${ count - 1 }}`, "uy"
 				).exec(path)[0],
 				sigil: null,
 				count,
-				level,
+				level: count,
 				lines: [ line ],
 			}
 		} else {
@@ -177,18 +174,19 @@ export default class Jargon extends null {
 					if ( count > 0 ) {
 						//  The sigil matches, so assign it to the
 						//    `matches` object.
-						//  The `level` of the chunk is the number of
-						//    sections in its path.
-						//  This is clamped to be one less than its
-						//    `count` for sections.
+						//  The `level` of the chunk is one greater
+						//    than the number of sections in its path.
+						//  This is clamped to its `count` for
+						//    sections.
 						const level = nodeType == NODE_TYPE.SECTION
-								? count - 1
-							: path.match(/[^/]+/gu)?.length ?? 0
+								? count
+							: (path.match(/[^/]+/gu)?.length ?? 0) + 1
 						matches[sigil] = {
+							jargon: this,
 							nodeType,
 							path: nodeType == NODE_TYPE.SECTION ? `${
 								new RegExp (
-									`(?:(?:^|/)[^/]+){0,${ level }}`,
+									`(?:(?:^|/)[^/]+){0,${ level - 1 }}`,
 									"uy"
 								).exec(path)[0]
 							}/${ sigil }` : `${ path }>${ sigil }`,
@@ -214,6 +212,7 @@ export default class Jargon extends null {
 				}
 			}
 			return {
+				jargon: this,
 				nodeType: NODE_TYPE.BLOCK,
 				path: `${ path }>#DEFAULT`,
 				sigil: "#DEFAULT",
