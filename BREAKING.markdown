@@ -5,6 +5,14 @@ The following is a list of known incompatibilities between documents
   processor.
 
  +  Market Commons ⅠⅠ occasionally throws errors!
+    Most of these are related to Declaration of Jargon processing, but
+      you should be aware of the fact that not every call to the parse
+      function will necessarily succeed (and compensate for this fact
+      accordingly).
+    In comparison with the original Market Commons, one noticable
+      source of errors is literals with invalid X·M·L content, like
+      `` `| <tag> |` content `| </tag> |` ``, which is no longer
+      permitted (see below).
     
     **Rationale:** Sometimes this is better!
 
@@ -17,6 +25,11 @@ The following is a list of known incompatibilities between documents
       headings (which is not something which should be easy).
     Also and importantly, this allows for the use of sigils which
       repeat a single character multiple times.
+
+ +  You can no longer specify attributes for a “default” block.
+    
+    **Rationale:** It wasn’t really obvious that a line beginning with
+      a `{` was actually setting the attributes for the paragraph.
 
  +  Literals are now processed differently :—
     
@@ -69,9 +82,11 @@ The following is a list of known incompatibilities between documents
     **Rationale:**
     Having a distinct empty element syntax makes it clearer when a
       lack of content is intentional.
+    In particular, this allows distinguishing between TEXTTO inlines
+      with empty contents, and TEXTTO inlines with no content.
 
  +  `||` is no longer supported as a way of specifying linebreaks.
-    Instead, use ` \#\ ` or ` \||\ `.
+    Instead, use ` \#\ `.
     
     **Rationale:**
     Having a special syntax for just one kind of empty element is

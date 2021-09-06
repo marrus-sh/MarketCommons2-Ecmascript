@@ -1,42 +1,77 @@
 #  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript  #
 
 This repository provides an implementation of the Market Commons ⅠⅠ
-  markup language into Ecmascript, usable with
-  [Deno](https://deno.land/) (and in browsers).
+  markup language into Ecmascript, usable with [Deno][] (and in browsers).
+
+[Deno]: https://deno.land/
 
 Market Commons ⅠⅠ is a sort of “extensible Markdown for X·M·L”; an
   example follows :—
 
 ```market
 <?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
-	<!-- 🌈: <mark class="RAINBOW"> -->
+	<!-- Defines 🌈| … |🌈 as <mark class="RAINBOW">…</mark>. -->
+	<!-- You must use character references when defining sigils! -->
 	<!INLINE &#x1F308; mark { class="RAINBOW" }>
 ]?>
+<!-- The following preamble will be inserted into the <head>:— -->
 <title lang="en" xml:lang="en">My Market Commons ⅠⅠ Document</title>
 
 @ {@en .MAIN #content} My Market Commons ⅠⅠ Document
 
 This is a sample document written in #|Market Commons ⅠⅠ|#.
-It is titled '|My Market Commons ⅠⅠ Document|' {.ARTICLE} and it is
-  *|very|* interesting.
-🌈|Wow!!|🌈
+It is titled '|My Market Commons ⅠⅠ Document|' {.ARTICLE} and it is *|very|* interesting.
+🌈|Wow!!|🌈 { data-rainbow-level=Infinity }
+```
+
+This produces the following X·M·L:
+
+```xml
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="generator" content="market-commons 2.0&#xA;https://deno.land/x/market@VERSION"/>
+	<!-- BEGIN PREAMBLE -->
+<!-- The following preamble will be inserted into the <head>:— -->
+<title lang="en" xml:lang="en">My Market Commons ⅠⅠ Document</title>
+	<!-- END PREAMBLE -->
+</head>
+<body>
+	<!-- BEGIN CONTENT -->
+<article lang="en" xml:lang="en" class="MAIN" id="content">
+	<h1 aria-level="1">My Market Commons ⅠⅠ Document</h1>
+	<p>This is a sample document written in <b>Market Commons ⅠⅠ</b>.
+It is titled <cite class="ARTICLE">My Market Commons ⅠⅠ Document</cite> and it is <em>very</em> interesting.
+<mark class="RAINBOW" data-rainbow-level="Infinity">Wow!!</mark>
+</p>
+</article>
+	<!-- END CONTENT -->
+</body>
+</html>
 ```
 
 ##  Current Status  ##
 
 In development.
-Initial release (hopefully) in early September 2021.
+Initial `v0.1.0` release (hopefully) September 2021.
 
-🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript is a reference implementation
-  written with the hope of being easy to understand and maintain.
+The `v0.0.⸺` series of releases provide an initial preview of
+  underlying technologies (e.g. Declaration of Jargon processing), but
+  do not include a functioning parser.
+
+<cite>🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript</cite> is a reference
+  implementation written with the hope of being easy to understand and
+  maintain.
 Faster algorithms for processing Market Commons ⅠⅠ documents likely
   exist.
 
 
 ##  Prerequisites  ##
 
-🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript requires a contemporary
-  Ecmascript environment with some additional D·O·M / Web A·P·Is.
+<cite>🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript</cite> requires a
+  contemporary Ecmascript environment with some additional D·O·M / Web
+  A·P·Is.
 In Deno (1.13+), the missing pieces are suitably filled in by importing
   `./fauxbrowser/mod.js` from this directory.
 On the other hand, in browsers, the piece most likely to be missing is
@@ -47,8 +82,8 @@ On the other hand, in browsers, the piece most likely to be missing is
 
 ##  Usage  ##
 
-🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript is available on `deno.land/x`
-  with the module name `market`.
+<cite>🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript</cite> is available on
+  `deno.land/x` with the module name `market`.
 
 ```js
 import { parse } from "https://deno.land/x/market@VERSION/mod.js"
@@ -67,6 +102,75 @@ Note that Market Commons ⅠⅠ produces files in the X·M·L, not H·T·M·L,
   syntax.
 They should be served with a mediatype of `application/xml` or
   `application/xhtml+xml` (or similar).
+
+
+##  Tips & Tricks  ##
+
+
+###  Making Use of Entities  ###
+
+You can use X·M·L entity references to define re·usable components for
+  your webpage.
+This requires overriding the default document template, but is fairly
+  straightforward to do :—
+
+```market
+<?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
+
+	<!DOCUMENT [[
+<!DOCTYPE html [
+	<!-- You can define whatever entities in here you like. -->
+	<!ENTITY cutie "(◡ ‿ ◡ ✿)">
+]>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><preamble xmlns="tag:go.KIBI.family,2021:market"/></head>
+<body><content xmlns="tag:go.KIBI.family,2021:market"/></body>
+</html>
+	]]>
+
+]>
+
+girls &cutie;
+```
+
+Market Commons ⅠⅠ doesn’t process these entity references at all—this
+  is an ordinary feature of X·M·L.
+
+
+###  Complex Processing  ###
+
+Market Commons ⅠⅠ is essentially just a “lightweight” alternate syntax
+  for X·M·L.
+To achieve more complex processing of content, try combining it with
+  other Web technologies like X·S·L·T or H·T·M·L Custom Elements.
+
+
+##  Participation & Future  ##
+
+The goal of Market Commons ⅠⅠ is stability.
+The meaning of existing documents should not change, and new features
+  will be added rarely (if ever).
+If there is a kind of document which is unbearably difficult for you to
+  produce in the current language, and you have an idea for an
+  extension to the Declaration of Jargon syntax which will make it
+  easier, feel free to let us know.
+Additions to the builtin Declarations of Jargon may be considered if
+  they are overwhelmingly useful and unlikely to affect existing
+  documents.
+
+You can discuss the language, get help, and share things you made using
+  Market Commons ⅠⅠ via [GitHub Discussions][MC2E-Discussions].
+
+[MC2E-Discussions]: https://github.com/marrus-sh/MarketCommons2-Ecmascript/discussions
+
+The best way to assist with Market Commons ⅠⅠ right now is by writing
+  documentation, particularly of the Declaration of Jargon syntax and
+  its capabilities.
+Welwritten tests of various aspects of processing are also appreciated.
+
+If you have the ability to write a formal standard of the Market
+  Commons ⅠⅠ language, and/or to have it assigned a proper media type
+  by the Internet Assigned Numbers Authority—get in touch.
 
 
 ##  Description of Market Commons ⅠⅠ  ##
@@ -199,7 +303,7 @@ The default (H·T·M·L) Declaration of Jargon defines the following
 |  `#x40` (`'@'`)  |     `lang`     |
 |  `#x5E` (`'^'`)  |   `datatype`   |
 | `#x60` (``'`'``) |     `type`     |
-|  `#x7E` (`'~'`)  |   `content `   |
+|  `#x7E` (`'~'`)  |   `content`    |
 
 
 ####  Chunks  ####
@@ -280,6 +384,20 @@ An empty inline can be indicated using a `#` hash between two sigils,
     ; ` <a href="http://www.example.com">http://www.example.com</a>
     ; ` </p>
     
+These have slightly different behaviours in the case of TEXTTO
+  inlines :—
+
+    These are slightly different:
+    &||& { &./image.png }
+    &#& { &./image.png }
+    
+    ; Produces:
+    ;
+    ; ` <p>These are slightly different:
+    ; ` <img alt="" src="./image.png"/>
+    ; ` <img src="./image.png"/>
+    ; ` </p>
+
 Hash has a lower precedence than pipe :—
 
     :#:||:
@@ -288,6 +406,39 @@ Hash has a lower precedence than pipe :—
     ;
     ; ` <p>:#<span></span>
     ; ` </p>
+
+The default (H·T·M·L) Declaration of Jargon defines the following
+  inline sigils :—
+
+|      Sigil       | Inline Name | Notes |
+| :--------------: | :---------: | ----- |
+|  `#x21` (`'!'`)  |  `strong`   |       |
+|  `#x22` (`'"'`)  |     `q`     |       |
+|  `#x23` (`'#'`)  |     `b`     |       |
+|  `#x24` (`'$'`)  |    `var`    |       |
+|  `#x25` (`'%'`)  |   `mark`    |       |
+|  `#x26` (`'&'`)  |    `img`    | TEXTTO `alt`, `title` |
+|  `#x27` (`"'"`)  |   `cite`    |       |
+|  `#x2A` (`'*'`)  |    `em`     |       |
+|  `#x2B` (`'+'`)  |    `ins`    |       |
+|  `#x2C` (`','`)  |    `sub`    |       |
+|  `#x2D` (`'-'`)  |    `del`    |       |
+|  `#x2E` (`'.'`)  |   `ruby`    | Use `{|…|{` for `<rb>` and `}|…|}` for `<rt>` |
+|  `#x2F` (`'/'`)  |     `i`     |       |
+|  `#x3A` (`':'`)  |   `span`    |       |
+|  `#x3B` (`';'`)  |    _N/A_    | COMMENT: Contents (and attributes) are ignored |
+|  `#x3C` (`'<'`)  |   `samp`    |       |
+|  `#x3D` (`'='`)  |     `s`     |       |
+|  `#x3E` (`'>'`)  |    `kbd`    |       |
+|  `#x3F` (`'?'`)  |    `dfn`    |       |
+|  `#x40` (`'@'`)  |     `a`     | TEXTFROM `href` (if empty) |
+|  `#x5B` (`'['`)  |   `small`   |       |
+|  `#x5C` (`'\'`)  |    `br`     | TEXTTO `data-text` |
+|  `#x5D` (`']'`)  |   `abbr`    |       |
+|  `#x5E` (`'^'`)  |    `sup`    |       |
+|  `#x5F` (`'_'`)  |     `u`     |       |
+| `#x60` (``'`'``) |    _N/A_    | LITERAL: Contents are treated as X·M·L; attibutes are ignored |
+|  `#x7E` (`'~'`)  |   `code`    |       |
 
 
 ###  Miscellaneous  ###
