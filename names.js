@@ -12,7 +12,8 @@
  *  The deno.land/x URL for this implementation.
  */
 //deno-lint-ignore camelcase
-export const deno_landXMarket = "https://deno.land/x/market@v0.0.2";
+export const deno_landXMarket =
+  "https://deno.land/x/market@v0.0.3-development";
 
 /**
  *  The Market Commons namespace, used by Market Commons ⅠⅠ.
