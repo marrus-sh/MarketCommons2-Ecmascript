@@ -26,5 +26,5 @@ import //  This is an old, archived script but it seems to do the job.
 //    documents created through `XMLParser`.
 const DocumentPrototype = Object.getPrototypeOf(window.document);
 if (DocumentPrototype.createTreeWalker == null) {
-	DocumentPrototype.createTreeWalker = document.createTreeWalker;
+  DocumentPrototype.createTreeWalker = document.createTreeWalker;
 }

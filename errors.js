@@ -5,12 +5,10 @@
 //
 //  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
-
-/**
- *  Market Commons ⅠⅠ error types.
- *
- *  @module MarketCommons2/errors
- */
+//
+//  ___________________________________________________________________
+//
+//  This module contains Market Commons ⅠⅠ error types.
 
 /**
  *  A generic Market Commons ⅠⅠ error.
@@ -20,71 +18,69 @@
  *    `U+0049 I LATIN CAPITAL LETTER I`.
  */
 export class MarketCommonsⅠⅠError extends Error {
+  /**
+   *  Create a `MarketCommonsⅠⅠError` from the provided `message`.
+   *
+   *  @argument {string} message
+   *  @argument {{index?:number}|{line?:number}} [options]
+   *  @argument {...any} additionalArguments
+   */
+  constructor(message, options, ...additionalArguments) {
+    const { index, line } = /** @type {any} */ (options ?? {});
+    super(String(message), ...additionalArguments);
+    this.index = index == null ? null : index >>> 0;
+    this.line = line == null ? null : line >>> 0;
+  }
 
-	/**
-	 *  Create a `MarketCommonsⅠⅠError` from the provided `message`.
-	 *
-	 *  @argument {string} message
-	 *  @argument {{index:number,line:number}} options
-	 */
-	constructor ( message, options, ...additionalArguments ) {
-		const { index, line } = options ?? { }
-		super (String(message), ...additionalArguments)
-		this.index = index == null ? null : index >>> 0
-		this.line = line == null ? null : line >>> 0
-	}
-
-	/**
-	 *  Generate a string describing this `MarketCommonsⅠⅠError`.
-	 *
-	 *  @returns {string}
-	 */
-	toString ( ) {
-		return this.index != null
-				? `Market Commons ⅠⅠ (@ ${ this.index }): ${ this.constructor.name }: ${ this.message }`
-			: this.line != null
-				? `Market Commons ⅠⅠ (line ${ this.line } of content): ${ this.constructor.name }: ${ this.message }`
-			: `Market Commons ⅠⅠ: ${this.constructor.name}: ${this.message}`
-	}
-
+  /**
+   *  Generate a string describing this `MarketCommonsⅠⅠError`.
+   *
+   *  @returns {string}
+   */
+  toString() {
+    return this.index != null
+      ? `Market Commons ⅠⅠ (@ ${this.index}): ${this.constructor.name}: ${this.message}`
+      : this.line != null
+      ? `Market Commons ⅠⅠ (line ${this.line} of content): ${this.constructor.name}: ${this.message}`
+      : `Market Commons ⅠⅠ: ${this.constructor.name}: ${this.message}`;
+  }
 }
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ configuration.
  */
-export class ConfigurationError extends MarketCommonsⅠⅠError { }
+export class ConfigurationError extends MarketCommonsⅠⅠError {}
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ parsing.
  */
-export class ParseError extends MarketCommonsⅠⅠError { }
+export class ParseError extends MarketCommonsⅠⅠError {}
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ namespace processing.
  */
-export class NamespaceError extends MarketCommonsⅠⅠError { }
+export class NamespaceError extends MarketCommonsⅠⅠError {}
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ sigil resolution.
  */
 export class SigilResolutionError extends MarketCommonsⅠⅠError {
-
-	/**
-	 *  Create a `SigilResolutionError` at the provided `line` and
-	 *    with the provided `nodeType` and `path`.
-	 *
-	 *  @argument {string} path
-	 *  @argument {{line:number}} options
-	 */
-	constructor ( path, options, ...additionalArguments ) {
-		const nodeType = options?.nodeType ?? null
-		super (
-			`Unable to resolve ${ nodeType.description } sigil path "${ path }"`,
-			options,
-			...additionalArguments
-		)
-		this.nodeType = nodeType
-		this.path = String(path)
-	}
-
+  /**
+   *  Create a `SigilResolutionError` at the provided `line` and
+   *    with the provided `nodeType` and `path`.
+   *
+   *  @argument {string} path
+   *  @argument {{line?:number,nodeType:Symbol}} options
+   *  @argument {...any} additionalArguments
+   */
+  constructor(path, options, ...additionalArguments) {
+    const nodeType = options.nodeType;
+    super(
+      `Unable to resolve ${nodeType.description} sigil path "${path}"`,
+      options,
+      ...additionalArguments,
+    );
+    this.nodeType = nodeType;
+    this.path = String(path);
+  }
 }

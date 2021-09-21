@@ -3,32 +3,32 @@
 //
 //  Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
-
-/**
- *  Market Commons ⅠⅠ syntax regular expressions.
- *
- *  This module contains a number of regular expressions important for
- *    Market Commons ⅠⅠ processing.
- *  Internally (within this file), they are defined as strings (using
- *    `String.raw`) such that they can be easily composed.
- *  They are exported (with the same names) as `RegExp`s with the
- *    `"u"` flag set.
- *
- *  Although you *can* import and use these regular expressions
- *    directly, they are typically the most useful when applied in a
- *    “sticky” manner (via the `y` flag).
- *  You can achieve this using the following code:
- *  
- *      //  Let `$` be a regular expression imported from this file.
- *      new RegExp ($.source, "uy")
- *
- *  Sticky regular expressions generally should *not* be shared across
- *    contexts, which is why they are not exported here.
- *
- *  @module MarketCommons2/syntax
- */
+//  This Source Code Form is subject to the terms of the Mozilla
+//    Public License, v. 2.0.
+//  If a copy of the MPL was not distributed with this file, You can
+//    obtain one at <https://mozilla.org/MPL/2.0/>.
+//
+//  ___________________________________________________________________
+//
+//  This module contains a number of regular expressions important for
+//    Market Commons ⅠⅠ processing.
+//  Internally (within this file), they are defined as strings (using
+//    `String.raw`) such that they can be easily composed.
+//  They are exported (with the same names) as `RegExp`s with the
+//    `"u"` flag set.
+//
+//  Although you *can* import and use these regular expressions
+//    directly, they are typically the most useful when applied in a
+//    “sticky” manner (via the `y` flag).
+//  You can achieve this using the following code:
+//
+//  ```js
+//  //  Let `$` be a regular expression imported from this file.
+//  new RegExp ($.source, "uy")
+//  ```
+//
+//  Sticky regular expressions generally should *not* be shared across
+//    contexts, which is why they are not exported here.
 
 //deno-lint-ignore-file camelcase
 
@@ -40,18 +40,17 @@
  *  This keeps the RegExp parser from needlessly capturing groups, and
  *    can be used to avoid duplicate capture group names.
  *
- *  @argument {string} stringRegExp
+ *  @argument {string|RegExp} stringRegExp
  *  @returns {string}
  */
-function uncaptureNamedGroups ( stringRegExp ) {
-	//  This function assumes that `(?<…>` begins a named group.
-	//  This isn’t true for all regular expressions (do *not* export
-	//    this function for general use), but it is for all those
-	//    defined in this file.
-	return (
-		stringRegExp instanceof RegExp ? stringRegExp.source
-			: String(stringRegExp)
-	).replace(/\(\?<[^>]*>/gu, "(?:")
+function uncaptureNamedGroups(stringRegExp) {
+  //  This function assumes that `(?<…>` begins a named group.
+  //  This isn’t true for all regular expressions (do *not* export
+  //    this function for general use), but it is for all those
+  //    defined in this file.
+  return (stringRegExp instanceof RegExp
+    ? stringRegExp.source
+    : String(stringRegExp)).replace(/\(\?<[^>]*>/gu, "(?:");
 }
 
 /*
@@ -59,8 +58,8 @@ The following are regular expressions defined by the X·M·L 1·1
   specification.
 */
 
-const Char =
-	String.raw `[\u{1}-\u{D7FF}\u{E000}-\u{FFFD}\u{10000}-\u{10FFFF}]`
+const Char = String.raw
+  `[\u{1}-\u{D7FF}\u{E000}-\u{FFFD}\u{10000}-\u{10FFFF}]`;
 /**
  *  Any Unicode character, excluding U+0000, U+FFFE, and U+FFFF.
  *
@@ -68,27 +67,27 @@ const Char =
  *                               | [#xE000-#xFFFD]
  *                               | [#x10000-#x10FFFF]
  */
-const Char_RegExp = new RegExp (Char, "u")
-export { Char_RegExp as Char }
+const Char_RegExp = new RegExp(Char, "u");
+export { Char_RegExp as Char };
 
-const RestrictedChar =
-	String.raw `[\u{1}-\u{8}\u{B}-\u{C}\u{E}-\u{1F}\u{7F}-\u{84}\u{86}-\u{9F}]`
+const RestrictedChar = String.raw
+  `[\u{1}-\u{8}\u{B}-\u{C}\u{E}-\u{1F}\u{7F}-\u{84}\u{86}-\u{9F}]`;
 /**
  *      [2a]  RestrictedChar ::= [#x1-#x8] | [#xB-#xC] | [#xE-#x1F]
  *                               | [#x7F-#x84] | [#x86-#x9F]
  */
-const RestrictedChar_RegExp = new RegExp (RestrictedChar, "u")
-export { RestrictedChar_RegExp as RestrictedChar }
+const RestrictedChar_RegExp = new RegExp(RestrictedChar, "u");
+export { RestrictedChar_RegExp as RestrictedChar };
 
-const S = String.raw `(?:[\u{20}\u{9}\u{D}\u{A}]+)`
+const S = String.raw`(?:[\u{20}\u{9}\u{D}\u{A}]+)`;
 /**
  *      [3]   S              ::= (#x20 | #x9 | #xD | #xA)+
  */
-const S_RegExp = new RegExp (S, "u")
-export { S_RegExp as S }
+const S_RegExp = new RegExp(S, "u");
+export { S_RegExp as S };
 
-const NameStartChar =
-	String.raw `[:A-Z_a-z\u{C0}-\u{D6}\u{D8}-\u{F6}\u{F8}-\u{2FF}\u{370}-\u{37D}\u{37F}-\u{1FFF}\u{200C}-\u{200D}\u{2070}-\u{218F}\u{2C00}-\u{2FEF}\u{3001}-\u{D7FF}\u{F900}-\u{FDCF}\u{FDF0}-\u{FFFD}\u{10000}-\u{EFFFF}]`
+const NameStartChar = String.raw
+  `[:A-Z_a-z\u{C0}-\u{D6}\u{D8}-\u{F6}\u{F8}-\u{2FF}\u{370}-\u{37D}\u{37F}-\u{1FFF}\u{200C}-\u{200D}\u{2070}-\u{218F}\u{2C00}-\u{2FEF}\u{3001}-\u{D7FF}\u{F900}-\u{FDCF}\u{FDF0}-\u{FFFD}\u{10000}-\u{EFFFF}]`;
 /**
  *      [4]   NameStartChar  ::= ":" | [A-Z] | "_" | [a-z]
  *                               | [#xC0-#xD6] | [#xD8-#xF6]
@@ -98,209 +97,205 @@ const NameStartChar =
  *                               | [#x3001-#xD7FF] | [#xF900-#xFDCF]
  *                               | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
  */
-const NameStartChar_RegExp = new RegExp (NameStartChar, "u")
-export { NameStartChar_RegExp as NameStartChar }
+const NameStartChar_RegExp = new RegExp(NameStartChar, "u");
+export { NameStartChar_RegExp as NameStartChar };
 
-const NameChar =
-	String.raw `(?:${ NameStartChar }|[-.0-9\u{B7}\u{0300}-\u{036F}\u{203F}-\u{2040}])`
+const NameChar = String.raw
+  `(?:${NameStartChar}|[-.0-9\u{B7}\u{0300}-\u{036F}\u{203F}-\u{2040}])`;
 /**
  *      [4a]  NameChar       ::= NameStartChar
  *                               | "-" | "." | [0-9] | #xB7
  *                               | [#x0300-#x036F] | [#x203F-#x2040]
  */
-const NameChar_RegExp = new RegExp (NameChar, "u")
-export { NameChar_RegExp as NameChar }
+const NameChar_RegExp = new RegExp(NameChar, "u");
+export { NameChar_RegExp as NameChar };
 
-const Name = String.raw `(?:${ NameStartChar }${ NameChar }*)`
+const Name = String.raw`(?:${NameStartChar}${NameChar}*)`;
 /**
  *      [5]   Name           ::= NameStartChar (NameChar)*
  */
-const Name_RegExp = new RegExp (Name, "u")
-export { Name_RegExp as Name }
+const Name_RegExp = new RegExp(Name, "u");
+export { Name_RegExp as Name };
 
-const CharRef = String.raw `(?:&#[0-9]+;|&#x[0-9a-fA-F]+;)`
+const CharRef = String.raw`(?:&#[0-9]+;|&#x[0-9a-fA-F]+;)`;
 /**
  *      [66]  CharRef        ::= '&#' [0-9]+ ';'
  *                               | '&#x' [0-9a-fA-F]+ ';'
- *
  *
  *  ##  Welformedness constraints  ##
  *
  *   +  Characters referred to using character references must match
  *        the production for `Char`.
  */
-const CharRef_RegExp = new RegExp (CharRef, "u")
-export { CharRef_RegExp as CharRef }
+const CharRef_RegExp = new RegExp(CharRef, "u");
+export { CharRef_RegExp as CharRef };
 
-const EntityRef = String.raw `(?:&${ Name };)`
+const EntityRef = String.raw`(?:&${Name};)`;
 /**
  *      [68]  EntityRef      ::= '&' Name ';'
  */
-const EntityRef_RegExp = new RegExp (EntityRef, "u")
-export { EntityRef_RegExp as EntityRef }
+const EntityRef_RegExp = new RegExp(EntityRef, "u");
+export { EntityRef_RegExp as EntityRef };
 
-const Reference = String.raw `(?:${ EntityRef }|${ CharRef })`
+const Reference = String.raw`(?:${EntityRef}|${CharRef})`;
 /**
  *      [67]  Reference      ::= EntityRef | CharRef
  */
-const Reference_RegExp = new RegExp (Reference, "u")
-export { Reference_RegExp as Reference }
+const Reference_RegExp = new RegExp(Reference, "u");
+export { Reference_RegExp as Reference };
 
-const AttValue =
-	String.raw `(?:"(?:(?=${ Char })[^"<&]|${ Reference })*"|'(?:(?=${ Char })[^'<&]|${ Reference })*')`
+const AttValue = String.raw
+  `(?:"(?:(?=${Char})[^"<&]|${Reference})*"|'(?:(?=${Char})[^'<&]|${Reference})*')`;
 /**
  *      [10]  AttValue       ::= '"' ([^<&"] | Reference)* '"'
  *                               |  "'" ([^<&'] | Reference)* "'"
  */
-const AttValue_RegExp = new RegExp (AttValue, "u")
-export { AttValue_RegExp as AttValue }
+const AttValue_RegExp = new RegExp(AttValue, "u");
+export { AttValue_RegExp as AttValue };
 
-const SystemLiteral =
-	String.raw `(?:"(?:(?=${ Char })[^"])*"|'(?:(?=${ Char })[^'])*')`
+const SystemLiteral = String.raw
+  `(?:"(?:(?=${Char})[^"])*"|'(?:(?=${Char})[^'])*')`;
 /**
  *      [11]  SystemLiteral  ::= ('"' [^"]* '"') | ("'" [^']* "'")
  */
-const SystemLiteral_RegExp = new RegExp (SystemLiteral, "u")
-export { SystemLiteral_RegExp as SystemLiteral }
+const SystemLiteral_RegExp = new RegExp(SystemLiteral, "u");
+export { SystemLiteral_RegExp as SystemLiteral };
 
-const Comment =
-	String.raw `(?:<!--(?:(?!-)${ Char }|-(?!-)${ Char })*-->)`
+const Comment = String.raw`(?:<!--(?:(?!-)${Char}|-(?!-)${Char})*-->)`;
 /**
  *      [15]  Comment        ::= '<!--' (
  *                                 (Char - '-') | ('-' (Char - '-'))
  *                               )* '-->'
  */
-const Comment_RegExp = new RegExp (Comment, "u")
-export { Comment_RegExp as Comment }
+const Comment_RegExp = new RegExp(Comment, "u");
+export { Comment_RegExp as Comment };
 
-const CData =
-	String.raw `(?:(?:(?!\])${ Char }|\](?!\])${ Char }|\]\](?!>)${ Char }|\]\]?$)*)`
+const CData = String.raw
+  `(?:(?:(?!\])${Char}|\](?!\])${Char}|\]\](?!>)${Char}|\]\]?$)*)`;
 /**
  *      [20]  CData          ::= (Char* - (Char* ']]>' Char*))
  */
-const CData_RegExp = new RegExp (CData, "u")
-export { CData_RegExp as CData }
+const CData_RegExp = new RegExp(CData, "u");
+export { CData_RegExp as CData };
 
-const CDEnd = String.raw `(?:\]\]>)`
+const CDEnd = String.raw`(?:\]\]>)`;
 /**
  *      [21]  CDEnd          ::= ']]>'
  */
-const CDEnd_RegExp = new RegExp (CDEnd, "u")
-export { CDEnd_RegExp as CDEnd }
+const CDEnd_RegExp = new RegExp(CDEnd, "u");
+export { CDEnd_RegExp as CDEnd };
 
-const Eq = String.raw `(?:${ S }?=${ S }?)`
+const Eq = String.raw`(?:${S}?=${S}?)`;
 /**
  *      [25]  Eq             ::= S? '=' S?
  */
-const Eq_RegExp = new RegExp (Eq, "u")
-export { Eq_RegExp as Eq }
+const Eq_RegExp = new RegExp(Eq, "u");
+export { Eq_RegExp as Eq };
 
 /*
 The following are regular expressions defined by the Namespaces in
   X·M·L 1.1 specification.
 */
 
-const DefaultAttName = String.raw `(?:xmlns)`
+const DefaultAttName = String.raw`(?:xmlns)`;
 /**
  *      [3]   DefaultAttName  ::= 'xmlns'
  */
-const DefaultAttName_RegExp = new RegExp (DefaultAttName, "u")
-export { DefaultAttName_RegExp as DefaultAttName }
+const DefaultAttName_RegExp = new RegExp(DefaultAttName, "u");
+export { DefaultAttName_RegExp as DefaultAttName };
 
-const NCNameChar = String.raw `(?:(?!:)${ NameChar })`
+const NCNameChar = String.raw`(?:(?!:)${NameChar})`;
 /**
  *      [5]   NCNameChar      ::= NameChar - ':'
  */
-const NCNameChar_RegExp = new RegExp (NCNameChar, "u")
-export { NCNameChar_RegExp as NCNameChar }
+const NCNameChar_RegExp = new RegExp(NCNameChar, "u");
+export { NCNameChar_RegExp as NCNameChar };
 
-const NCNameStartChar = String.raw `(?:(?!:)${ NameStartChar })`
+const NCNameStartChar = String.raw`(?:(?!:)${NameStartChar})`;
 /**
  *      [6]   NCNameStartChar ::= NameStartChar - ':'
  */
-const NCNameStartChar_RegExp = new RegExp (NCNameStartChar, "u")
-export { NCNameStartChar_RegExp as NCNameStartChar }
+const NCNameStartChar_RegExp = new RegExp(NCNameStartChar, "u");
+export { NCNameStartChar_RegExp as NCNameStartChar };
 
-const NCName = String.raw `(?:${ NCNameStartChar }${ NCNameChar }*)`
+const NCName = String.raw`(?:${NCNameStartChar}${NCNameChar}*)`;
 /**
  *      [4]   NCName          ::= NCNameStartChar NCNameChar*
  */
-const NCName_RegExp = new RegExp (NCName, "u")
-export { NCName_RegExp as NCName }
+const NCName_RegExp = new RegExp(NCName, "u");
+export { NCName_RegExp as NCName };
 
-const PrefixedAttName = String.raw `(?:xmlns:${ NCName })`
+const PrefixedAttName = String.raw`(?:xmlns:${NCName})`;
 /**
  *      [2]   PrefixedAttName ::= 'xmlns:' NCName
  */
-const PrefixedAttName_RegExp = new RegExp (PrefixedAttName, "u")
-export { PrefixedAttName_RegExp as PrefixedAttName }
+const PrefixedAttName_RegExp = new RegExp(PrefixedAttName, "u");
+export { PrefixedAttName_RegExp as PrefixedAttName };
 
-const NSAttName =
-	String.raw `(?:${ PrefixedAttName }|${ DefaultAttName })`
+const NSAttName = String.raw`(?:${PrefixedAttName}|${DefaultAttName})`;
 /**
  *      [1]   NSAttName       ::= PrefixedAttName | DefaultAttName
  */
-const NSAttName_RegExp = new RegExp (NSAttName, "u")
-export { NSAttName_RegExp as NSAttName }
+const NSAttName_RegExp = new RegExp(NSAttName, "u");
+export { NSAttName_RegExp as NSAttName };
 
-const Prefix = String.raw `${ NCName }`
+const Prefix = String.raw`${NCName}`;
 /**
  *      [10]  Prefix          ::= NCName
  */
-const Prefix_RegExp = new RegExp (Prefix, "u")
-export { Prefix_RegExp as Prefix }
+const Prefix_RegExp = new RegExp(Prefix, "u");
+export { Prefix_RegExp as Prefix };
 
-const LocalPart = String.raw `${ NCName }`
+const LocalPart = String.raw`${NCName}`;
 /**
  *      [11]  LocalPart       ::= NCName
  */
-const LocalPart_RegExp = new RegExp (LocalPart, "u")
-export { LocalPart_RegExp as LocalPart }
+const LocalPart_RegExp = new RegExp(LocalPart, "u");
+export { LocalPart_RegExp as LocalPart };
 
-const PrefixedName = String.raw `(?:${ Prefix }:${ LocalPart })`
+const PrefixedName = String.raw`(?:${Prefix}:${LocalPart})`;
 /**
  *      [8]   PrefixedName    ::= Prefix ':' LocalPart
  */
-const PrefixedName_RegExp = new RegExp (PrefixedName, "u")
-export { PrefixedName_RegExp as PrefixedName }
+const PrefixedName_RegExp = new RegExp(PrefixedName, "u");
+export { PrefixedName_RegExp as PrefixedName };
 
-const UnprefixedName = String.raw `${ LocalPart }`
+const UnprefixedName = String.raw`${LocalPart}`;
 /**
  *      [9]   UnprefixedName  ::= LocalPart
  */
-const UnprefixedName_RegExp = new RegExp (UnprefixedName, "u")
-export { UnprefixedName_RegExp as UnprefixedName }
+const UnprefixedName_RegExp = new RegExp(UnprefixedName, "u");
+export { UnprefixedName_RegExp as UnprefixedName };
 
-const QName = String.raw `(?:${ PrefixedName }|${ UnprefixedName })`
+const QName = String.raw`(?:${PrefixedName}|${UnprefixedName})`;
 /**
  *      [7]   QName           ::= PrefixedName | UnprefixedName
  */
-const QName_RegExp = new RegExp (QName, "u")
-export { QName_RegExp as QName }
+const QName_RegExp = new RegExp(QName, "u");
+export { QName_RegExp as QName };
 
-const Attribute =
-	String.raw `(?:${ NSAttName }${ Eq }${ AttValue }|${ QName }${ Eq }${ AttValue })`
+const Attribute = String.raw
+  `(?:${NSAttName}${Eq}${AttValue}|${QName}${Eq}${AttValue})`;
 /**
  *      [15]  Attribute       ::= NSAttName Eq AttValue
  *                                | QName Eq AttValue
  */
-const Attribute_RegExp = new RegExp (Attribute, "u")
-export { Attribute_RegExp as Attribute }
+const Attribute_RegExp = new RegExp(Attribute, "u");
+export { Attribute_RegExp as Attribute };
 
 /*
 The following regular expressions help to define the Market Commons ⅠⅠ
   syntax.
 */
 
-const AttributesD·J =
-	String.raw `(?:\{(?:${ S }?${ Attribute }(?:${ S }${ Attribute })*)?${ S }?\})`
+const AttributesD·J = String.raw
+  `(?:\{(?:${S}?${Attribute}(?:${S}${Attribute})*)?${S}?\})`;
 /**
  *  Attributes declaration.
  *
  *      [🆐A] AttributesD·J  ::= '{' (
  *                                 S? Attribute (S Attribute)*
  *                               )? S? '}'
- *
  *
  *  ##  Welformedness constraints  ##
  *
@@ -310,26 +305,25 @@ const AttributesD·J =
  *   +  [🆐A‐2] The attribute name *must not* match the `NSAttName`
  *        production.
  */
-const AttributesD·J_RegExp = new RegExp (AttributesD·J, "u")
-export { AttributesD·J_RegExp as AttributesD·J }
+const AttributesD·J_RegExp = new RegExp(AttributesD·J, "u");
+export { AttributesD·J_RegExp as AttributesD·J };
 
-const SigilD·J = String.raw `(?:${ CharRef }+)`
+const SigilD·J = String.raw`(?:${CharRef}+)`;
 /**
  *  Sigil declaration, provided as a sequence of character references.
  *
  *      [🆐B] SigilD·J       ::= CharRef+
- *
  *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐B‐1] Each character referenced by CharRef *must not* match
  *        `S` or `'|'`.
  */
-const SigilD·J_RegExp = new RegExp (SigilD·J, "u")
-export { SigilD·J_RegExp as SigilD·J }
+const SigilD·J_RegExp = new RegExp(SigilD·J, "u");
+export { SigilD·J_RegExp as SigilD·J };
 
-const SigilD·JPath =
-	String.raw `(?:${ SigilD·J }(?:${ S }?//?${ S }?${ SigilD·J })*)`
+const SigilD·JPath = String.raw
+  `(?:${SigilD·J}(?:${S}?//?${S}?${SigilD·J})*)`;
 /**
  *  Sigil path.
  *
@@ -338,25 +332,23 @@ const SigilD·JPath =
  *
  *      [🆐C] SigilD·JPath   ::= SigilD·J (S? '/' '/'? S? SigilD·J)*
  */
-const SigilD·JPath_RegExp = new RegExp (SigilD·JPath, "u")
-export { SigilD·JPath_RegExp as SigilD·JPath }
+const SigilD·JPath_RegExp = new RegExp(SigilD·JPath, "u");
+export { SigilD·JPath_RegExp as SigilD·JPath };
 
-const NamespaceD·J =
-	String.raw `(?:<!NAMESPACE(?:${ S }(?<namespacePrefix>${ Prefix }):)?${ S }(?<namespaceLiteral>${ SystemLiteral })${ S }?>)`
+const NamespaceD·J = String.raw
+  `(?:<!NAMESPACE(?:${S}(?<namespacePrefix>${Prefix}):)?${S}(?<namespaceLiteral>${SystemLiteral})${S}?>)`;
 /**
  *  Namespace declaration.
  *
  *      [🆐K] NamespaceD·J   ::= '<!NAMESPACE' (S Prefix)?
  *                               S SystemLiteral S? '>'
  *
- *
  *  ##  Capture groups  ##
  *
- *  01. `namespacePrefix`: The namespace prefix.
+ *  01. `namespacePrefix` (optional): The namespace prefix.
  *
  *  02. `namespaceLiteral`: The `SystemLiteral` of the namespace
  *        (including quotes).
- *
  *
  *  ##  Welformedness constraints  ##
  *
@@ -371,11 +363,11 @@ const NamespaceD·J =
  *         `"http://www.w3.org/XML/1998/namespace"` or
  *         `"http://www.w3.org/2000/xmlns/"` (any quotes).
  */
-const NamespaceD·J_RegExp = new RegExp (NamespaceD·J, "u")
-export { NamespaceD·J_RegExp as NamespaceD·J }
+const NamespaceD·J_RegExp = new RegExp(NamespaceD·J, "u");
+export { NamespaceD·J_RegExp as NamespaceD·J };
 
-const DocumentD·J =
-	String.raw `(?:<!DOCUMENT${ S }\[\[(?<documentTemplate>${ CData })${ CDEnd })`
+const DocumentD·J = String.raw
+  `(?:<!DOCUMENT${S}\[\[(?<documentTemplate>${CData})${CDEnd})`;
 /**
  *  Document (template) declaration.
  *
@@ -386,11 +378,9 @@ const DocumentD·J =
  *
  *      [🆐D] DocumentD·J    ::= '<!DOCUMENT' S '[[' CData CDEnd
  *
- *
  *  ##  Capture groups  ##
  *
  *  01. `documentTemplate`: Template contents.
- *
  *
  *  ##  Welformedness constraints  ##
  *
@@ -409,11 +399,11 @@ const DocumentD·J =
  *   +  [🆐D‐3] Template contents *must not* contain any other elements
  *        in the namespace `tag:go.KIBI.family,2021:market`.
  */
-const DocumentD·J_RegExp = new RegExp (DocumentD·J, "u")
-export { DocumentD·J_RegExp as DocumentD·J }
+const DocumentD·J_RegExp = new RegExp(DocumentD·J, "u");
+export { DocumentD·J_RegExp as DocumentD·J };
 
-const SectionD·J =
-	String.raw `(?:<!SECTION${ S }(?<sectionPath>${ SigilD·JPath })${ S }(?<sectionName>${ Name })(?:${ S }(?<sectionAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<sectionCountTo>${ Name }(?:${ S }${ Name })*))?(?:${ S }\|${ S }(?<sectionHeadingName>${ Name })(?:${ S }(?<sectionHeadingAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<sectionHeadingCountTo>${ Name }(?:${ S }${ Name })*))?|${ S }TEXTTO${ S }(?<sectionTextTo>${ Name }(?:${ S }${ Name })*))?${ S }?>)`
+const SectionD·J = String.raw
+  `(?:<!SECTION${S}(?<sectionPath>${SigilD·JPath})${S}(?<sectionName>${Name})(?:${S}(?<sectionAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionCountTo>${Name}(?:${S}${Name})*))?(?:${S}\|${S}(?<sectionHeadingName>${Name})(?:${S}(?<sectionHeadingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionHeadingCountTo>${Name}(?:${S}${Name})*))?|${S}TEXTTO${S}(?<sectionTextTo>${Name}(?:${S}${Name})*))?${S}?>)`;
 /**
  *  Section declaration.
  *
@@ -428,7 +418,6 @@ const SectionD·J =
  *                                   S 'COUNTTO' (S QName)+
  *                                 )? | S 'TEXTTO' (S QName)+
  *                               ) S? '>'
- *
  *
  *  ##  Capture groups  ##
  *
@@ -452,17 +441,16 @@ const SectionD·J =
  *  08. `sectionTextTo` (optional): One or more attribute names to
  *        send (heading) text to, if no heading element is supported.
  *
- *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐E‐2] Section and heading names and attributes *must not*
  *        match the `NSAttName` production.
  */
-const SectionD·J_RegExp = new RegExp (SectionD·J, "u")
-export { SectionD·J_RegExp as SectionD·J }
+const SectionD·J_RegExp = new RegExp(SectionD·J, "u");
+export { SectionD·J_RegExp as SectionD·J };
 
-const HeadingD·J =
-	String.raw `(?:<!HEADING(?:${ S }(?<headingSectionPath>${ SigilD·JPath })(?:${ S }(?<headingSectionStrict>>))?)?${ S }(?<headingSigil>${ SigilD·J })${ S }(?<headingName>${ QName })(?:${ S }(?<headingAttributes>${ AttributesD·J }))?(?:${ S }COUNTTO${ S }(?<headingCountTo>${ QName }(?:${ S }${ QName })*))?${ S }?>)`
+const HeadingD·J = String.raw
+  `(?:<!HEADING(?:${S}(?<headingSectionPath>${SigilD·JPath})(?:${S}(?<headingSectionStrict>>))?)?${S}(?<headingSigil>${SigilD·J})${S}(?<headingName>${QName})(?:${S}(?<headingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<headingCountTo>${QName}(?:${S}${QName})*))?${S}?>)`;
 /**
  *  Heading declaration.
  *
@@ -472,7 +460,6 @@ const HeadingD·J =
  *                               S QName (S AttributesD·J)? (
  *                                 S 'COUNTTO' (S QName)+
  *                               )? S? '>'
- *
  *
  *  ##  Capture groups  ##
  *
@@ -490,17 +477,16 @@ const HeadingD·J =
  *  06. `headingCountTo` (optional): One or more attribute names to
  *        send the heading level/count to.
  *
- *
  *  ##  Welformedness constraints  ##
  *
- *   +  [🆐F‐2] Heading names and attributes *must not* match the 
+ *   +  [🆐F‐2] Heading names and attributes *must not* match the
  *        `NSAttName` production.
  */
-const HeadingD·J_RegExp = new RegExp (HeadingD·J, "u")
-export { HeadingD·J_RegExp as HeadingD·J }
+const HeadingD·J_RegExp = new RegExp(HeadingD·J, "u");
+export { HeadingD·J_RegExp as HeadingD·J };
 
-const BlockD·J =
-	String.raw `(?:<!BLOCK(?:${ S }(?<blockSectionPath>${ SigilD·JPath })(?:${ S }(?<blockSectionStrict>>))?)?${ S }(?:(?<blockPath>${ SigilD·JPath })|DEFAULT${ S }(?<blockSigil>${ SigilD·J }))${ S }(?:(?<blockName>${ QName })(?:${ S }(?<blockAttributes>${ AttributesD·J }))?(?:${ S }(?<blockFinal>FINAL))?(?:${ S }INLIST${ S }(?<blockListName>${ QName })(?:${ S }(?<blockListAttributes>${ AttributesD·J }))?)?|#${ S }(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
+const BlockD·J = String.raw
+  `(?:<!BLOCK(?:${S}(?<blockSectionPath>${SigilD·JPath})(?:${S}(?<blockSectionStrict>>))?)?${S}(?:(?<blockPath>${SigilD·JPath})|DEFAULT${S}(?<blockSigil>${SigilD·J}))${S}(?:(?<blockName>${QName})(?:${S}(?<blockAttributes>${AttributesD·J}))?(?:${S}(?<blockFinal>FINAL))?(?:${S}INLIST${S}(?<blockListName>${QName})(?:${S}(?<blockListAttributes>${AttributesD·J}))?)?|#${S}(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Block declaration.
  *
@@ -520,7 +506,6 @@ const BlockD·J =
  *                                   | 'LITERAL'
  *                                 )
  *                               ) S? '>'
- *
  *
  *  ##  Capture groups  ##
  *
@@ -551,17 +536,16 @@ const BlockD·J =
  *        comment block, or `LITERAL` if this sigil defines a literal
  *        block.
  *
- *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐G‐3] Block and list names and attributes *must not* match
  *        the `NSAttName` production.
  */
-const BlockD·J_RegExp = new RegExp (BlockD·J, "u")
-export { BlockD·J_RegExp as BlockD·J }
+const BlockD·J_RegExp = new RegExp(BlockD·J, "u");
+export { BlockD·J_RegExp as BlockD·J };
 
-const InlineD·J =
-	String.raw `(?:<!INLINE(?:${ S }(?<inlineSectionOrBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineSectionOrBlockStrict>>))?(?:${ S }(?:(?<inlineBlockPath>${ SigilD·JPath })(?:${ S }(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${ S }(?<inlinePath>${ SigilD·JPath })${S}(?:(?<inlineName>${ QName })(?:${ S }(?<inlineAttributes>${ AttributesD·J }))?(?:${ S }(?<inlineFinal>FINAL)|${ S }TEXTFROM${ S }(?<inlineTextFrom>${ QName })|${ S }TEXTTO${ S }(?<inlineTextTo>${ QName }(?:${ S }${ QName })*))?|#${ S }(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${ S }?>)`
+const InlineD·J = String.raw
+  `(?:<!INLINE(?:${S}(?<inlineSectionOrBlockPath>${SigilD·JPath})(?:${S}(?<inlineSectionOrBlockStrict>>))?(?:${S}(?:(?<inlineBlockPath>${SigilD·JPath})(?:${S}(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${S}(?<inlinePath>${SigilD·JPath})${S}(?:(?<inlineName>${QName})(?:${S}(?<inlineAttributes>${AttributesD·J}))?(?:${S}(?<inlineFinal>FINAL)|${S}TEXTFROM${S}(?<inlineTextFrom>${QName})|${S}TEXTTO${S}(?<inlineTextTo>${QName}(?:${S}${QName})*))?|#${S}(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Inline declaration.
  *
@@ -581,7 +565,6 @@ const InlineD·J =
  *                                   | 'LITERAL'
  *                                 )
  *                               ) S? '>'
- *
  *
  *  ##  Capture groups  ##
  *
@@ -621,17 +604,16 @@ const InlineD·J =
  *        comment inline, or `LITERAL` if this sigil defines a literal
  *        inline.
  *
- *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐H‐4] Inline names and attributes *must not* match the
  *        `NSAttName` production
  */
-const InlineD·J_RegExp = new RegExp (InlineD·J, "u")
-export { InlineD·J_RegExp as InlineD·J }
+const InlineD·J_RegExp = new RegExp(InlineD·J, "u");
+export { InlineD·J_RegExp as InlineD·J };
 
-const AttributeD·J =
-	String.raw `(?:<!ATTRIBUTE(?:${ S }(?<attributeSectionOrBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${ S }(?:(?<attributeBlockOrInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${ S }(?:(?<attributeInlinePath>${ SigilD·JPath })(?:${ S }(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${ S }(?<attributeSigil>${ SigilD·J })${ S }(?<attributeNames>${ QName }(?:${ S }${ QName })*)${ S }?>)`
+const AttributeD·J = String.raw
+  `(?:<!ATTRIBUTE(?:${S}(?<attributeSectionOrBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${S}(?:(?<attributeBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${S}(?:(?<attributeInlinePath>${SigilD·JPath})(?:${S}(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${S}(?<attributeSigil>${SigilD·J})${S}(?<attributeNames>${QName}(?:${S}${QName})*)${S}?>)`;
 /**
  *  Attribute declaration.
  *
@@ -642,7 +624,6 @@ const AttributeD·J =
  *                                   )?
  *                                 )?
  *                               )? S SigilD·J (S QName)+ S? '>'
- *
  *
  *  ##  Capture groups  ##
  *
@@ -675,17 +656,24 @@ const AttributeD·J =
  *
  *  10. `attributeNames`: Attribute X·M·L element name(s).
  *
- *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐I‐4] Attribute names *must not* match the `NSAttName`
  *        production.
  */
-const AttributeD·J_RegExp = new RegExp (AttributeD·J, "u")
-export { AttributeD·J_RegExp as AttributeD·J }
+const AttributeD·J_RegExp = new RegExp(AttributeD·J, "u");
+export { AttributeD·J_RegExp as AttributeD·J };
 
-const D·J =
-	String.raw `(?:<\?market-commons${ S }2\.0(?:${ S }(?<externalName>${ SystemLiteral })|(?:${ S }(?<externalSubset>${ SystemLiteral }))?${ S }\[(?<internalDeclarations>(?:${ S }|${ uncaptureNamedGroups(NamespaceD·J) }|${ uncaptureNamedGroups(DocumentD·J) }|${ uncaptureNamedGroups(SectionD·J) }|${ uncaptureNamedGroups(HeadingD·J) }|${ uncaptureNamedGroups(BlockD·J) }|${ uncaptureNamedGroups(InlineD·J) }|${ uncaptureNamedGroups(AttributeD·J) }|${ Comment })*)\])${ S }?\?>\u{A})`
+const D·J = String.raw
+  `(?:<\?market-commons${S}2\.0(?:${S}(?<externalName>${SystemLiteral})|(?:${S}(?<externalSubset>${SystemLiteral}))?${S}\[(?<internalDeclarations>(?:${S}|${
+    uncaptureNamedGroups(NamespaceD·J)
+  }|${uncaptureNamedGroups(DocumentD·J)}|${
+    uncaptureNamedGroups(SectionD·J)
+  }|${uncaptureNamedGroups(HeadingD·J)}|${
+    uncaptureNamedGroups(BlockD·J)
+  }|${uncaptureNamedGroups(InlineD·J)}|${
+    uncaptureNamedGroups(AttributeD·J)
+  }|${Comment})*)\])${S}?\?>\u{A})`;
 /**
  *  Declaration of Jargon.
  *
@@ -720,7 +708,6 @@ const D·J =
  *                                 )* ']'
  *                               ) S? '?>' #xA
  *
- *
  *  ##  Capture groups  ##
  *
  *  01. `externalName` (optional):
@@ -733,7 +720,6 @@ const D·J =
  *
  *  03. `internalDeclarations` (optional): Internal declarations.
  *
- *
  *  ##  Welformedness constraints  ##
  *
  *   +  [🆐J‐1] The system identifier *must* be resolvable to a file
@@ -742,5 +728,5 @@ const D·J =
  *
  *   +  [🆐J‐2] System identifiers *must not* recurse when resolving.
  */
-const D·J_RegExp = new RegExp (D·J, "u")
-export { D·J_RegExp as D·J }
+const D·J_RegExp = new RegExp(D·J, "u");
+export { D·J_RegExp as D·J };

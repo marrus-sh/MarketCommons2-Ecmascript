@@ -7,13 +7,13 @@
 //  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
 import {
-	//deno-lint-ignore camelcase
-	deno_landXMarket,
-	marketNamespace,
-	x·h·t·m·lNamespace
-} from "./names.js"
+  //deno-lint-ignore camelcase
+  deno_landXMarket,
+  marketNamespace,
+  x·h·t·m·lNamespace,
+} from "./names.js";
 
-export default String.raw `<?market-commons 2.0 [
+export default String.raw`<?market-commons 2.0 [
 <!--
 @ Market Commons ⅠⅠ Default (H·T·M·L) Declaration of Jargon @
 
@@ -24,21 +24,21 @@ It can be manually specified with the following ~| SystemLiteral |~:
 -->
 
 <!-- Namespaces -->
-<!NAMESPACE "${ x·h·t·m·lNamespace }">
+<!NAMESPACE "${x·h·t·m·lNamespace}">
 
 <!-- Document Template -->
 <!DOCUMENT [[<!DOCTYPE html>
-<html xmlns="${ x·h·t·m·lNamespace }">
+<html xmlns="${x·h·t·m·lNamespace}">
 <head>
 	<meta charset="utf-8"/>
-	<meta name="generator" content="market-commons 2.0&#xA;${ deno_landXMarket }"/>
+	<meta name="generator" content="market-commons 2.0&#xA;${deno_landXMarket}"/>
 	<!-- BEGIN PREAMBLE -->
-<preamble xmlns="${ marketNamespace }"/>
+<preamble xmlns="${marketNamespace}"/>
 	<!-- END PREAMBLE -->
 </head>
 <body>
 	<!-- BEGIN CONTENT -->
-<content xmlns="${ marketNamespace }"/>
+<content xmlns="${marketNamespace}"/>
 	<!-- END CONTENT -->
 </body>
 </html>]]>
@@ -124,4 +124,4 @@ It can be manually specified with the following ~| SystemLiteral |~:
 <!-- \` --><!ATTRIBUTE &#x60; type             >
 <!-- ~  --><!ATTRIBUTE &#x7E; content          >
 ]?>
-`
+`;

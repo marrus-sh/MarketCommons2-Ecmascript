@@ -3,23 +3,29 @@
 //
 //  Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
+//  This Source Code Form is subject to the terms of the Mozilla
+//    Public License, v. 2.0.
+//  If a copy of the MPL was not distributed with this file, You can
+//    obtain one at <https://mozilla.org/MPL/2.0/>.
+//
+//  ___________________________________________________________________
+//
+//  This module contains default values used when configuring the
+//    Market Commons ⅠⅠ processor.
+
+import htmlD·J from "./html.marketdj.js";
+import { marketNamespace } from "./names.js";
 
 /**
- *  Default values used when configuring the Market Commons ⅠⅠ
- *    processor.
- *
- *  @module MarketCommons2/defaults
+ *  The default Declaration of Jargon if none is supplied.
  */
-
-import htmlD·J from "./html.marketdj.js"
-import { marketNamespace } from "./names.js"
+export const declarationOfJargon =
+  `<?market-commons 2.0 "${marketNamespace}/html"?>\n`;
 
 /**
  *  The default `Map` mapping system identifiers to Declarations of
  *    Jargon.
  */
-export const systemIdentifierMap = new Map ([
-	[ `${ marketNamespace }/html`, htmlD·J ],
-])
+export const systemIdentifierMap = new Map([
+  [`${marketNamespace}/html`, htmlD·J],
+]);

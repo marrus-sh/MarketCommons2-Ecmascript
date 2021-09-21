@@ -21,8 +21,8 @@
 
 import { x·h·t·m·lNamespace } from "../names.js";
 import {
-	DOMParser,
-	XMLSerializer,
+  DOMParser,
+  XMLSerializer,
 } from "https://esm.sh/@xmldom/xmldom@0.7.3";
 
 //@ts-ignore
@@ -31,8 +31,8 @@ window.DOMParser ??= DOMParser;
 window.XMLSerializer ??= XMLSerializer;
 //@ts-ignore
 window.document ??=
-	//  A blank X·H·T·M·L page.
-	(new DOMParser()).parseFromString(
-		`<html xmlns="${x·h·t·m·lNamespace}"><head/><body/></html>`,
-		"application/xhtml+xml",
-	);
+  //  A blank X·H·T·M·L page.
+  (new DOMParser()).parseFromString(
+    `<html xmlns="${x·h·t·m·lNamespace}"><head/><body/></html>`,
+    "application/xhtml+xml",
+  );
