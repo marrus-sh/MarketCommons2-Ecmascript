@@ -1,4 +1,4 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: html.marketdj.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: 🆐/html.marketdj.js
 //  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
@@ -13,7 +13,7 @@ import {
   deno_landXMarket,
   marketNamespace,
   x·h·t·m·lNamespace,
-} from "./names.js";
+} from "../names.js";
 
 export default String.raw`<?market-commons 2.0 [
 <!--

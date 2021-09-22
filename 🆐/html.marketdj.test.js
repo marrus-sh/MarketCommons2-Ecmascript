@@ -1,4 +1,4 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: html.marketdj.test.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: 🆐/html.marketdj.test.js
 //  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
@@ -11,8 +11,8 @@
 //@ts-nocheck
 //deno-lint-ignore-file ban-ts-comment
 
-import "./fauxbrowser/mod.js";
-import { process } from "./dj.js";
+import "../fauxbrowser/mod.js";
+import { process } from "../dj.js";
 import htmlD·J from "./html.marketdj.js";
 import {
   //deno-lint-ignore camelcase
@@ -20,8 +20,8 @@ import {
   x·h·t·m·lNamespace,
   x·m·lNamespace,
   x·m·l·n·sNamespace,
-} from "./names.js";
-import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
+} from "../names.js";
+import { CONTENT_MODEL, NODE_TYPE } from "../symbols.js";
 import {
   assert,
   assertEquals,

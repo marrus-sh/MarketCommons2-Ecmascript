@@ -13,7 +13,7 @@
 //  This module contains default values used when configuring the
 //    Market Commons ⅠⅠ processor.
 
-import htmlD·J from "./html.marketdj.js";
+import htmlD·J from "./🆐/html.marketdj.js";
 import { marketNamespace } from "./names.js";
 
 /**
