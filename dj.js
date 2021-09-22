@@ -22,7 +22,6 @@ import {
   ParseError,
   SigilResolutionError,
 } from "./errors.js";
-import /* for type definitions */ "./lines.js";
 import {
   marketNamespace,
   parsererrorNamespace,
@@ -231,7 +230,7 @@ export const Jargon = (() => {
      *    provided `path`.
      *
      *  @argument {string} path
-     *  @argument {import("./lines.js").Line} line
+     *  @argument {import("./text.js").Line} line
      *  @returns {Object}
      */
     makeChunk(path, line) {

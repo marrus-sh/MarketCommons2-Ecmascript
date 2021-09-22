@@ -82,3 +82,21 @@ export function trim(text) {
     text,
   )?.[1] ?? "";
 }
+
+/**
+ *  A `String` object with an attached `index`.
+ */
+export class Line extends String {
+  /**
+   *  Creates a `Line` with at provided `index` and which has a value
+   *    of the provided `contents`.
+   *
+   *  @argument {number} index
+   *  @argument {string} contents
+   */
+  constructor(index, contents) {
+    super(contents);
+    this.index = index >> 0;
+    Object.defineProperty(this, index, { writable: false });
+  }
+}
