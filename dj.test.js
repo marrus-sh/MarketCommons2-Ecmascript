@@ -1,4 +1,4 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: jargon.test.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: dj.test.js
 //  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
@@ -12,7 +12,7 @@
 //deno-lint-ignore-file ban-ts-comment
 
 import { SigilResolutionError } from "./errors.js";
-import Jargon from "./jargon.js";
+import { Jargon } from "./dj.js";
 import {
   assertEquals,
   assertThrows,
@@ -21,9 +21,7 @@ import {
 const myBadNodeType = Symbol("my bad node type");
 const myNodeType = Symbol("my node type");
 const myJargon = {
-  namespaces: new Map([
-    [null, null],
-  ]),
+  namespaces: new Map([["", ""]]),
   [myBadNodeType]: {},
   [myNodeType]: new Map([
     ["&#0;", "bad sigil"],
