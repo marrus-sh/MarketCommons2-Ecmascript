@@ -6,8 +6,7 @@
   },
   "fmt": {
     "options": {
-      "lineWidth": 71,
-      "proseWrap": "preserve"
+      "lineWidth": 71
     }
   }
 }
