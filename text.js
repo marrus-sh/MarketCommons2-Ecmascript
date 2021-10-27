@@ -14,7 +14,25 @@
 //    processing.
 
 import { ParseError } from "./errors.js";
-import { RestrictedChar, S } from "./syntax.js";
+import { NSAttName, QName, RestrictedChar, S } from "./syntax.js";
+
+/**
+ *  A `String` object with an attached `index`.
+ */
+export class Line extends String {
+  /**
+   *  Creates a `Line` with at provided `index` and which has a value
+   *    of the provided `contents`.
+   *
+   *  @argument {number} index
+   *  @argument {string} contents
+   */
+  constructor(index, contents) {
+    super(contents);
+    this.index = index >> 0;
+    Object.defineProperty(this, index, { writable: false });
+  }
+}
 
 /**
  *  Normalizes line endings in the provided `text` according to X·M·L
@@ -84,19 +102,26 @@ export function trim(text) {
 }
 
 /**
- *  A `String` object with an attached `index`.
+ *  Throws an error if the provided `qualifiedName` is not welformed;
+ *    otherwise, simply returns it.
+ *
+ *  @argument {string} qualifiedName
+ *  @argument {{index?:number,line?:number}} [options]
+ *  @returns {string}
  */
-export class Line extends String {
-  /**
-   *  Creates a `Line` with at provided `index` and which has a value
-   *    of the provided `contents`.
-   *
-   *  @argument {number} index
-   *  @argument {string} contents
-   */
-  constructor(index, contents) {
-    super(contents);
-    this.index = index >> 0;
-    Object.defineProperty(this, index, { writable: false });
+export function welformedName(qualifiedName, options = {}) {
+  if (
+    !new RegExp(`^${QName.source}$`, "u").test(qualifiedName) ||
+    new RegExp(`^${NSAttName.source}$`, "u").test(qualifiedName)
+  ) {
+    //  Names cannot match the `NSAttName` production [🆐A‐2]
+    //    [🆐E‐2][🆐F‐2][🆐G‐3][🆐H‐4][🆐I‐4].
+    throw new ParseError(
+      `"${qualifiedName}" cannot be used as a qualified name.`,
+      options,
+    );
+  } else {
+    //  Simply return the name.
+    return qualifiedName;
   }
 }

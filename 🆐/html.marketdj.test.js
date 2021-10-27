@@ -12,7 +12,7 @@
 //deno-lint-ignore-file ban-ts-comment
 
 import "../fauxbrowser/mod.js";
-import { process } from "../dj.js";
+import { Jargon } from "../dj.js";
 import htmlD·J from "./html.marketdj.js";
 import {
   //deno-lint-ignore camelcase
@@ -29,17 +29,16 @@ import {
 } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 
 const D·J = htmlD·J;
-const result = process(D·J);
-const jargon = result.jargon;
+const jargon = new Jargon(D·J);
 
 Deno.test({
   name: "H·T·M·L D·J processing produced jargon.",
-  fn: () => assert(result.jargon != null),
+  fn: () => assert(jargon != null),
 });
 
 Deno.test({
   name: "H·T·M·L D·J processing consumed entire string.",
-  fn: () => assertEquals(result.lastIndex, D·J.length),
+  fn: () => assertEquals(jargon.source.length, D·J.length),
 });
 
 Deno.test({
@@ -47,11 +46,11 @@ Deno.test({
   fn: () =>
     assertEquals(
       jargon.namespaces,
-      new Map([
-        ["", x·h·t·m·lNamespace],
-        ["xml", x·m·lNamespace],
-        ["xmlns", x·m·l·n·sNamespace],
-      ]),
+      {
+        "": x·h·t·m·lNamespace,
+        xml: x·m·lNamespace,
+        xmlns: x·m·l·n·sNamespace,
+      },
     ),
 });
 
@@ -97,7 +96,7 @@ Deno.test({
       "&#47;": {
         contentModel: CONTENT_MODEL.TEXT,
         qualifiedName: "div",
-        textTo: new Set(["data-title"]),
+        textTo: ["data-title"],
         heading: null,
       },
       "&#58;": { qualifiedName: "div" },
@@ -108,13 +107,14 @@ Deno.test({
       "&#95;": { qualifiedName: "footer" },
     };
     assertEquals(
-      jargon[NODE_TYPE.SECTION].size,
+      Object.keys(jargon[NODE_TYPE.SECTION]).length,
       Object.keys(sections).length,
     );
     for (const sigil in sections) {
-      assertEquals(jargon[NODE_TYPE.SECTION].get(sigil).size, 1);
+      const pathsObject = jargon[NODE_TYPE.SECTION][sigil]
+      assertEquals(Object.keys(pathsObject).length, 1);
       const path = sigil;
-      const $ = jargon[NODE_TYPE.SECTION].get(sigil).get(path);
+      const $ = pathsObject[path];
       const {
         contentModel,
         heading,
@@ -130,7 +130,7 @@ Deno.test({
       assertEquals($.sigil, sigil);
       assertEquals($.path, path);
       assertEquals($.qualifiedName, qualifiedName);
-      assertEquals($.attributes, new Map());
+      assertEquals($.attributes, {});
       assertEquals($.countTo, null);
       assertEquals($.textTo, textTo ?? null);
       assertEquals(
@@ -140,10 +140,10 @@ Deno.test({
             nodeType: NODE_TYPE.HEADING,
             contentModel: CONTENT_MODEL.INLINE,
             sigil: sigil,
-            path: `* ${sigil}`,
+            path: `${sigil} ${sigil}`,
             qualifiedName: "h1",
-            attributes: new Map(),
-            countTo: new Set(["aria-level"]),
+            attributes: {},
+            countTo: ["aria-level"],
           }
           : heading,
       );
@@ -156,13 +156,14 @@ Deno.test({
   fn: () => {
     const headings = { "&#45;": { qualifiedName: "h1" } };
     assertEquals(
-      jargon[NODE_TYPE.HEADING].size,
+      Object.keys(jargon[NODE_TYPE.HEADING]).length,
       Object.keys(headings).length,
     );
     for (const sigil in headings) {
-      assertEquals(jargon[NODE_TYPE.HEADING].get(sigil).size, 1);
+      const pathsObject = jargon[NODE_TYPE.HEADING][sigil]
+      assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* ${sigil}`;
-      const $ = jargon[NODE_TYPE.HEADING].get(sigil).get(path);
+      const $ = pathsObject[path];
       const { qualifiedName } = headings[sigil];
       assert($ != null);
       assertEquals($.nodeType, NODE_TYPE.HEADING);
@@ -170,8 +171,8 @@ Deno.test({
       assertEquals($.sigil, sigil);
       assertEquals($.path, path);
       assertEquals($.qualifiedName, qualifiedName);
-      assertEquals($.attributes, new Map());
-      assertEquals($.countTo, new Set(["aria-level"]));
+      assertEquals($.attributes, {});
+      assertEquals($.countTo, ["aria-level"]);
     }
   },
 });
@@ -198,18 +199,17 @@ Deno.test({
       "&#96;": { contentModel: CONTENT_MODEL.LITERAL },
     };
     assertEquals(
-      Array.from(jargon[NODE_TYPE.BLOCK].keys()).filter(
-        ($) => $ != "#DEFAULT",
-      ).length,
+      Object.keys(jargon[NODE_TYPE.BLOCK]).length,
       Object.keys(blocks).length,
     );
     for (const subpath in blocks) {
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      assertEquals(jargon[NODE_TYPE.BLOCK].get(sigil).size, 1);
+      const pathsObject = jargon[NODE_TYPE.BLOCK][sigil]
+      assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* ${subpath}`;
-      const $ = jargon[NODE_TYPE.BLOCK].get(sigil).get(path);
+      const $ = pathsObject[path];
       const {
         contentModel,
         inList,
@@ -224,8 +224,8 @@ Deno.test({
       );
       assertEquals($.sigil, sigil);
       assertEquals($.path, path);
-      assertEquals($.qualifiedName, qualifiedName ?? null);
-      assertEquals($.attributes, new Map());
+      assertEquals($.qualifiedName, qualifiedName ?? "");
+      assertEquals($.attributes, {});
       assertEquals(
         $.isDefault,
         isDefault ?? false,
@@ -238,7 +238,7 @@ Deno.test({
         assertEquals(list.sigil, null);
         assertEquals(list.path, null);
         assertEquals(list.qualifiedName, inList);
-        assertEquals(list.attributes, new Map());
+        assertEquals(list.attributes, {});
       }
     }
   },
@@ -247,10 +247,11 @@ Deno.test({
 Deno.test({
   name: "H·T·M·L D·J block defaults process correctly.",
   fn: () => {
-    assertEquals(jargon[NODE_TYPE.BLOCK].get("#DEFAULT").size, 1);
+    const pathsObject = jargon[NODE_TYPE.BLOCK]["#DEFAULT"]
+    assertEquals(Object.keys(pathsObject).length, 1);
     assertStrictEquals(
-      jargon[NODE_TYPE.BLOCK].get("#DEFAULT").get("*>#DEFAULT"),
-      jargon[NODE_TYPE.BLOCK].get("&#46;").get("* &#46;"),
+      pathsObject["*>#DEFAULT"],
+      jargon[NODE_TYPE.BLOCK]["&#46;"]["* &#46;"],
     );
   },
 });
@@ -267,7 +268,7 @@ Deno.test({
       "&#38;": {
         contentModel: CONTENT_MODEL.TEXT,
         qualifiedName: "img",
-        textTo: new Set(["alt", "title"]),
+        textTo: ["alt", "title"],
       },
       "&#39;": { qualifiedName: "cite" },
       "&#42;": { qualifiedName: "em" },
@@ -289,7 +290,7 @@ Deno.test({
       "&#92;": {
         contentModel: CONTENT_MODEL.TEXT,
         qualifiedName: "br",
-        textTo: new Set(["data-text"]),
+        textTo: ["data-text"],
       },
       "&#93;": { qualifiedName: "abbr" },
       "&#94;": { qualifiedName: "sup" },
@@ -298,16 +299,17 @@ Deno.test({
       "&#126;": { qualifiedName: "code" },
     };
     assertEquals(
-      jargon[NODE_TYPE.INLINE].size,
+      Object.keys(jargon[NODE_TYPE.INLINE]).length,
       Object.keys(inlines).length,
     );
     for (const subpath in inlines) {
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      assertEquals(jargon[NODE_TYPE.INLINE].get(sigil).size, 1);
+      const pathsObject = jargon[NODE_TYPE.INLINE][sigil]
+      assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* * ${subpath}`;
-      const $ = jargon[NODE_TYPE.INLINE].get(sigil).get(path);
+      const $ = pathsObject[path]
       const {
         contentModel,
         qualifiedName,
@@ -322,8 +324,8 @@ Deno.test({
       );
       assertEquals($.sigil, sigil);
       assertEquals($.path, path);
-      assertEquals($.qualifiedName, qualifiedName ?? null);
-      assertEquals($.attributes, new Map());
+      assertEquals($.qualifiedName, qualifiedName ?? "");
+      assertEquals($.attributes, {});
       assertEquals($.textFrom, textFrom ?? null);
       assertEquals($.textTo, textTo ?? null);
     }
@@ -354,36 +356,26 @@ Deno.test({
       "&#126;": { qualifiedName: "content" },
     };
     assertEquals(
-      jargon[NODE_TYPE.ATTRIBUTE].size,
+      Object.keys(jargon[NODE_TYPE.ATTRIBUTE]).length,
       Object.keys(attributes).length,
     );
     for (const subpath in attributes) {
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      assertEquals(
-        jargon[NODE_TYPE.ATTRIBUTE].get(sigil).size,
-        1,
-      );
+      const pathsObject = jargon[NODE_TYPE.ATTRIBUTE][sigil]
+      assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* * * ${subpath}`;
-      const $ = jargon[NODE_TYPE.ATTRIBUTE].get(sigil).get(path);
+      const $ = pathsObject[path];
       const { qualifiedName } = attributes[subpath];
       assert($ != null);
-      assert(
-        Array.from($).every(
-          ($$) => $$.nodeType == NODE_TYPE.ATTRIBUTE,
-        ),
-      );
-      assert(
-        Array.from($).every(
-          ($$) => $$.contentModel == CONTENT_MODEL.TEXT,
-        ),
-      );
-      assert(Array.from($).every(($$) => $$.sigil == sigil));
-      assert(Array.from($).every(($$) => $$.path == path));
+      assert($.every(($$) => $$.nodeType == NODE_TYPE.ATTRIBUTE));
+      assert($.every(($$) => $$.contentModel == CONTENT_MODEL.TEXT));
+      assert($.every(($$) => $$.sigil == sigil));
+      assert($.every(($$) => $$.path == path));
       assertEquals(
-        new Set(Array.from($).map(($$) => $$.qualifiedName)),
-        new Set([].concat(qualifiedName)),
+        $.map(($$) => $$.qualifiedName),
+        [].concat(qualifiedName),
       );
     }
   },

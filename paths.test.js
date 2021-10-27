@@ -12,9 +12,7 @@
 //deno-lint-ignore-file ban-ts-comment
 
 import { normalizeReferences } from "./paths.js";
-import {
-  assertEquals,
-} from "https://deno.land/std@0.106.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 
 Deno.test({
   name: "character reference normalization",

@@ -21,45 +21,25 @@ import {
 const myBadNodeType = Symbol("my bad node type");
 const myNodeType = Symbol("my node type");
 const myJargon = {
-  namespaces: new Map([["", ""]]),
-  [myBadNodeType]: {},
-  [myNodeType]: new Map([
-    ["&#0;", "bad sigil"],
-    [
-      "&#1;",
-      new Map(
-        [
-          ["* * &#1;", { value: "just the sigil" }],
-          ["* * &#2;/&#1;", { value: "same‐type parent" }],
-          ["* * &#2;//&#1;", {
-            value: "same‐type ancestor",
-          }],
-          ["* * &#3;/&#2;/&#1;", {
-            value: "multiple parents",
-          }],
-          ["* * &#3;//&#2;/&#1;", {
-            value: "parent and ancestor",
-          }],
-          ["* * &#3;/&#2;//&#1;", {
-            value: "ancestor and parent",
-          }],
-          ["* &#4;>&#1;", {
-            value: "different‐type parent",
-          }],
-          ["* &#4; &#1;", {
-            value: "different‐type ancestor",
-          }],
-          ["&#5; &#4;>&#1;", {
-            value: "different‐type parent and ancestor",
-          }],
-          ["&#5;>&#4; &#1;", {
-            value: "different‐type ancestor and parent",
-          }],
-        ],
-      ),
-    ],
-  ]),
+  namespaces: { "": "" },
+  [myBadNodeType]: new Map(),
+  [myNodeType]: {
+    "&#0;": "bad sigil",
+    "&#1;": {
+      "* * &#1;": { value: "just the sigil" },
+      "* * &#2;/&#1;": { value: "same‐type parent" },
+      "* * &#2;//&#1;": { value: "same‐type ancestor" },
+      "* * &#3;/&#2;/&#1;": { value: "multiple parents" },
+      "* * &#3;//&#2;/&#1;": { value: "parent & ancestor" },
+      "* * &#3;/&#2;//&#1;": { value: "ancestor & parent" },
+      "* &#4;>&#1;": { value: "different‐type parent" },
+      "* &#4; &#1;": { value: "different‐type ancestor" },
+      "&#5; &#4;>&#1;": { value: "different‐type parent & ancestor" },
+      "&#5;>&#4; &#1;": { value: "different‐type ancestor & parent" },
+    },
+  },
 };
+Object.setPrototypeOf(myJargon, Jargon.prototype);
 const resolve = Jargon.prototype.resolve.bind(myJargon);
 
 Deno.test({
@@ -102,7 +82,7 @@ Deno.test({
   name: "resolves plain sigil",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#1;").value,
+      resolve(myNodeType, "&#0;>&#0;>&#1;").jargon.value,
       "just the sigil",
     ),
 });
@@ -111,7 +91,7 @@ Deno.test({
   name: "resolves same‐type parent",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#2;/&#1;").value,
+      resolve(myNodeType, "&#0;>&#0;>&#2;/&#1;").jargon.value,
       "same‐type parent",
     ),
 });
@@ -120,7 +100,7 @@ Deno.test({
   name: "resolves same‐type ancestor",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#2;/&#0;/&#1;").value,
+      resolve(myNodeType, "&#0;>&#0;>&#2;/&#0;/&#1;").jargon.value,
       "same‐type ancestor",
     ),
 });
@@ -129,26 +109,28 @@ Deno.test({
   name: "resolves multiple parents",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#3;/&#2;/&#1;").value,
+      resolve(myNodeType, "&#0;>&#0;>&#3;/&#2;/&#1;").jargon.value,
       "multiple parents",
     ),
 });
 
 Deno.test({
-  name: "resolves parent and ancestor",
+  name: "resolves parent & ancestor",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#3;/&#0;/&#2;/&#1;").value,
-      "parent and ancestor",
+      resolve(myNodeType, "&#0;>&#0;>&#3;/&#0;/&#2;/&#1;").jargon
+        .value,
+      "parent & ancestor",
     ),
 });
 
 Deno.test({
-  name: "resolves ancestor and parent",
+  name: "resolves ancestor & parent",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#0;>&#3;/&#2;/&#0;/&#1;").value,
-      "ancestor and parent",
+      resolve(myNodeType, "&#0;>&#0;>&#3;/&#2;/&#0;/&#1;").jargon
+        .value,
+      "ancestor & parent",
     ),
 });
 
@@ -156,7 +138,7 @@ Deno.test({
   name: "resolves different‐type parent",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#4;>&#1;").value,
+      resolve(myNodeType, "&#0;>&#4;>&#1;").jargon.value,
       "different‐type parent",
     ),
 });
@@ -165,26 +147,26 @@ Deno.test({
   name: "resolves different‐type ancestor",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#0;>&#4;/&#0;>&#0;/&#1;").value,
+      resolve(myNodeType, "&#0;>&#4;/&#0;>&#0;/&#1;").jargon.value,
       "different‐type ancestor",
     ),
 });
 
 Deno.test({
-  name: "resolves different‐type parent and ancestor",
+  name: "resolves different‐type parent & ancestor",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#5;/&#0;>&#0;/&#4;>&#1;").value,
-      "different‐type parent and ancestor",
+      resolve(myNodeType, "&#5;/&#0;>&#0;/&#4;>&#1;").jargon.value,
+      "different‐type parent & ancestor",
     ),
 });
 
 Deno.test({
-  name: "resolves different‐type ancestor and parent",
+  name: "resolves different‐type ancestor & parent",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#5;>&#4;/&#0;>&#0;/&#1;").value,
-      "different‐type ancestor and parent",
+      resolve(myNodeType, "&#5;>&#4;/&#0;>&#0;/&#1;").jargon.value,
+      "different‐type ancestor & parent",
     ),
 });
 
@@ -192,7 +174,8 @@ Deno.test({
   name: "allows top‐level to not be root",
   fn: () =>
     assertEquals(
-      resolve(myNodeType, "&#6;/&#5;/&#0;>&#0;/&#4;>&#1;").value,
-      "different‐type parent and ancestor",
+      resolve(myNodeType, "&#6;/&#5;/&#0;>&#0;/&#4;>&#1;").jargon
+        .value,
+      "different‐type parent & ancestor",
     ),
 });

@@ -403,14 +403,14 @@ const DocumentD·J_RegExp = new RegExp(DocumentD·J, "u");
 export { DocumentD·J_RegExp as DocumentD·J };
 
 const SectionD·J = String.raw
-  `(?:<!SECTION${S}(?<sectionPath>${SigilD·JPath})${S}(?<sectionName>${Name})(?:${S}(?<sectionAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionCountTo>${Name}(?:${S}${Name})*))?(?:${S}\|${S}(?<sectionHeadingName>${Name})(?:${S}(?<sectionHeadingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionHeadingCountTo>${Name}(?:${S}${Name})*))?|${S}TEXTTO${S}(?<sectionTextTo>${Name}(?:${S}${Name})*))?${S}?>)`;
+  `(?:<!SECTION${S}(?<sectionSigil>${SigilD·J})${S}(?<sectionName>${Name})(?:${S}(?<sectionAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionCountTo>${Name}(?:${S}${Name})*))?(?:${S}\|${S}(?<sectionHeadingName>${Name})(?:${S}(?<sectionHeadingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionHeadingCountTo>${Name}(?:${S}${Name})*))?|${S}TEXTTO${S}(?<sectionTextTo>${Name}(?:${S}${Name})*))?${S}?>)`;
 /**
  *  Section declaration.
  *
  *  The second `Name` and `AttributesD·J` describes the heading which
  *    may be used to begin the section.
  *
- *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·JPath
+ *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·J
  *                               S QName (S AttributesD·J)? (
  *                                 S 'COUNTTO' (S QName)+
  *                               )? (
@@ -421,7 +421,7 @@ const SectionD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `sectionPath`: Section sigil path.
+ *  01. `sectionSigil`: Section sigil.
  *
  *  02. `sectionName`: Section X·M·L element name.
  *
@@ -450,12 +450,12 @@ const SectionD·J_RegExp = new RegExp(SectionD·J, "u");
 export { SectionD·J_RegExp as SectionD·J };
 
 const HeadingD·J = String.raw
-  `(?:<!HEADING(?:${S}(?<headingSectionPath>${SigilD·JPath})(?:${S}(?<headingSectionStrict>>))?)?${S}(?<headingSigil>${SigilD·J})${S}(?<headingName>${QName})(?:${S}(?<headingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<headingCountTo>${QName}(?:${S}${QName})*))?${S}?>)`;
+  `(?:<!HEADING(?:${S}(?<headingSectionSigil>${SigilD·J})(?:${S}(?<headingSectionStrict>>))?)?${S}(?<headingSigil>${SigilD·J})${S}(?<headingName>${QName})(?:${S}(?<headingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<headingCountTo>${QName}(?:${S}${QName})*))?${S}?>)`;
 /**
  *  Heading declaration.
  *
  *      [🆐F] HeadingD·J     ::= '<!HEADING' (
- *                                 S SigilD·JPath (S '>')?
+ *                                 S SigilD·J (S '>')?
  *                               )? S SigilD·J
  *                               S QName (S AttributesD·J)? (
  *                                 S 'COUNTTO' (S QName)+
@@ -463,7 +463,7 @@ const HeadingD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `headingSectionPath` (optional): Section sigil path.
+ *  01. `headingSectionSigil` (optional): Section sigil.
  *
  *  02. `headingSectionStrict` (optional): `>` if the section sigil
  *    path indicates a parent (rather than ancestor) relationship.
@@ -486,12 +486,12 @@ const HeadingD·J_RegExp = new RegExp(HeadingD·J, "u");
 export { HeadingD·J_RegExp as HeadingD·J };
 
 const BlockD·J = String.raw
-  `(?:<!BLOCK(?:${S}(?<blockSectionPath>${SigilD·JPath})(?:${S}(?<blockSectionStrict>>))?)?${S}(?:(?<blockPath>${SigilD·JPath})|DEFAULT${S}(?<blockSigil>${SigilD·J}))${S}(?:(?<blockName>${QName})(?:${S}(?<blockAttributes>${AttributesD·J}))?(?:${S}(?<blockFinal>FINAL))?(?:${S}INLIST${S}(?<blockListName>${QName})(?:${S}(?<blockListAttributes>${AttributesD·J}))?)?|#${S}(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
+  `(?:<!BLOCK(?:${S}(?<blockSectionSigil>${SigilD·J})(?:${S}(?<blockSectionStrict>>))?)?${S}(?:(?<blockPath>${SigilD·JPath})|DEFAULT${S}(?<blockSigil>${SigilD·J}))${S}(?:(?<blockName>${QName})(?:${S}(?<blockAttributes>${AttributesD·J}))?(?:${S}(?<blockFinal>FINAL))?(?:${S}INLIST${S}(?<blockListName>${QName})(?:${S}(?<blockListAttributes>${AttributesD·J}))?)?|#${S}(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Block declaration.
  *
  *      [🆐G] BlockD·J       ::= '<!BLOCK' (
- *                                 S SigilD·JPath (S '>')?
+ *                                 S SigilD·J (S '>')?
  *                               )? S (
  *                                 SigilD·JPath | 'DEFAULT' S SigilD·J
  *                               ) S (
@@ -509,7 +509,7 @@ const BlockD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `blockSectionPath` (optional): Section sigil path.
+ *  01. `blockSectionSigil` (optional): Section sigil.
  *
  *  02. `blockSectionStrict` (optional): `>` if the section sigil path
  *        indicates a parent (rather than ancestor) relationship.
@@ -545,14 +545,14 @@ const BlockD·J_RegExp = new RegExp(BlockD·J, "u");
 export { BlockD·J_RegExp as BlockD·J };
 
 const InlineD·J = String.raw
-  `(?:<!INLINE(?:${S}(?<inlineSectionOrBlockPath>${SigilD·JPath})(?:${S}(?<inlineSectionOrBlockStrict>>))?(?:${S}(?:(?<inlineBlockPath>${SigilD·JPath})(?:${S}(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${S}(?<inlinePath>${SigilD·JPath})${S}(?:(?<inlineName>${QName})(?:${S}(?<inlineAttributes>${AttributesD·J}))?(?:${S}(?<inlineFinal>FINAL)|${S}TEXTFROM${S}(?<inlineTextFrom>${QName})|${S}TEXTTO${S}(?<inlineTextTo>${QName}(?:${S}${QName})*))?|#${S}(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
+  `(?:<!INLINE(?:${S}(?:(?<inlineSectionSigil>${SigilD·J})(?:${S}(?<inlineSectionStrict>>))?${S}(?:(?<inlineSectionBlockPath>${SigilD·JPath})(?:${S}(?<inlineSectionBlockStrict>>))?|(?<inlineSectionBlockAny>\*))|(?<inlineBlockPath>${SigilD·JPath})(?:${S}(?<inlineBlockStrict>>))?))?${S}(?<inlinePath>${SigilD·JPath})${S}(?:(?<inlineName>${QName})(?:${S}(?<inlineAttributes>${AttributesD·J}))?(?:${S}(?<inlineFinal>FINAL)|${S}TEXTFROM${S}(?<inlineTextFrom>${QName})|${S}TEXTTO${S}(?<inlineTextTo>${QName}(?:${S}${QName})*))?|#${S}(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Inline declaration.
  *
  *      [🆐H] InlineD·J      ::= '<!INLINE' (
- *                                 S SigilD·JPath (S '>')? (
+ *                                 S SigilD·J (S '>')? (
  *                                   S (SigilD·JPath (S '>')? | '*')
- *                                 )?
+ *                                 ) | S SigilD·JPath (S '>')?
  *                               )? S SigilD·JPath
  *                               S (
  *                                 QName (S AttributesD·J)? (
@@ -568,38 +568,45 @@ const InlineD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `inlineSectionOrBlockPath` (optional): Section/block sigil
- *        path.
+ *  01. `inlineSectionSigil` (optional): Section sigil.
  *
- *  02. `inlineSectionOrBlockStrict` (optional): `>` if the
- *        section/block sigil path indicates a parent (rather than
- *        ancestor) relationship.
- *
- *  03. `inlineBlockPath` (optional): Block sigil path.
- *
- *  04. `inlineBlockStrict` (optional): `>` if the block sigil path
+ *  02. `inlineSectionStrict` (optional): `>` if the section sigil
  *        indicates a parent (rather than ancestor) relationship.
  *
- *  05. `inlineBlockAny` (optional): `*` if there is a section but not
- *        block sigil path.
+ *  03. `inlineSectionBlockPath` (optional): Block sigil path, if there
+ *        is a section sigil..
  *
- *  06. `inlinePath`: Inline sigil path.
+ *  04. `inlineSectionBlockStrict` (optional): `>` if there is a
+ *        section sigil and the block sigil path indicates a parent
+ *        (rather than ancestor) relationship.
  *
- *  07. `inlineName` (optional): Inline X·M·L element name.
+ *  05. `inlineSectionBlockAny` (optional): `*` if there is a section
+ *        sigil but not a block sigil path.
  *
- *  08. `inlineAttributes` (optional): Inline attributes declaration.
+ *  06. `inlineBlockPath` (optional): Block sigil path, if there is not
+ *        a section sigil.
  *
- *  09. `inlineFinal` (optional): `FINAL` if this inline cannot contain
+ *  07. `inlineBlockStrict` (optional): `>` if there is not a
+ *        section sigil, and the block sigil path indicates a parent
+ *        (rather than ancestor) relationship.
+ *
+ *  08. `inlinePath`: Inline sigil path.
+ *
+ *  09. `inlineName` (optional): Inline X·M·L element name.
+ *
+ *  10. `inlineAttributes` (optional): Inline attributes declaration.
+ *
+ *  11. `inlineFinal` (optional): `FINAL` if this inline cannot contain
  *        child inlines.
  *
- *  10. `inlineTextFrom` (optional): An attribute name to pull text
+ *  12. `inlineTextFrom` (optional): An attribute name to pull text
  *        from.
  *
- *  11. `inlineTextTo` (optional): One or more attribute names to
+ *  13. `inlineTextTo` (optional): One or more attribute names to
  *        send text to.
  *      This implies a `FINAL` inline.
  *
- *  12. `inlineSpecial` (optional): `TRANSPARENT` if this sigil defines
+ *  14. `inlineSpecial` (optional): `TRANSPARENT` if this sigil defines
  *        a transparent inline, `COMMENT` if this sigil defines a
  *        comment inline, or `LITERAL` if this sigil defines a literal
  *        inline.
@@ -613,48 +620,67 @@ const InlineD·J_RegExp = new RegExp(InlineD·J, "u");
 export { InlineD·J_RegExp as InlineD·J };
 
 const AttributeD·J = String.raw
-  `(?:<!ATTRIBUTE(?:${S}(?<attributeSectionOrBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${S}(?:(?<attributeBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${S}(?:(?<attributeInlinePath>${SigilD·JPath})(?:${S}(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${S}(?<attributeSigil>${SigilD·J})${S}(?<attributeNames>${QName}(?:${S}${QName})*)${S}?>)`;
+  `(?:<!ATTRIBUTE(?:${S}(?:(?<attributeSectionSigil>${SigilD·J})(?:${S}(?<attributeSectionStrict>>))?${S}(?:(?<attributeSectionBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionBlockOrInlineStrict>>))?|(?<attributeSectionBlockOrInlineAny>\*))(?:${S}(?:(?<attributeSectionInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionInlineStrict>>))?|(?<attributeSectionInlineAny>\*)))?|(?<attributeBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeBlockOrInlineStrict>>))?(?:${S}(?:(?<attributeInlinePath>${SigilD·JPath})(?:${S}(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?))?${S}(?<attributeSigil>${SigilD·J})${S}(?<attributeNames>${QName}(?:${S}${QName})*)${S}?>)`;
 /**
  *  Attribute declaration.
  *
  *      [🆐I] AttributeD·J   ::= '<!ATTRIBUTE' (
- *                                 S SigilD·JPath (S '>')? (
+ *                                 S SigilD·J (S '>')? (
  *                                   S (SigilD·JPath (S '>')? | '*') (
  *                                     S (SigilD·JPath (S '>')? | '*')
  *                                   )?
+ *                                 ) | S SigilD·JPath (S '>')? (
+ *                                   S (SigilD·JPath (S '>')? | '*')
  *                                 )?
  *                               )? S SigilD·J (S QName)+ S? '>'
  *
  *  ##  Capture groups  ##
  *
- *  01. `attributeSectionOrBlockOrInlinePath` (optional):
- *        Section/block/inline sigil path.
+ *  01. `attributeSectionSigil` (optional): Section sigil.
  *
- *  02. `attributeSectionOrBlockOrInlineStrict` (optional): `>` if the
- *        section/block/inline sigil path indicates a parent (rather
- *        than ancestor) relationship.
+ *  02. `attributeSectionStrict` (optional): `>` if the section sigil
+ *        indicates a parent (rather than ancestor) relationship.
  *
- *  03. `attributeBlockOrInlinePath` (optional): Block/inline sigil
- *        path.
+ *  03. `attributeSectionBlockOrInlinePath` (optional): Block/inline
+ *        sigil path, if there is a section sigil.
  *
- *  04. `attributeBlockOrInlineStrict` (optional): `>` if the
- *        block/inline sigil path indicates a parent (rather than
- *        ancestor) relationship.
+ *  04. `attributeSectionBlockOrInlineStrict` (optional): `>` if there
+ *        is a section sigil and the block/inline sigil path indicates
+ *        a parent (rather than ancestor) relationship.
  *
- *  05. `attributeBlockOrInlineAny` (optional): `*` if there is a
- *        section/block but not block/inline sigil path.
+ *  05. `attributeSectionBlockOrInlineAny` (optional): `*` if there is
+ *        a section sigil but not a block/inline sigil path.
  *
- *  06. `attributeInlinePath` (optional): Inline sigil path.
+ *  06. `attributeSectionInlinePath` (optional): Inline sigil path, if
+ *        there is a section sigil.
  *
- *  07. `attributeInlineStrict` (optional): `>` if the inline sigil
- *        path indicates a parent (rather than ancestor) relationship.
+ *  07. `attributeSectionInlineStrict` (optional): `>` if there is a
+ *        section sigil and the inline sigil path indicates a parent
+ *        (rather than ancestor) relationship.
  *
- *  08. `attributeInlineAny` (optional): `*` if there is a
- *        section/block but not inline sigil path.
+ *  08. `attributeSectionInlineAny` (optional): `*` if there is a
+ *        section sigil but not an inline sigil path.
  *
- *  09. `attibuteSigil`: Attribute sigil.
+ *  09. `attributeBlockOrInlinePath` (optional): Block/inline sigil
+ *        path, if there is not a section sigil.
  *
- *  10. `attributeNames`: Attribute X·M·L element name(s).
+ *  10. `attributeBlockOrInlineStrict` (optional): `>` if there is not
+ *        a section sigil and the block/inline sigil path indicates a
+ *        parent (rather than ancestor) relationship.
+ *
+ *  11. `attributeInlinePath` (optional): Inline sigil path, if there
+ *        is not a section sigil.
+ *
+ *  12. `attributeInlineStrict` (optional): `>` if there is not a
+ *        a section sigil and the inline sigil path indicates a parent
+ *        (rather than ancestor) relationship.
+ *
+ *  13. `attributeInlineAny` (optional): `*` if there is a
+ *        block sigil path, but not inline sigil path or section sigil.
+ *
+ *  14. `attibuteSigil`: Attribute sigil.
+ *
+ *  15. `attributeNames`: Attribute X·M·L element name(s).
  *
  *  ##  Welformedness constraints  ##
  *

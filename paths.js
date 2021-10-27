@@ -13,7 +13,8 @@
 //  This module contains Market Commons ⅠⅠ sigil path processing
 //    utilities.
 
-import { SigilD·J } from "./syntax.js";
+import { ParseError } from "./errors.js";
+import { CharRef, SigilD·J, SigilD·JPath } from "./syntax.js";
 
 /**
  *  Normalizes all `CharRef`s in the provided `path` to use the decimal
@@ -32,6 +33,42 @@ export function normalizeReferences(path) {
     /&#x([0-9A-Fa-f]+);/gu,
     (_, hex) => `&#${parseInt(hex, 16)};`,
   );
+}
+
+/**
+ *  Throws an error if the provided `path` is not welformed; otherwise,
+ *    returns the normalized form.
+ *
+ *  @argument {string} path
+ *  @argument {{index?:number}} [options]
+ *  @returns {string}
+ */
+export function welformedPath(path, options = {}) {
+  const normalizedPath = normalizeReferences(path);
+  if (!new RegExp(`^${SigilD·JPath.source}$`, "u").test(path)) {
+    throw new ParseError(
+      `"${path}" is not a sigil path.`,
+      options,
+    );
+  } else {
+    for (
+      const charRef of normalizedPath.matchAll(
+        new RegExp(CharRef.source, "g"),
+      )
+    ) {
+      if (/^(?:&#32;|&#9;|&#10;|&#13;|&#124;)$/u.test(charRef[0])) {
+        //  A sigil may not contain a character indicating `S` or
+        //    `'|'` [🆐B‐1].
+        throw new ParseError(
+          `Whitespace and "|" characters are not allowed in sigils.`,
+          options,
+        );
+      } else {
+        continue;
+      }
+    }
+    return normalizedPath;
+  }
 }
 
 /**
@@ -71,36 +108,4 @@ export function globRegExp(glob) {
       `${SigilD·J.source}(?:/${SigilD·J.source})*`,
     ) + "$",
   );
-}
-
-/**
- *  Returns a `Set` of all the keys in `sigilMap` which can match
- *    the provided `path` in at least some fashion.
- *
- *  @argument {string} path
- *  @argument {Map<string,Map<string,any>>} sigilMap
- *  @returns {Set<string>}
- */
-export function sigilsInScope(path, sigilMap) {
-  const result = new Set();
-  checkingSigils:
-  for (const [sigil, pathMap] of sigilMap) {
-    if (sigil == "#DEFAULT") {
-      //  `#DEFAULT` is not a proper sigil and won’t be returned
-      //    by this function.
-      continue checkingSigils;
-    } else {
-      //  `sigil` is ordinary and proper.
-      const pathWithSigil = />$/u.test(path)
-        ? `${path}${sigil}`
-        : `${path}/${sigil}`;
-      for (const glob of pathMap.keys()) {
-        if (globRegExp(glob).test(pathWithSigil)) {
-          result.add(sigil);
-          continue checkingSigils;
-        }
-      }
-    }
-  }
-  return result;
 }
