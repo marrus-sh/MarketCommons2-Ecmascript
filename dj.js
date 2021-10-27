@@ -520,14 +520,16 @@ function processHeading(source, index) {
       /** @type {{headingSigil:string,headingName:string,[index:string]:string|undefined}} */ (
         parseResult.groups
       );
-    const sigil = welformedPath(headingSigil)
+    const sigil = welformedPath(headingSigil);
     return {
       jargon: Object.freeze({
         nodeType: NODE_TYPE.HEADING,
         contentModel: CONTENT_MODEL.INLINE,
         sigil,
         path: [
-          headingSectionSigil == null ? "*" : welformedPath(headingSectionSigil),
+          headingSectionSigil == null
+            ? "*"
+            : welformedPath(headingSectionSigil),
           headingSectionStrict ?? " ",
           sigil,
         ].join(""),
@@ -582,7 +584,7 @@ function processBlock(source, index) {
         parseResult.groups
       );
     const definitelyExtantBlockPath = welformedPath(
-      /** @type {string} */ (blockPath ?? blockSigil)
+      /** @type {string} */ (blockPath ?? blockSigil),
     );
     return {
       jargon: Object.freeze({
@@ -598,7 +600,9 @@ function processBlock(source, index) {
           ),
         ),
         path: [
-          blockSectionSigil == null ? "*" : welformedPath(blockSectionSigil) ?? "*",
+          blockSectionSigil == null
+            ? "*"
+            : welformedPath(blockSectionSigil) ?? "*",
           blockSectionStrict ?? " ",
           definitelyExtantBlockPath,
         ].join(""),
@@ -670,7 +674,8 @@ function processInline(source, index) {
       /** @type {{inlinePath:string,inlineSpecial:"COMMENT"|"LITERAL"|undefined,[index:string]:string|undefined}} */ (
         parseResult.groups
       );
-    const possiblyBlockPath = inlineSectionBlockPath ?? inlineBlockPath
+    const possiblyBlockPath = inlineSectionBlockPath ??
+      inlineBlockPath;
     return {
       jargon: Object.freeze({
         nodeType: NODE_TYPE.INLINE,
@@ -683,9 +688,13 @@ function processInline(source, index) {
           inlinePath.substring(inlinePath.lastIndexOf("/") + 1),
         ),
         path: [
-          inlineSectionSigil == null ? "*" : welformedPath(inlineSectionSigil),
+          inlineSectionSigil == null
+            ? "*"
+            : welformedPath(inlineSectionSigil),
           inlineSectionStrict ?? " ",
-          possiblyBlockPath == null ? "*" : welformedPath(possiblyBlockPath),
+          possiblyBlockPath == null
+            ? "*"
+            : welformedPath(possiblyBlockPath),
           inlineSectionBlockStrict ?? inlineBlockStrict ?? " ",
           welformedPath(inlinePath),
         ].join(""),
@@ -754,28 +763,35 @@ function processAttribute(source, index) {
       attributeSectionInlineAny != null ||
       attributeInlinePath != null || attributeInlineAny != null;
     const possiblyBlockPath = blockDefined
-      ? attributeSectionBlockOrInlineStrict ?? attributeBlockOrInlineStrict
-      : null
+      ? attributeSectionBlockOrInlineStrict ??
+        attributeBlockOrInlineStrict
+      : null;
     const possiblyInlinePath = blockDefined
       ? attributeSectionInlinePath ?? attributeInlinePath
-      : attributeSectionBlockOrInlinePath ?? attributeBlockOrInlinePath
+      : attributeSectionBlockOrInlinePath ??
+        attributeBlockOrInlinePath;
     const sigil = welformedPath(attributeSigil);
     const path = [
-      attributeSectionSigil == null ? "*" : welformedPath(attributeSectionSigil),
+      attributeSectionSigil == null
+        ? "*"
+        : welformedPath(attributeSectionSigil),
       attributeSectionStrict ?? " ",
-      possiblyBlockPath == null ? "*" : welformedPath(possiblyBlockPath),
+      possiblyBlockPath == null
+        ? "*"
+        : welformedPath(possiblyBlockPath),
       blockDefined
         ? attributeSectionBlockOrInlineStrict ??
           attributeBlockOrInlineStrict ?? " "
         : " ",
-      possiblyInlinePath == null ? "*" : welformedPath(possiblyInlinePath),
+      possiblyInlinePath == null ? "*"
+      : welformedPath(possiblyInlinePath),
       blockDefined
         ? attributeSectionInlineStrict ?? attributeInlineStrict ??
           " "
         : attributeSectionBlockOrInlineStrict ??
           attributeBlockOrInlineStrict ?? " ",
       sigil,
-    ].join("")
+    ].join("");
     return {
       path,
       sigil,
@@ -1600,12 +1616,12 @@ export class Jargon {
               );
             return jargon instanceof Array
               ? jargon.map((attribute) => ({
-                  ...this.resolveQName(attribute.qualifiedName, {
-                    ...options,
-                    path,
-                  }),
-                  jargon: attribute,
-                }))
+                ...this.resolveQName(attribute.qualifiedName, {
+                  ...options,
+                  path,
+                }),
+                jargon: attribute,
+              }))
               : {
                 ...this.resolveQName(jargon.qualifiedName, {
                   ...options,

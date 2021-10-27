@@ -111,7 +111,7 @@ Deno.test({
       Object.keys(sections).length,
     );
     for (const sigil in sections) {
-      const pathsObject = jargon[NODE_TYPE.SECTION][sigil]
+      const pathsObject = jargon[NODE_TYPE.SECTION][sigil];
       assertEquals(Object.keys(pathsObject).length, 1);
       const path = sigil;
       const $ = pathsObject[path];
@@ -160,7 +160,7 @@ Deno.test({
       Object.keys(headings).length,
     );
     for (const sigil in headings) {
-      const pathsObject = jargon[NODE_TYPE.HEADING][sigil]
+      const pathsObject = jargon[NODE_TYPE.HEADING][sigil];
       assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* ${sigil}`;
       const $ = pathsObject[path];
@@ -206,7 +206,7 @@ Deno.test({
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      const pathsObject = jargon[NODE_TYPE.BLOCK][sigil]
+      const pathsObject = jargon[NODE_TYPE.BLOCK][sigil];
       assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* ${subpath}`;
       const $ = pathsObject[path];
@@ -247,7 +247,7 @@ Deno.test({
 Deno.test({
   name: "H·T·M·L D·J block defaults process correctly.",
   fn: () => {
-    const pathsObject = jargon[NODE_TYPE.BLOCK]["#DEFAULT"]
+    const pathsObject = jargon[NODE_TYPE.BLOCK]["#DEFAULT"];
     assertEquals(Object.keys(pathsObject).length, 1);
     assertStrictEquals(
       pathsObject["*>#DEFAULT"],
@@ -306,10 +306,10 @@ Deno.test({
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      const pathsObject = jargon[NODE_TYPE.INLINE][sigil]
+      const pathsObject = jargon[NODE_TYPE.INLINE][sigil];
       assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* * ${subpath}`;
-      const $ = pathsObject[path]
+      const $ = pathsObject[path];
       const {
         contentModel,
         qualifiedName,
@@ -363,7 +363,7 @@ Deno.test({
       const sigil = subpath.substring(
         subpath.lastIndexOf("/") + 1,
       );
-      const pathsObject = jargon[NODE_TYPE.ATTRIBUTE][sigil]
+      const pathsObject = jargon[NODE_TYPE.ATTRIBUTE][sigil];
       assertEquals(Object.keys(pathsObject).length, 1);
       const path = `* * * ${subpath}`;
       const $ = pathsObject[path];
