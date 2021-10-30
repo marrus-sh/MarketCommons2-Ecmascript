@@ -117,6 +117,13 @@ const Name = String.raw`(?:${NameStartChar}${NameChar}*)`;
 const Name_RegExp = new RegExp(Name, "u");
 export { Name_RegExp as Name };
 
+const Nmtoken = String.raw`(?:${NameChar}+)`;
+/**
+ *      [6]   Nmtoken        ::= (NameChar)+
+ */
+const Nmtoken_RegExp = new RegExp(Nmtoken, "u");
+export { Nmtoken_RegExp as Nmtoken };
+
 const CharRef = String.raw`(?:&#[0-9]+;|&#x[0-9a-fA-F]+;)`;
 /**
  *      [66]  CharRef        ::= '&#' [0-9]+ ';'
@@ -144,8 +151,28 @@ const Reference = String.raw`(?:${EntityRef}|${CharRef})`;
 const Reference_RegExp = new RegExp(Reference, "u");
 export { Reference_RegExp as Reference };
 
+const PEReference = String.raw`(?:%${Name};)`;
+/**
+ *      [69]  PEReference    ::= '%' Name ';'
+ */
+const PEReference_RegExp = new RegExp(PEReference, "u");
+export { PEReference_RegExp as PEReference };
+
+const EntityValue = String.raw
+  `(?:"(?:(?=${Char})[^%&"]|${PEReference}|${Reference})*"|'(?:(?=${Char})[^%&']|${PEReference}|${Reference})*')`;
+/**
+ *      [9]   EntityValue    ::= '"' (
+ *                                 [^%&"] | PEReference | Reference
+ *                               )* '"'
+ *                               "'" (
+ *                                 [^%&'] | PEReference | Reference
+ *                               )* "'"
+ */
+const EntityValue_RegExp = new RegExp(EntityValue, "u");
+export { EntityValue_RegExp as EntityValue };
+
 const AttValue = String.raw
-  `(?:"(?:(?=${Char})[^"<&]|${Reference})*"|'(?:(?=${Char})[^'<&]|${Reference})*')`;
+  `(?:"(?:(?=${Char})[^<&"]|${Reference})*"|'(?:(?=${Char})[^<&']|${Reference})*')`;
 /**
  *      [10]  AttValue       ::= '"' ([^<&"] | Reference)* '"'
  *                               |  "'" ([^<&'] | Reference)* "'"
@@ -161,6 +188,24 @@ const SystemLiteral = String.raw
 const SystemLiteral_RegExp = new RegExp(SystemLiteral, "u");
 export { SystemLiteral_RegExp as SystemLiteral };
 
+const PubidChar = String.raw
+  `[-\u{20}\u{D}\u{A}a-zA-Z0-9'()+,./:=?;!*#@$_%]`;
+/**
+ *      [13]  PubidChar      ::= #x20 | #xD | #xA | [a-zA-Z0-9]
+ *                               | [-'()+,./:=?;!*#@$_%]
+ */
+const PubidChar_RegExp = new RegExp(PubidChar, "u");
+export { PubidChar_RegExp as PubidChar };
+
+const PubidLiteral = String.raw
+  `(?:"${PubidChar}*"|'(?:(?=${PubidChar})[^'])*')`;
+/**
+ *      [12]  PubidLiteral   ::= '"' PubidChar* '"'
+ *                               | "'" (PubidChar - "'")* "'"
+ */
+const PubidLiteral_RegExp = new RegExp(PubidLiteral, "u");
+export { PubidLiteral_RegExp as PubidLiteral };
+
 const Comment = String.raw`(?:<!--(?:(?!-)${Char}|-(?!-)${Char})*-->)`;
 /**
  *      [15]  Comment        ::= '<!--' (
@@ -169,6 +214,23 @@ const Comment = String.raw`(?:<!--(?:(?!-)${Char}|-(?!-)${Char})*-->)`;
  */
 const Comment_RegExp = new RegExp(Comment, "u");
 export { Comment_RegExp as Comment };
+
+const PITarget = String.raw`(?:(?![Xx][Mm][Ll])${Name})`;
+/**
+ *      [17]  PITarget       ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
+ */
+const PITarget_RegExp = new RegExp(PITarget, "u");
+export { PITarget_RegExp as PITarget };
+
+const PI = String.raw
+  `(?:<\?${PITarget}(?:${S}(?:(?!\?>)${Char})*)?\?>)`;
+/**
+ *      [16]  PI             ::= '<?' PITarget (
+ *                                 S (Char* - (Char* '?>' Char*))
+ *                               )? '?>'
+ */
+const PI_RegExp = new RegExp(PI, "u");
+export { PI_RegExp as PI };
 
 const CData = String.raw
   `(?:(?:(?!\])${Char}|\](?!\])${Char}|\]\](?!>)${Char}|\]\]?$)*)`;
@@ -191,6 +253,224 @@ const Eq = String.raw`(?:${S}?=${S}?)`;
  */
 const Eq_RegExp = new RegExp(Eq, "u");
 export { Eq_RegExp as Eq };
+
+const VersionNum = String.raw`(?:1\.1)`;
+/**
+ *      [26]  VersionNum     ::= '1.1'
+ */
+const VersionNum_RegExp = new RegExp(VersionNum, "u");
+export { VersionNum_RegExp as VersionNum };
+
+const VersionInfo = String.raw
+  `(?:${S}version${Eq}(?:'${VersionNum}'|"${VersionNum}"))`;
+/**
+ *      [24]  VersionInfo    ::= S 'version' Eq (
+ *                                 "'" VersionNum "'"
+ *                                 | '"' VersionNum '"'
+ *                               )
+ */
+const VersionInfo_RegExp = new RegExp(VersionInfo, "u");
+export { VersionInfo_RegExp as VersionInfo };
+
+const EncName = String.raw`(?:[A-Za-z][-A-Za-z0-9._]*)`;
+/**
+ *      [81]  EncName        ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+ */
+const EncName_RegExp = new RegExp(EncName, "u");
+export { EncName_RegExp as EncName };
+
+const EncodingDecl = String.raw
+  `(?:${S}encoding${Eq}(?:"${EncName}"|'${EncName}'))`;
+/**
+ *      [80]  EncodingDecl   ::= S 'encoding' Eq (
+ *                                 '"' EncName '"' | "'" EncName "'"
+ *                               )
+ */
+const EncodingDecl_RegExp = new RegExp(EncodingDecl, "u");
+export { EncodingDecl_RegExp as EncodingDecl };
+
+const SDDecl = String.raw
+  `(?:${S}standalone${Eq}(?:'(?:yes|no)'|"(?:yes|no)"))`;
+/**
+ *      [32]  SDDecl        ::= S 'standalone' Eq (
+ *                                ("'" ('yes' | 'no') "'")
+ *                                | ('"' ('yes' | 'no') '"')
+ *                              )
+ */
+const SDDecl_RegExp = new RegExp(SDDecl, "u");
+export { SDDecl_RegExp as SDDecl };
+
+const XMLDecl = String.raw
+  `(?:<\?xml${VersionInfo}${EncodingDecl}?${SDDecl}?${S}?\?>)`;
+/**
+ *      [23]  XMLDecl        ::= '<?xml' VersionInfo EncodingDecl?
+ *                               SDDecl? S? '?>'
+ */
+const XMLDecl_RegExp = new RegExp(XMLDecl, "u");
+export { XMLDecl_RegExp as XMLDecl };
+
+const Misc = String.raw`(?:${Comment}|${PI}|${S})`;
+/**
+ *      [27]  Misc           ::= Comment | PI | S
+ */
+const Misc_RegExp = new RegExp(Misc, "u");
+export { Misc_RegExp as Misc };
+
+const DeclSep = String.raw`(?:${PEReference}|${S})`;
+/**
+ *      [28a] DeclSep        ::= PEReference | S
+ */
+const DeclSep_RegExp = new RegExp(DeclSep, "u");
+export { DeclSep_RegExp as DeclSep };
+
+const StringType = String.raw`(?:CDATA)`;
+/**
+ *      [55]  StringType     ::= 'CDATA'
+ */
+const StringType_RegExp = new RegExp(StringType, "u");
+export { StringType_RegExp as StringType };
+
+const TokenizedType = String.raw
+  `(?:ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS)`;
+/**
+ *      [56]  TokenizedType  ::= 'ID' | 'IDREF' | 'IDREFS' | 'ENTITY'
+ *                               | 'ENTITIES' | 'NMTOKEN' | 'NMTOKENS'
+ */
+const TokenizedType_RegExp = new RegExp(TokenizedType, "u");
+export { TokenizedType_RegExp as TokenizedType };
+
+const NotationType = String.raw
+  `(?:NOTATION${S}\(${S}?${Name}(?:${S}?\|${S}?${Name})*${S}?\))`;
+/**
+ *      [58]  NotationType   ::= 'NOTATION' S '(' S? Name (
+ *                                 S? '|' S? Name
+ *                               )* S? ')'
+ */
+const NotationType_RegExp = new RegExp(NotationType, "u");
+export { NotationType_RegExp as NotationType };
+
+const Enumeration = String.raw
+  `(?:\(${S}?${Nmtoken}(?:${S}?\|${S}?${Nmtoken})*${S}?\))`;
+/**
+ *      [59]  Enumeration    ::= '(' S? Nmtoken (
+ *                                 S? '|' S? Nmtoken
+ *                               )* S? ')'
+ */
+const Enumeration_RegExp = new RegExp(Enumeration, "u");
+export { Enumeration_RegExp as Enumeration };
+
+const EnumeratedType = String.raw`(?:${NotationType}|${Enumeration})`;
+/**
+ *      [57]  EnumeratedType ::= NotationType | Enumeration
+ */
+const EnumeratedType_RegExp = new RegExp(EnumeratedType, "u");
+export { EnumeratedType_RegExp as EnumeratedType };
+
+const AttType = String.raw
+  `(?:${StringType}|${TokenizedType}|${EnumeratedType})`;
+/**
+ *      [54]  AttType        ::= StringType | TokenizedType
+ *                               | EnumeratedType
+ */
+const AttType_RegExp = new RegExp(AttType, "u");
+export { AttType_RegExp as AttType };
+
+const DefaultDecl = String.raw
+  `(?:#REQUIRED|#IMPLIED|(?:(?:#FIXED${S})?${AttValue}))`;
+/**
+ *      [60]  DefaultDecl    ::= '#REQUIRED' | '#IMPLIED'
+ *                               | (('#FIXED' S)? AttValue)
+ */
+const DefaultDecl_RegExp = new RegExp(DefaultDecl, "u");
+export { DefaultDecl_RegExp as DefaultDecl };
+
+const AttDef = String.raw
+  `(?:${S}${Name}${S}${AttType}${S}${DefaultDecl})`;
+/**
+ *      [53]  AttDef         ::= S Name S AttType S DefaultDecl
+ */
+const AttDef_RegExp = new RegExp(AttDef, "u");
+export { AttDef_RegExp as AttDef };
+
+const AttlistDecl = String.raw
+  `(?:<!ATTLIST${S}${Name}${AttDef}*${S}?>)`;
+/**
+ *      [52]  AttlistDecl    ::= '<!ATTLIST' S Name AttDef* S? '>'
+ */
+const AttlistDecl_RegExp = new RegExp(AttlistDecl, "u");
+export { AttlistDecl_RegExp as AttlistDecl };
+
+const ExternalID = String.raw
+  `(?:SYSTEM${S}${SystemLiteral}|PUBLIC${S}${PubidLiteral}${S}${SystemLiteral})`;
+/**
+ *      [75]  ExternalID     ::= 'SYSTEM' S SystemLiteral
+ *                               | 'PUBLIC' S PubidLiteral
+ *                                 S SystemLiteral
+ */
+const ExternalID_RegExp = new RegExp(ExternalID, "u");
+export { ExternalID_RegExp as ExternalID };
+
+const NDataDecl = String.raw`(?:${S}NDATA${S}${Name})`;
+/**
+ *      [76]  NDataDecl      ::= S 'NDATA' S Name
+ */
+const NDataDecl_RegExp = new RegExp(NDataDecl, "u");
+export { NDataDecl_RegExp as NDataDecl };
+
+const EntityDef = String.raw
+  `(?:${EntityValue}|${ExternalID}${NDataDecl}?)`;
+/**
+ *      [73]  EntityDef      ::= EntityValue | (ExternalID NDataDecl?)
+ */
+const EntityDef_RegExp = new RegExp(EntityDef, "u");
+export { EntityDef_RegExp as EntityDef };
+
+const GEDecl = String.raw
+  `(?:<!ENTITY${S}${Name}${S}${EntityDef}${S}?>)`;
+/**
+ *      [71]  GEDecl         ::= '<!ENTITY' S Name S EntityDef S? '>'
+ */
+const GEDecl_RegExp = new RegExp(GEDecl, "u");
+export { GEDecl_RegExp as GEDecl };
+
+const PEDef = String.raw`(?:${EntityValue}|${ExternalID})`;
+/**
+ *      [74]  PEDef          ::= EntityValue | ExternalID
+ */
+const PEDef_RegExp = new RegExp(PEDef, "u");
+export { PEDef_RegExp as PEDef };
+
+const PEDecl = String.raw
+  `(?:<!ENTITY${S}%${S}${Name}${S}${PEDef}${S}?>)`;
+/**
+ *      [72]  PEDecl         ::= '<!ENTITY' S '%' S Name S PEDef S? '>'
+ */
+const PEDecl_RegExp = new RegExp(PEDecl, "u");
+export { PEDecl_RegExp as PEDecl };
+
+const EntityDecl = String.raw`(?:${GEDecl}|${PEDecl})`;
+/**
+ *      [70]  EntityDecl     ::= GEDecl | PEDecl
+ */
+const EntityDecl_RegExp = new RegExp(EntityDecl, "u");
+export { EntityDecl_RegExp as EntityDecl };
+
+const PublicID = String.raw`(?:PUBLIC${S}${PubidLiteral})`;
+/**
+ *      [83]  PublicID       ::= 'PUBLIC' S PubidLiteral
+ */
+const PublicID_RegExp = new RegExp(PublicID, "u");
+export { PublicID_RegExp as PublicID };
+
+const NotationDecl = String.raw
+  `(?:<!NOTATION${S}${Name}${S}(?:${ExternalID}|${PublicID})${S}?>)`;
+/**
+ *      [82]  NotationDecl   ::= '<!NOTATION' S Name S (
+ *                                 ExternalID | PublicID
+ *                               ) S? '>'
+ */
+const NotationDecl_RegExp = new RegExp(NotationDecl, "u");
+export { NotationDecl_RegExp as NotationDecl };
 
 /*
 The following are regular expressions defined by the Namespaces in
