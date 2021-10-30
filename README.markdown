@@ -70,11 +70,16 @@ likely exist.
 <cite>🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript</cite> requires a
 contemporary Ecmascript environment with some additional D·O·M / Web
 A·P·Is. In Deno (1.13+), the missing pieces are suitably filled in by
-importing `./fauxbrowser/mod.js` from this directory. On the other
-hand, in browsers, the piece most likely to be missing is
-[`structuredClone()`][WindowOrWorkerGlobalScope.structuredClone].
+importing `./fauxbrowser/mod.js` from this directory.
 
-[WindowOrWorkerGlobalScope.structuredClone]: https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/structuredClone
+This script will exhibit improper behaviour in environments where the
+following test fails :—
+
+```js
+const re = /fails/uy;
+re.lastIndex = "this test ".length;
+"this test fails".replace(re, "succeeds");
+```
 
 ## Usage
 
@@ -120,7 +125,7 @@ but is fairly straightforward to do :—
 </html>
 	]]>
 
-]>
+]?>
 
 girls &cutie;
 ```
@@ -389,7 +394,7 @@ inline sigils :—
 |  `#x2B` (`'+'`)  |    `ins`    |                                                               |
 |  `#x2C` (`','`)  |    `sub`    |                                                               |
 |  `#x2D` (`'-'`)  |    `del`    |                                                               |
-|  `#x2E` (`'.'`)  |   `ruby`    | Use `{                                                        |
+|  `#x2E` (`'.'`)  |   `ruby`    | Use `#x7B` (`'{'`) and `#x7D` (`'}'`) for `rb` and `rt`       |
 |  `#x2F` (`'/'`)  |     `i`     |                                                               |
 |  `#x3A` (`':'`)  |   `span`    |                                                               |
 |  `#x3B` (`';'`)  |    _N/A_    | COMMENT: Contents (and attributes) are ignored                |

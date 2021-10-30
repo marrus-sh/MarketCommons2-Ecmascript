@@ -57,6 +57,7 @@ import { Line, prepareAsX·M·L, welformedName } from "./text.js";
  *  @typedef {Object} DocumentJargon
  *  @property {typeof NODE_TYPE.DOCUMENT} nodeType
  *  @property {typeof CONTENT_MODEL.MIXED} contentModel
+ *  @property {string} source
  *  @property {XMLDocument} template
  */
 
@@ -304,14 +305,14 @@ function processDocument(source, index, DOMParser) {
     return null;
   } else {
     //  Process the document declaration.
+    const documentSource = parseResult.groups.documentTemplate;
     const document = (new DOMParser()).parseFromString(
       //@ts-ignore: Object definitely is defined.
-      parseResult.groups.documentTemplate,
+      documentSource,
       "application/xml",
     );
     const root = document.documentElement;
-    //@ts-ignore: Intentional extension of document.
-    const marketNodes = document[marketNamespace] = Object.create(
+    const marketNodes = Object.create(
       null,
       {
         preamble: {
@@ -328,6 +329,12 @@ function processDocument(source, index, DOMParser) {
         },
       },
     );
+    Object.defineProperty(document, marketNamespace, {
+      configurable: true,
+      enumerable: false,
+      value: marketNodes,
+      writable: false,
+    });
     if (
       root.localName == "parsererror" &&
       root.namespaceURI == parsererrorNamespace
@@ -395,6 +402,7 @@ function processDocument(source, index, DOMParser) {
       jargon: Object.freeze({
         nodeType: NODE_TYPE.DOCUMENT,
         contentModel: CONTENT_MODEL.MIXED,
+        source: documentSource,
         template: document,
       }),
       lastIndex: regExp.lastIndex,
@@ -826,8 +834,8 @@ function processComment(source, index) {
 }
 
 /**
- *  Adds the provided `jargon` to the correct location in the
- *    provided `sigilMap`.
+ *  Adds the provided `jargon` to the correct location in the provided
+ *    `object`.
  *
  * @argument {{[index:string]:{[index:string]:object}}} object
  * @argument {any} jargon
@@ -1609,11 +1617,7 @@ export class Jargon {
             //    appropriate `namespace` and `localName` based on
             //    its `qualifiedName` and the defined namespaces.
             /** @type {SectionJargon|HeadingJargon|BlockJargon|InlineJargon|AttributeJargon[]} */
-            const jargon =
-              //@ts-ignore: structuredClone is a web API.
-              structuredClone(
-                sortedMatchingDefinitions.pop(),
-              );
+            const jargon = sortedMatchingDefinitions.pop();
             return jargon instanceof Array
               ? jargon.map((attribute) => ({
                 ...this.resolveQName(attribute.qualifiedName, {
@@ -1673,8 +1677,8 @@ export class Jargon {
   }
 
   /**
-   *  Returns a `Set` of all the keys in `sigilMap` which can match
-   *    the provided `path` in at least some fashion.
+   *  Returns an `Array` of all the sigils for the provided `nodeType`
+   *    which can match the provided `path` in at least some fashion.
    *
    *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
    *  @argument {string} path
