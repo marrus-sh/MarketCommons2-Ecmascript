@@ -55,7 +55,8 @@ function uncaptureNamedGroups(stringRegExp) {
 
 /*
 The following are regular expressions defined by the X·M·L 1·1
-  specification.
+  specification, except for `VersionNum` (and, consequently,
+  `VersionInfo` and `XMLDecl`), which uses the X·M·L 1·0 definition.
 */
 
 const Char = String.raw
@@ -254,9 +255,9 @@ const Eq = String.raw`(?:${S}?=${S}?)`;
 const Eq_RegExp = new RegExp(Eq, "u");
 export { Eq_RegExp as Eq };
 
-const VersionNum = String.raw`(?:1\.1)`;
+const VersionNum = String.raw`(?:1\.[0-9]+)`;
 /**
- *      [26]  VersionNum     ::= '1.1'
+ *      [26]  VersionNum     ::= '1.' [0-9]+
  */
 const VersionNum_RegExp = new RegExp(VersionNum, "u");
 export { VersionNum_RegExp as VersionNum };
