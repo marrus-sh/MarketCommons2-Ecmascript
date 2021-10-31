@@ -26,17 +26,12 @@ import {
   x·m·lNamespace,
   x·m·l·n·sNamespace,
 } from "./names.js";
-import {
-  globRegExp,
-  normalizeReferences,
-  welformedPath,
-} from "./paths.js";
+import { globRegExp, welformedPath } from "./paths.js";
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 import {
   AttributeD·J,
   AttValue,
   BlockD·J,
-  CharRef,
   Comment,
   DocumentD·J,
   D·J,
@@ -49,7 +44,7 @@ import {
   SectionD·J,
   SigilD·J,
 } from "./syntax.js";
-import { Line, prepareAsX·M·L, welformedName } from "./text.js";
+import { prepareAsX·M·L, welformedName } from "./text.js";
 
 /**
  *  A document jargon.
@@ -141,16 +136,9 @@ import { Line, prepareAsX·M·L, welformedName } from "./text.js";
  */
 
 /**
- *  A chunk.
+ *  The result produced after resolving a sigil.
  *
- *  @typedef {Object} Chunk
- *  @property {Jargon} jargon
- *  @property {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK} nodeType
- *  @property {string} path
- *  @property {string} sigil
- *  @property {number} count
- *  @property {number} level
- *  @property {Readonly<Line[]>} lines
+ *  @typedef {Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>|Readonly<Readonly<AttributeJargon>[]>} ResolvedJargon
  */
 
 /**
@@ -305,9 +293,10 @@ function processDocument(source, index, DOMParser) {
     return null;
   } else {
     //  Process the document declaration.
-    const documentSource = parseResult.groups.documentTemplate;
-    const document = (new DOMParser()).parseFromString(
+    const documentSource =
       //@ts-ignore: Object definitely is defined.
+      parseResult.groups.documentTemplate;
+    const document = (new DOMParser()).parseFromString(
       documentSource,
       "application/xml",
     );
@@ -1273,179 +1262,6 @@ export class Jargon {
   }
 
   /**
-   *  Returns an object indicating the number of consecutive `sigil`s
-   *    that begin the provided `line`, starting from the offset given
-   *    by the provided `lastIndex`, or `null` if none applies.
-   *
-   *  If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
-   *    `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted:
-   *  The resulting `count` will be `1`.
-   *
-   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
-   *  @argument {string} path
-   *  @argument {Line} line
-   *  @argument {number} [lastIndex]
-   *  @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
-   */
-  countSigils(nodeType, path, line, lastIndex = 0) {
-    const index = lastIndex >> 0;
-    /** @type {{[index:string]:{sigil:string,count:number,index:number,lastIndex:number}}} */
-    const matches = Object.create(null);
-    const string = String(line);
-    for (const sigil of this.sigilsInScope(nodeType, path)) {
-      let sigilRegExpSource = "";
-      for (
-        const charRef of normalizeReferences(sigil).matchAll(
-          new RegExp(CharRef.source, "gu"),
-        )
-      ) {
-        //  Build up a regular expression source from the character
-        //    references in `sigil`.
-        sigilRegExpSource += String.raw`${"" //  see <https://github.com/microsoft/TypeScript/issues/42887>
-        }\u{${
-          //  Drop the `&#` and convert to hexadecimal.
-          parseInt(charRef[0].substring(2)).toString(16)
-        }}`;
-      }
-      const suffix =
-        nodeType == NODE_TYPE.ATTRIBUTE || nodeType == NODE_TYPE.INLINE
-          ? ""
-          : String.raw`(?!\|)[ \t]*`;
-      const regExp = new RegExp(`${sigilRegExpSource}${suffix}`, "uy");
-      regExp.lastIndex = lastIndex;
-      if (
-        nodeType == NODE_TYPE.SECTION || nodeType == NODE_TYPE.HEADING
-      ) {
-        let count = 0;
-        let nextIndex = index;
-        //  A section or heading may consist of repeated sigils.
-        while (regExp.test(string)) {
-          //  Increment `count` for as long as there is another sigil.
-          ++count;
-          nextIndex = regExp.lastIndex;
-        }
-        if (count > 0) {
-          matches[sigil] = {
-            sigil,
-            count,
-            index,
-            lastIndex: nextIndex,
-          };
-        }
-      } else if (regExp.test(string)) {
-        matches[sigil] = {
-          sigil,
-          count: 1,
-          index,
-          lastIndex: regExp.lastIndex,
-        };
-      } else {
-        continue;
-      }
-    }
-    const longestMatchingSigil = Object.keys(matches)
-      .reduce(
-        (longest, current) =>
-          current.length > longest.length ? current : longest,
-        "",
-      );
-    if (longestMatchingSigil != "") {
-      return matches[longestMatchingSigil];
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   *  Creates a “chunk” object from the provided (trimmed) `line` at
-   *    the provided `path`.
-   *
-   *  @argument {string} path
-   *  @argument {Line} line
-   *  @argument {boolean} inBlock
-   *  @returns {Chunk}
-   */
-  makeChunk(path, line, inBlock = false) {
-    if (!inBlock && /^(?:\|[ \t]*)+$/.test(String(line))) {
-      //  `line` is a section‐close mark.
-      const count = Array.from(line.matchAll(/\|/gu)).length;
-      return {
-        jargon: this,
-        nodeType: NODE_TYPE.SECTION,
-        path: /** @type {RegExpExecArray} */ (new RegExp(
-          `(?:(?:^|/)[^/]+){0,${count - 1}}`,
-          "uy",
-        ).exec(path))[0],
-        sigil: "|",
-        count,
-        level: count,
-        lines: [new Line(line.index, "")],
-      };
-    } else {
-      //  See if `line` begins with a section, heading, or block
-      //    sigil.
-      //  If it does, build the chunk accordingly.
-      //  If it doesn’t, the chunk is a default block.
-      for (
-        const nodeType
-          of /** @type {(typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK)[]} */ (
-            inBlock ? [NODE_TYPE.BLOCK] : [
-              NODE_TYPE.SECTION,
-              NODE_TYPE.HEADING,
-              NODE_TYPE.BLOCK,
-            ]
-          )
-      ) {
-        const sigilInfo = this.countSigils(
-          nodeType,
-          NODE_TYPE.SECTION || inBlock ? path : `${path}>`,
-          line,
-        );
-        if (sigilInfo != null) {
-          //  Some sigil matches, so assign it to the `matches` object.
-          //  The `level` of the chunk is one greater than the number
-          //    of items in its path.
-          //  This is clamped to its `count` for sections.
-          const { sigil, count, lastIndex } = sigilInfo;
-          const level = nodeType == NODE_TYPE.SECTION
-            ? count
-            : (path.match(/[^\/>]+/gu)?.length ?? 0) + 1;
-          return {
-            jargon: this,
-            nodeType,
-            path: nodeType == NODE_TYPE.SECTION
-              ? `${
-                /** @type {RegExpExecArray} */ (
-                  new RegExp(
-                    `(?:(?:^|/)[^/]+){0,${level - 1}}`,
-                    "uy",
-                  ).exec(path)
-                )[0]
-              }/${sigil}`
-              : `${path}>${sigil}`,
-            sigil,
-            count,
-            level,
-            lines: [new Line(line.index, line.substring(lastIndex))],
-          };
-        } else {
-          //  The sigil does not match.
-          continue;
-        }
-      }
-      return {
-        jargon: this,
-        nodeType: NODE_TYPE.BLOCK,
-        path: `${path}>#DEFAULT`,
-        sigil: "#DEFAULT",
-        count: 0,
-        level: path.match(/[^/]+/gu)?.length ?? 0,
-        lines: [line],
-      };
-    }
-  }
-
-  /**
    *  Resolves the provided `path` for the provided `nodeType` using
    *    this `Jargon`, and returns the corresponding definition.
    *
@@ -1455,7 +1271,7 @@ export class Jargon {
    *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
    *  @argument {string} path
    *  @argument {{line?:number}} [options]
-   *  @returns {{localName:string,namespace:?string,jargon:SectionJargon|HeadingJargon|BlockJargon|InlineJargon}|{localName:string,namespace:?string,jargon:AttributeJargon}[]}
+   *  @returns {{localName:string,namespace:?string,jargon:Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>}|{localName:string,namespace:?string,jargon:Readonly<AttributeJargon>}[]}
    */
   resolve(nodeType, path, options = {}) {
     //  Because most any failure to resolve ought to produce a
@@ -1477,9 +1293,9 @@ export class Jargon {
         if (pathsObject == null) {
           throw new TypeError("Sigil not defined.");
         } else {
-          /** @type {[string,SectionJargon|HeadingJargon|BlockJargon|InlineJargon|AttributeJargon[]][]} */
+          /** @type {[string,ResolvedJargon][]} */
           const entries = Object.entries(pathsObject);
-          /** @type {(SectionJargon|HeadingJargon|BlockJargon|InlineJargon|AttributeJargon[])[]} */
+          /** @type {ResolvedJargon[]} */
           const sortedMatchingDefinitions = Object.entries(
             entries,
           ).filter(
@@ -1616,8 +1432,9 @@ export class Jargon {
             //  There is a final result; clone it and add an
             //    appropriate `namespace` and `localName` based on
             //    its `qualifiedName` and the defined namespaces.
-            /** @type {SectionJargon|HeadingJargon|BlockJargon|InlineJargon|AttributeJargon[]} */
-            const jargon = sortedMatchingDefinitions.pop();
+            const jargon = /** @type {ResolvedJargon} */ (
+              sortedMatchingDefinitions.pop()
+            );
             return jargon instanceof Array
               ? jargon.map((attribute) => ({
                 ...this.resolveQName(attribute.qualifiedName, {
@@ -1679,6 +1496,8 @@ export class Jargon {
   /**
    *  Returns an `Array` of all the sigils for the provided `nodeType`
    *    which can match the provided `path` in at least some fashion.
+   *
+   *  These responses are cached internally.
    *
    *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
    *  @argument {string} path
