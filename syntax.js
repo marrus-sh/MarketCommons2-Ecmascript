@@ -55,7 +55,8 @@ function uncaptureNamedGroups(stringRegExp) {
 
 /*
 The following are regular expressions defined by the X·M·L 1·1
-  specification.
+  specification, except for `VersionNum` (and, consequently,
+  `VersionInfo` and `XMLDecl`), which uses the X·M·L 1·0 definition.
 */
 
 const Char = String.raw
@@ -117,6 +118,13 @@ const Name = String.raw`(?:${NameStartChar}${NameChar}*)`;
 const Name_RegExp = new RegExp(Name, "u");
 export { Name_RegExp as Name };
 
+const Nmtoken = String.raw`(?:${NameChar}+)`;
+/**
+ *      [6]   Nmtoken        ::= (NameChar)+
+ */
+const Nmtoken_RegExp = new RegExp(Nmtoken, "u");
+export { Nmtoken_RegExp as Nmtoken };
+
 const CharRef = String.raw`(?:&#[0-9]+;|&#x[0-9a-fA-F]+;)`;
 /**
  *      [66]  CharRef        ::= '&#' [0-9]+ ';'
@@ -144,8 +152,28 @@ const Reference = String.raw`(?:${EntityRef}|${CharRef})`;
 const Reference_RegExp = new RegExp(Reference, "u");
 export { Reference_RegExp as Reference };
 
+const PEReference = String.raw`(?:%${Name};)`;
+/**
+ *      [69]  PEReference    ::= '%' Name ';'
+ */
+const PEReference_RegExp = new RegExp(PEReference, "u");
+export { PEReference_RegExp as PEReference };
+
+const EntityValue = String.raw
+  `(?:"(?:(?=${Char})[^%&"]|${PEReference}|${Reference})*"|'(?:(?=${Char})[^%&']|${PEReference}|${Reference})*')`;
+/**
+ *      [9]   EntityValue    ::= '"' (
+ *                                 [^%&"] | PEReference | Reference
+ *                               )* '"'
+ *                               "'" (
+ *                                 [^%&'] | PEReference | Reference
+ *                               )* "'"
+ */
+const EntityValue_RegExp = new RegExp(EntityValue, "u");
+export { EntityValue_RegExp as EntityValue };
+
 const AttValue = String.raw
-  `(?:"(?:(?=${Char})[^"<&]|${Reference})*"|'(?:(?=${Char})[^'<&]|${Reference})*')`;
+  `(?:"(?:(?=${Char})[^<&"]|${Reference})*"|'(?:(?=${Char})[^<&']|${Reference})*')`;
 /**
  *      [10]  AttValue       ::= '"' ([^<&"] | Reference)* '"'
  *                               |  "'" ([^<&'] | Reference)* "'"
@@ -161,6 +189,24 @@ const SystemLiteral = String.raw
 const SystemLiteral_RegExp = new RegExp(SystemLiteral, "u");
 export { SystemLiteral_RegExp as SystemLiteral };
 
+const PubidChar = String.raw
+  `[-\u{20}\u{D}\u{A}a-zA-Z0-9'()+,./:=?;!*#@$_%]`;
+/**
+ *      [13]  PubidChar      ::= #x20 | #xD | #xA | [a-zA-Z0-9]
+ *                               | [-'()+,./:=?;!*#@$_%]
+ */
+const PubidChar_RegExp = new RegExp(PubidChar, "u");
+export { PubidChar_RegExp as PubidChar };
+
+const PubidLiteral = String.raw
+  `(?:"${PubidChar}*"|'(?:(?=${PubidChar})[^'])*')`;
+/**
+ *      [12]  PubidLiteral   ::= '"' PubidChar* '"'
+ *                               | "'" (PubidChar - "'")* "'"
+ */
+const PubidLiteral_RegExp = new RegExp(PubidLiteral, "u");
+export { PubidLiteral_RegExp as PubidLiteral };
+
 const Comment = String.raw`(?:<!--(?:(?!-)${Char}|-(?!-)${Char})*-->)`;
 /**
  *      [15]  Comment        ::= '<!--' (
@@ -169,6 +215,23 @@ const Comment = String.raw`(?:<!--(?:(?!-)${Char}|-(?!-)${Char})*-->)`;
  */
 const Comment_RegExp = new RegExp(Comment, "u");
 export { Comment_RegExp as Comment };
+
+const PITarget = String.raw`(?:(?![Xx][Mm][Ll])${Name})`;
+/**
+ *      [17]  PITarget       ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
+ */
+const PITarget_RegExp = new RegExp(PITarget, "u");
+export { PITarget_RegExp as PITarget };
+
+const PI = String.raw
+  `(?:<\?${PITarget}(?:${S}(?:(?!\?>)${Char})*)?\?>)`;
+/**
+ *      [16]  PI             ::= '<?' PITarget (
+ *                                 S (Char* - (Char* '?>' Char*))
+ *                               )? '?>'
+ */
+const PI_RegExp = new RegExp(PI, "u");
+export { PI_RegExp as PI };
 
 const CData = String.raw
   `(?:(?:(?!\])${Char}|\](?!\])${Char}|\]\](?!>)${Char}|\]\]?$)*)`;
@@ -191,6 +254,224 @@ const Eq = String.raw`(?:${S}?=${S}?)`;
  */
 const Eq_RegExp = new RegExp(Eq, "u");
 export { Eq_RegExp as Eq };
+
+const VersionNum = String.raw`(?:1\.[0-9]+)`;
+/**
+ *      [26]  VersionNum     ::= '1.' [0-9]+
+ */
+const VersionNum_RegExp = new RegExp(VersionNum, "u");
+export { VersionNum_RegExp as VersionNum };
+
+const VersionInfo = String.raw
+  `(?:${S}version${Eq}(?:'${VersionNum}'|"${VersionNum}"))`;
+/**
+ *      [24]  VersionInfo    ::= S 'version' Eq (
+ *                                 "'" VersionNum "'"
+ *                                 | '"' VersionNum '"'
+ *                               )
+ */
+const VersionInfo_RegExp = new RegExp(VersionInfo, "u");
+export { VersionInfo_RegExp as VersionInfo };
+
+const EncName = String.raw`(?:[A-Za-z][-A-Za-z0-9._]*)`;
+/**
+ *      [81]  EncName        ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
+ */
+const EncName_RegExp = new RegExp(EncName, "u");
+export { EncName_RegExp as EncName };
+
+const EncodingDecl = String.raw
+  `(?:${S}encoding${Eq}(?:"${EncName}"|'${EncName}'))`;
+/**
+ *      [80]  EncodingDecl   ::= S 'encoding' Eq (
+ *                                 '"' EncName '"' | "'" EncName "'"
+ *                               )
+ */
+const EncodingDecl_RegExp = new RegExp(EncodingDecl, "u");
+export { EncodingDecl_RegExp as EncodingDecl };
+
+const SDDecl = String.raw
+  `(?:${S}standalone${Eq}(?:'(?:yes|no)'|"(?:yes|no)"))`;
+/**
+ *      [32]  SDDecl        ::= S 'standalone' Eq (
+ *                                ("'" ('yes' | 'no') "'")
+ *                                | ('"' ('yes' | 'no') '"')
+ *                              )
+ */
+const SDDecl_RegExp = new RegExp(SDDecl, "u");
+export { SDDecl_RegExp as SDDecl };
+
+const XMLDecl = String.raw
+  `(?:<\?xml${VersionInfo}${EncodingDecl}?${SDDecl}?${S}?\?>)`;
+/**
+ *      [23]  XMLDecl        ::= '<?xml' VersionInfo EncodingDecl?
+ *                               SDDecl? S? '?>'
+ */
+const XMLDecl_RegExp = new RegExp(XMLDecl, "u");
+export { XMLDecl_RegExp as XMLDecl };
+
+const Misc = String.raw`(?:${Comment}|${PI}|${S})`;
+/**
+ *      [27]  Misc           ::= Comment | PI | S
+ */
+const Misc_RegExp = new RegExp(Misc, "u");
+export { Misc_RegExp as Misc };
+
+const DeclSep = String.raw`(?:${PEReference}|${S})`;
+/**
+ *      [28a] DeclSep        ::= PEReference | S
+ */
+const DeclSep_RegExp = new RegExp(DeclSep, "u");
+export { DeclSep_RegExp as DeclSep };
+
+const StringType = String.raw`(?:CDATA)`;
+/**
+ *      [55]  StringType     ::= 'CDATA'
+ */
+const StringType_RegExp = new RegExp(StringType, "u");
+export { StringType_RegExp as StringType };
+
+const TokenizedType = String.raw
+  `(?:ID|IDREF|IDREFS|ENTITY|ENTITIES|NMTOKEN|NMTOKENS)`;
+/**
+ *      [56]  TokenizedType  ::= 'ID' | 'IDREF' | 'IDREFS' | 'ENTITY'
+ *                               | 'ENTITIES' | 'NMTOKEN' | 'NMTOKENS'
+ */
+const TokenizedType_RegExp = new RegExp(TokenizedType, "u");
+export { TokenizedType_RegExp as TokenizedType };
+
+const NotationType = String.raw
+  `(?:NOTATION${S}\(${S}?${Name}(?:${S}?\|${S}?${Name})*${S}?\))`;
+/**
+ *      [58]  NotationType   ::= 'NOTATION' S '(' S? Name (
+ *                                 S? '|' S? Name
+ *                               )* S? ')'
+ */
+const NotationType_RegExp = new RegExp(NotationType, "u");
+export { NotationType_RegExp as NotationType };
+
+const Enumeration = String.raw
+  `(?:\(${S}?${Nmtoken}(?:${S}?\|${S}?${Nmtoken})*${S}?\))`;
+/**
+ *      [59]  Enumeration    ::= '(' S? Nmtoken (
+ *                                 S? '|' S? Nmtoken
+ *                               )* S? ')'
+ */
+const Enumeration_RegExp = new RegExp(Enumeration, "u");
+export { Enumeration_RegExp as Enumeration };
+
+const EnumeratedType = String.raw`(?:${NotationType}|${Enumeration})`;
+/**
+ *      [57]  EnumeratedType ::= NotationType | Enumeration
+ */
+const EnumeratedType_RegExp = new RegExp(EnumeratedType, "u");
+export { EnumeratedType_RegExp as EnumeratedType };
+
+const AttType = String.raw
+  `(?:${StringType}|${TokenizedType}|${EnumeratedType})`;
+/**
+ *      [54]  AttType        ::= StringType | TokenizedType
+ *                               | EnumeratedType
+ */
+const AttType_RegExp = new RegExp(AttType, "u");
+export { AttType_RegExp as AttType };
+
+const DefaultDecl = String.raw
+  `(?:#REQUIRED|#IMPLIED|(?:(?:#FIXED${S})?${AttValue}))`;
+/**
+ *      [60]  DefaultDecl    ::= '#REQUIRED' | '#IMPLIED'
+ *                               | (('#FIXED' S)? AttValue)
+ */
+const DefaultDecl_RegExp = new RegExp(DefaultDecl, "u");
+export { DefaultDecl_RegExp as DefaultDecl };
+
+const AttDef = String.raw
+  `(?:${S}${Name}${S}${AttType}${S}${DefaultDecl})`;
+/**
+ *      [53]  AttDef         ::= S Name S AttType S DefaultDecl
+ */
+const AttDef_RegExp = new RegExp(AttDef, "u");
+export { AttDef_RegExp as AttDef };
+
+const AttlistDecl = String.raw
+  `(?:<!ATTLIST${S}${Name}${AttDef}*${S}?>)`;
+/**
+ *      [52]  AttlistDecl    ::= '<!ATTLIST' S Name AttDef* S? '>'
+ */
+const AttlistDecl_RegExp = new RegExp(AttlistDecl, "u");
+export { AttlistDecl_RegExp as AttlistDecl };
+
+const ExternalID = String.raw
+  `(?:SYSTEM${S}${SystemLiteral}|PUBLIC${S}${PubidLiteral}${S}${SystemLiteral})`;
+/**
+ *      [75]  ExternalID     ::= 'SYSTEM' S SystemLiteral
+ *                               | 'PUBLIC' S PubidLiteral
+ *                                 S SystemLiteral
+ */
+const ExternalID_RegExp = new RegExp(ExternalID, "u");
+export { ExternalID_RegExp as ExternalID };
+
+const NDataDecl = String.raw`(?:${S}NDATA${S}${Name})`;
+/**
+ *      [76]  NDataDecl      ::= S 'NDATA' S Name
+ */
+const NDataDecl_RegExp = new RegExp(NDataDecl, "u");
+export { NDataDecl_RegExp as NDataDecl };
+
+const EntityDef = String.raw
+  `(?:${EntityValue}|${ExternalID}${NDataDecl}?)`;
+/**
+ *      [73]  EntityDef      ::= EntityValue | (ExternalID NDataDecl?)
+ */
+const EntityDef_RegExp = new RegExp(EntityDef, "u");
+export { EntityDef_RegExp as EntityDef };
+
+const GEDecl = String.raw
+  `(?:<!ENTITY${S}${Name}${S}${EntityDef}${S}?>)`;
+/**
+ *      [71]  GEDecl         ::= '<!ENTITY' S Name S EntityDef S? '>'
+ */
+const GEDecl_RegExp = new RegExp(GEDecl, "u");
+export { GEDecl_RegExp as GEDecl };
+
+const PEDef = String.raw`(?:${EntityValue}|${ExternalID})`;
+/**
+ *      [74]  PEDef          ::= EntityValue | ExternalID
+ */
+const PEDef_RegExp = new RegExp(PEDef, "u");
+export { PEDef_RegExp as PEDef };
+
+const PEDecl = String.raw
+  `(?:<!ENTITY${S}%${S}${Name}${S}${PEDef}${S}?>)`;
+/**
+ *      [72]  PEDecl         ::= '<!ENTITY' S '%' S Name S PEDef S? '>'
+ */
+const PEDecl_RegExp = new RegExp(PEDecl, "u");
+export { PEDecl_RegExp as PEDecl };
+
+const EntityDecl = String.raw`(?:${GEDecl}|${PEDecl})`;
+/**
+ *      [70]  EntityDecl     ::= GEDecl | PEDecl
+ */
+const EntityDecl_RegExp = new RegExp(EntityDecl, "u");
+export { EntityDecl_RegExp as EntityDecl };
+
+const PublicID = String.raw`(?:PUBLIC${S}${PubidLiteral})`;
+/**
+ *      [83]  PublicID       ::= 'PUBLIC' S PubidLiteral
+ */
+const PublicID_RegExp = new RegExp(PublicID, "u");
+export { PublicID_RegExp as PublicID };
+
+const NotationDecl = String.raw
+  `(?:<!NOTATION${S}${Name}${S}(?:${ExternalID}|${PublicID})${S}?>)`;
+/**
+ *      [82]  NotationDecl   ::= '<!NOTATION' S Name S (
+ *                                 ExternalID | PublicID
+ *                               ) S? '>'
+ */
+const NotationDecl_RegExp = new RegExp(NotationDecl, "u");
+export { NotationDecl_RegExp as NotationDecl };
 
 /*
 The following are regular expressions defined by the Namespaces in
@@ -403,14 +684,14 @@ const DocumentD·J_RegExp = new RegExp(DocumentD·J, "u");
 export { DocumentD·J_RegExp as DocumentD·J };
 
 const SectionD·J = String.raw
-  `(?:<!SECTION${S}(?<sectionPath>${SigilD·JPath})${S}(?<sectionName>${Name})(?:${S}(?<sectionAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionCountTo>${Name}(?:${S}${Name})*))?(?:${S}\|${S}(?<sectionHeadingName>${Name})(?:${S}(?<sectionHeadingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionHeadingCountTo>${Name}(?:${S}${Name})*))?|${S}TEXTTO${S}(?<sectionTextTo>${Name}(?:${S}${Name})*))?${S}?>)`;
+  `(?:<!SECTION${S}(?<sectionSigil>${SigilD·J})${S}(?<sectionName>${Name})(?:${S}(?<sectionAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionCountTo>${Name}(?:${S}${Name})*))?(?:${S}\|${S}(?<sectionHeadingName>${Name})(?:${S}(?<sectionHeadingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<sectionHeadingCountTo>${Name}(?:${S}${Name})*))?|${S}TEXTTO${S}(?<sectionTextTo>${Name}(?:${S}${Name})*))?${S}?>)`;
 /**
  *  Section declaration.
  *
  *  The second `Name` and `AttributesD·J` describes the heading which
  *    may be used to begin the section.
  *
- *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·JPath
+ *      [🆐E] SectionD·J     ::= '<!SECTION' S SigilD·J
  *                               S QName (S AttributesD·J)? (
  *                                 S 'COUNTTO' (S QName)+
  *                               )? (
@@ -421,7 +702,7 @@ const SectionD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `sectionPath`: Section sigil path.
+ *  01. `sectionSigil`: Section sigil.
  *
  *  02. `sectionName`: Section X·M·L element name.
  *
@@ -450,12 +731,12 @@ const SectionD·J_RegExp = new RegExp(SectionD·J, "u");
 export { SectionD·J_RegExp as SectionD·J };
 
 const HeadingD·J = String.raw
-  `(?:<!HEADING(?:${S}(?<headingSectionPath>${SigilD·JPath})(?:${S}(?<headingSectionStrict>>))?)?${S}(?<headingSigil>${SigilD·J})${S}(?<headingName>${QName})(?:${S}(?<headingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<headingCountTo>${QName}(?:${S}${QName})*))?${S}?>)`;
+  `(?:<!HEADING(?:${S}(?<headingSectionSigil>${SigilD·J})(?:${S}(?<headingSectionStrict>>))?)?${S}(?<headingSigil>${SigilD·J})${S}(?<headingName>${QName})(?:${S}(?<headingAttributes>${AttributesD·J}))?(?:${S}COUNTTO${S}(?<headingCountTo>${QName}(?:${S}${QName})*))?${S}?>)`;
 /**
  *  Heading declaration.
  *
  *      [🆐F] HeadingD·J     ::= '<!HEADING' (
- *                                 S SigilD·JPath (S '>')?
+ *                                 S SigilD·J (S '>')?
  *                               )? S SigilD·J
  *                               S QName (S AttributesD·J)? (
  *                                 S 'COUNTTO' (S QName)+
@@ -463,7 +744,7 @@ const HeadingD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `headingSectionPath` (optional): Section sigil path.
+ *  01. `headingSectionSigil` (optional): Section sigil.
  *
  *  02. `headingSectionStrict` (optional): `>` if the section sigil
  *    path indicates a parent (rather than ancestor) relationship.
@@ -486,12 +767,12 @@ const HeadingD·J_RegExp = new RegExp(HeadingD·J, "u");
 export { HeadingD·J_RegExp as HeadingD·J };
 
 const BlockD·J = String.raw
-  `(?:<!BLOCK(?:${S}(?<blockSectionPath>${SigilD·JPath})(?:${S}(?<blockSectionStrict>>))?)?${S}(?:(?<blockPath>${SigilD·JPath})|DEFAULT${S}(?<blockSigil>${SigilD·J}))${S}(?:(?<blockName>${QName})(?:${S}(?<blockAttributes>${AttributesD·J}))?(?:${S}(?<blockFinal>FINAL))?(?:${S}INLIST${S}(?<blockListName>${QName})(?:${S}(?<blockListAttributes>${AttributesD·J}))?)?|#${S}(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
+  `(?:<!BLOCK(?:${S}(?<blockSectionSigil>${SigilD·J})(?:${S}(?<blockSectionStrict>>))?)?${S}(?:(?<blockPath>${SigilD·JPath})|DEFAULT${S}(?<blockSigil>${SigilD·J}))${S}(?:(?<blockName>${QName})(?:${S}(?<blockAttributes>${AttributesD·J}))?(?:${S}(?<blockFinal>FINAL))?(?:${S}INLIST${S}(?<blockListName>${QName})(?:${S}(?<blockListAttributes>${AttributesD·J}))?)?|#${S}(?<blockSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Block declaration.
  *
  *      [🆐G] BlockD·J       ::= '<!BLOCK' (
- *                                 S SigilD·JPath (S '>')?
+ *                                 S SigilD·J (S '>')?
  *                               )? S (
  *                                 SigilD·JPath | 'DEFAULT' S SigilD·J
  *                               ) S (
@@ -509,7 +790,7 @@ const BlockD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `blockSectionPath` (optional): Section sigil path.
+ *  01. `blockSectionSigil` (optional): Section sigil.
  *
  *  02. `blockSectionStrict` (optional): `>` if the section sigil path
  *        indicates a parent (rather than ancestor) relationship.
@@ -545,14 +826,14 @@ const BlockD·J_RegExp = new RegExp(BlockD·J, "u");
 export { BlockD·J_RegExp as BlockD·J };
 
 const InlineD·J = String.raw
-  `(?:<!INLINE(?:${S}(?<inlineSectionOrBlockPath>${SigilD·JPath})(?:${S}(?<inlineSectionOrBlockStrict>>))?(?:${S}(?:(?<inlineBlockPath>${SigilD·JPath})(?:${S}(?<inlineBlockStrict>>))?|(?<inlineBlockAny>\*)))?)?${S}(?<inlinePath>${SigilD·JPath})${S}(?:(?<inlineName>${QName})(?:${S}(?<inlineAttributes>${AttributesD·J}))?(?:${S}(?<inlineFinal>FINAL)|${S}TEXTFROM${S}(?<inlineTextFrom>${QName})|${S}TEXTTO${S}(?<inlineTextTo>${QName}(?:${S}${QName})*))?|#${S}(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
+  `(?:<!INLINE(?:${S}(?:(?<inlineSectionSigil>${SigilD·J})(?:${S}(?<inlineSectionStrict>>))?${S}(?:(?<inlineSectionBlockPath>${SigilD·JPath})(?:${S}(?<inlineSectionBlockStrict>>))?|(?<inlineSectionBlockAny>\*))|(?<inlineBlockPath>${SigilD·JPath})(?:${S}(?<inlineBlockStrict>>))?))?${S}(?<inlinePath>${SigilD·JPath})${S}(?:(?<inlineName>${QName})(?:${S}(?<inlineAttributes>${AttributesD·J}))?(?:${S}(?<inlineFinal>FINAL)|${S}TEXTFROM${S}(?<inlineTextFrom>${QName})|${S}TEXTTO${S}(?<inlineTextTo>${QName}(?:${S}${QName})*))?|#${S}(?<inlineSpecial>TRANSPARENT|COMMENT|LITERAL))${S}?>)`;
 /**
  *  Inline declaration.
  *
  *      [🆐H] InlineD·J      ::= '<!INLINE' (
- *                                 S SigilD·JPath (S '>')? (
+ *                                 S SigilD·J (S '>')? (
  *                                   S (SigilD·JPath (S '>')? | '*')
- *                                 )?
+ *                                 ) | S SigilD·JPath (S '>')?
  *                               )? S SigilD·JPath
  *                               S (
  *                                 QName (S AttributesD·J)? (
@@ -568,38 +849,45 @@ const InlineD·J = String.raw
  *
  *  ##  Capture groups  ##
  *
- *  01. `inlineSectionOrBlockPath` (optional): Section/block sigil
- *        path.
+ *  01. `inlineSectionSigil` (optional): Section sigil.
  *
- *  02. `inlineSectionOrBlockStrict` (optional): `>` if the
- *        section/block sigil path indicates a parent (rather than
- *        ancestor) relationship.
- *
- *  03. `inlineBlockPath` (optional): Block sigil path.
- *
- *  04. `inlineBlockStrict` (optional): `>` if the block sigil path
+ *  02. `inlineSectionStrict` (optional): `>` if the section sigil
  *        indicates a parent (rather than ancestor) relationship.
  *
- *  05. `inlineBlockAny` (optional): `*` if there is a section but not
- *        block sigil path.
+ *  03. `inlineSectionBlockPath` (optional): Block sigil path, if there
+ *        is a section sigil..
  *
- *  06. `inlinePath`: Inline sigil path.
+ *  04. `inlineSectionBlockStrict` (optional): `>` if there is a
+ *        section sigil and the block sigil path indicates a parent
+ *        (rather than ancestor) relationship.
  *
- *  07. `inlineName` (optional): Inline X·M·L element name.
+ *  05. `inlineSectionBlockAny` (optional): `*` if there is a section
+ *        sigil but not a block sigil path.
  *
- *  08. `inlineAttributes` (optional): Inline attributes declaration.
+ *  06. `inlineBlockPath` (optional): Block sigil path, if there is not
+ *        a section sigil.
  *
- *  09. `inlineFinal` (optional): `FINAL` if this inline cannot contain
+ *  07. `inlineBlockStrict` (optional): `>` if there is not a
+ *        section sigil, and the block sigil path indicates a parent
+ *        (rather than ancestor) relationship.
+ *
+ *  08. `inlinePath`: Inline sigil path.
+ *
+ *  09. `inlineName` (optional): Inline X·M·L element name.
+ *
+ *  10. `inlineAttributes` (optional): Inline attributes declaration.
+ *
+ *  11. `inlineFinal` (optional): `FINAL` if this inline cannot contain
  *        child inlines.
  *
- *  10. `inlineTextFrom` (optional): An attribute name to pull text
+ *  12. `inlineTextFrom` (optional): An attribute name to pull text
  *        from.
  *
- *  11. `inlineTextTo` (optional): One or more attribute names to
+ *  13. `inlineTextTo` (optional): One or more attribute names to
  *        send text to.
  *      This implies a `FINAL` inline.
  *
- *  12. `inlineSpecial` (optional): `TRANSPARENT` if this sigil defines
+ *  14. `inlineSpecial` (optional): `TRANSPARENT` if this sigil defines
  *        a transparent inline, `COMMENT` if this sigil defines a
  *        comment inline, or `LITERAL` if this sigil defines a literal
  *        inline.
@@ -613,48 +901,67 @@ const InlineD·J_RegExp = new RegExp(InlineD·J, "u");
 export { InlineD·J_RegExp as InlineD·J };
 
 const AttributeD·J = String.raw
-  `(?:<!ATTRIBUTE(?:${S}(?<attributeSectionOrBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionOrBlockOrInlineStrict>>))?(?:${S}(?:(?<attributeBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeBlockOrInlineStrict>>))?|(?<attributeBlockOrInlineAny>\*))(?:${S}(?:(?<attributeInlinePath>${SigilD·JPath})(?:${S}(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?)?)?${S}(?<attributeSigil>${SigilD·J})${S}(?<attributeNames>${QName}(?:${S}${QName})*)${S}?>)`;
+  `(?:<!ATTRIBUTE(?:${S}(?:(?<attributeSectionSigil>${SigilD·J})(?:${S}(?<attributeSectionStrict>>))?${S}(?:(?<attributeSectionBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionBlockOrInlineStrict>>))?|(?<attributeSectionBlockOrInlineAny>\*))(?:${S}(?:(?<attributeSectionInlinePath>${SigilD·JPath})(?:${S}(?<attributeSectionInlineStrict>>))?|(?<attributeSectionInlineAny>\*)))?|(?<attributeBlockOrInlinePath>${SigilD·JPath})(?:${S}(?<attributeBlockOrInlineStrict>>))?(?:${S}(?:(?<attributeInlinePath>${SigilD·JPath})(?:${S}(?<attributeInlineStrict>>))?|(?<attributeInlineAny>\*)))?))?${S}(?<attributeSigil>${SigilD·J})${S}(?<attributeNames>${QName}(?:${S}${QName})*)${S}?>)`;
 /**
  *  Attribute declaration.
  *
  *      [🆐I] AttributeD·J   ::= '<!ATTRIBUTE' (
- *                                 S SigilD·JPath (S '>')? (
+ *                                 S SigilD·J (S '>')? (
  *                                   S (SigilD·JPath (S '>')? | '*') (
  *                                     S (SigilD·JPath (S '>')? | '*')
  *                                   )?
+ *                                 ) | S SigilD·JPath (S '>')? (
+ *                                   S (SigilD·JPath (S '>')? | '*')
  *                                 )?
  *                               )? S SigilD·J (S QName)+ S? '>'
  *
  *  ##  Capture groups  ##
  *
- *  01. `attributeSectionOrBlockOrInlinePath` (optional):
- *        Section/block/inline sigil path.
+ *  01. `attributeSectionSigil` (optional): Section sigil.
  *
- *  02. `attributeSectionOrBlockOrInlineStrict` (optional): `>` if the
- *        section/block/inline sigil path indicates a parent (rather
- *        than ancestor) relationship.
+ *  02. `attributeSectionStrict` (optional): `>` if the section sigil
+ *        indicates a parent (rather than ancestor) relationship.
  *
- *  03. `attributeBlockOrInlinePath` (optional): Block/inline sigil
- *        path.
+ *  03. `attributeSectionBlockOrInlinePath` (optional): Block/inline
+ *        sigil path, if there is a section sigil.
  *
- *  04. `attributeBlockOrInlineStrict` (optional): `>` if the
- *        block/inline sigil path indicates a parent (rather than
- *        ancestor) relationship.
+ *  04. `attributeSectionBlockOrInlineStrict` (optional): `>` if there
+ *        is a section sigil and the block/inline sigil path indicates
+ *        a parent (rather than ancestor) relationship.
  *
- *  05. `attributeBlockOrInlineAny` (optional): `*` if there is a
- *        section/block but not block/inline sigil path.
+ *  05. `attributeSectionBlockOrInlineAny` (optional): `*` if there is
+ *        a section sigil but not a block/inline sigil path.
  *
- *  06. `attributeInlinePath` (optional): Inline sigil path.
+ *  06. `attributeSectionInlinePath` (optional): Inline sigil path, if
+ *        there is a section sigil.
  *
- *  07. `attributeInlineStrict` (optional): `>` if the inline sigil
- *        path indicates a parent (rather than ancestor) relationship.
+ *  07. `attributeSectionInlineStrict` (optional): `>` if there is a
+ *        section sigil and the inline sigil path indicates a parent
+ *        (rather than ancestor) relationship.
  *
- *  08. `attributeInlineAny` (optional): `*` if there is a
- *        section/block but not inline sigil path.
+ *  08. `attributeSectionInlineAny` (optional): `*` if there is a
+ *        section sigil but not an inline sigil path.
  *
- *  09. `attibuteSigil`: Attribute sigil.
+ *  09. `attributeBlockOrInlinePath` (optional): Block/inline sigil
+ *        path, if there is not a section sigil.
  *
- *  10. `attributeNames`: Attribute X·M·L element name(s).
+ *  10. `attributeBlockOrInlineStrict` (optional): `>` if there is not
+ *        a section sigil and the block/inline sigil path indicates a
+ *        parent (rather than ancestor) relationship.
+ *
+ *  11. `attributeInlinePath` (optional): Inline sigil path, if there
+ *        is not a section sigil.
+ *
+ *  12. `attributeInlineStrict` (optional): `>` if there is not a
+ *        a section sigil and the inline sigil path indicates a parent
+ *        (rather than ancestor) relationship.
+ *
+ *  13. `attributeInlineAny` (optional): `*` if there is a
+ *        block sigil path, but not inline sigil path or section sigil.
+ *
+ *  14. `attibuteSigil`: Attribute sigil.
+ *
+ *  15. `attributeNames`: Attribute X·M·L element name(s).
  *
  *  ##  Welformedness constraints  ##
  *

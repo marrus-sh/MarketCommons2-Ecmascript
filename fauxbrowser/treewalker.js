@@ -33,7 +33,7 @@ The following function (and *only* the following function) was
  >    SOFTWARE.
 
 It is reproduced separately here (instead of just using an import)
-  solely for the ˋ@ts-nocheckˋ directive above.
+  solely for the `@ts-nocheck` directive above.
 */
 
 /**
@@ -126,7 +126,7 @@ It is reproduced separately here (instead of just using an import)
    */
   nodeFilter = function (tw, node) {
     // Maps nodeType to whatToShow
-    if (!(((1 << (node.nodeType - 1)) & tw.whatToShow))) {
+    if (!((1 << (node.nodeType - 1)) & tw.whatToShow)) {
       return NodeFilter.FILTER_SKIP;
     }
 
@@ -473,4 +473,4 @@ It is reproduced separately here (instead of just using an import)
   if (!win.TreeWalker) {
     win.TreeWalker = TreeWalker;
   }
-}(window, document));
+})(window, document);

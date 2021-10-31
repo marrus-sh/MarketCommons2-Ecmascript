@@ -13,7 +13,7 @@
 //  This module contains default values used when configuring the
 //    Market Commons ⅠⅠ processor.
 
-import htmlD·J from "./html.marketdj.js";
+import htmlD·J from "./🆐/html.marketdj.js";
 import { marketNamespace } from "./names.js";
 
 /**
@@ -23,9 +23,10 @@ export const declarationOfJargon =
   `<?market-commons 2.0 "${marketNamespace}/html"?>\n`;
 
 /**
- *  The default `Map` mapping system identifiers to Declarations of
- *    Jargon.
+ *  The default object associating system identifiers with
+ *    Declarations of Jargon.
  */
-export const systemIdentifierMap = new Map([
-  [`${marketNamespace}/html`, htmlD·J],
-]);
+export const systemIdentifiers = Object.freeze(Object.assign(
+  Object.create(null),
+  { [`${marketNamespace}/html`]: htmlD·J },
+));
