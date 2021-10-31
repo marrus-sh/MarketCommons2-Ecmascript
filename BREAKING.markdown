@@ -4,7 +4,7 @@ The following is a list of known incompatibilities between documents
 written in the original Market Commons format and a Market Commons ⅠⅠ
 processor.
 
-- Market Commons ⅠⅠ occasionally throws errors! Most of these are
+- Market Commons ⅠⅠ (occasionally) throws errors! Most of these are
   related to Declaration of Jargon processing, but you should be aware
   of the fact that not every call to the parse function will
   necessarily succeed (and compensate for this fact accordingly). In
@@ -24,6 +24,14 @@ processor.
   importantly, this allows for the use of sigils which repeat a single
   character multiple times.
 
+- Headings now _require_ closing sigils (after the heading text) to
+  specify attributes.
+
+  **Rationale:** In the original Market Commons, when a heading ended
+  in an inline, it was unclear whether the attributes applied to the
+  inline or to the heading itself. Requiring at least one final sigil
+  before heading attributes clarifies this.
+
 - You can no longer specify attributes for a “default” block.
 
   **Rationale:** It wasn’t really obvious that a line beginning with a
@@ -35,8 +43,8 @@ processor.
 
   - Newlines are not allowed in inline literals.
 
-    **Rationale:** This makes literal behaviour more predictable and
-    better conform to expectations.
+  **Rationale:** This makes literal behaviour more predictable and
+  better conform to expectations.
 
 - Support for media elements has changed and been reduced; for
   simplicity, Market Commons ⅠⅠ only supports `<img>` and not `<video>`
