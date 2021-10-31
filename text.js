@@ -17,24 +17,6 @@ import { ParseError } from "./errors.js";
 import { NSAttName, QName, RestrictedChar, S } from "./syntax.js";
 
 /**
- *  A `String` object with an attached `index`.
- */
-export class Line extends String {
-  /**
-   *  Creates a `Line` with at provided `index` and which has a value
-   *    of the provided `contents`.
-   *
-   *  @argument {number} index
-   *  @argument {string} contents
-   */
-  constructor(index, contents) {
-    super(contents);
-    this.index = index >> 0;
-    Object.defineProperty(this, index, { writable: false });
-  }
-}
-
-/**
  *  Normalizes line endings in the provided `text` according to X·M·L
  *    rules and returns the result.
  *
