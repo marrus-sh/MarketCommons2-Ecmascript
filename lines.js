@@ -115,8 +115,8 @@ export class Line extends /** @type {any} */ (String) {
   /**
    *  Effectively the same as `String::slice`, but returns a `Line`.
    *
-   *  @argument {number} start
-   *  @argument {number} end
+   *  @argument {number} [start]
+   *  @argument {number} [end]
    *  @returns {Line}
    */
   slice(start, end) {
@@ -131,7 +131,7 @@ export class Line extends /** @type {any} */ (String) {
    *    `Line`s.
    *
    *  @argument {{[Symbol.split]:(string:string,limit?:number|undefined)=>string[]}} separator
-   *  @argument {number} limit
+   *  @argument {number} [limit]
    *  @returns {Line[]}
    */
   split(separator, limit) {
@@ -145,7 +145,7 @@ export class Line extends /** @type {any} */ (String) {
    *    `Line`.
    *
    *  @argument {number} start
-   *  @argument {number} end
+   *  @argument {number} [end]
    *  @returns {Line}
    */
   substring(start, end) {
