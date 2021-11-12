@@ -46,12 +46,25 @@ import {
 } from "./syntax.js";
 import { prepareAsX·M·L, welformedName } from "./text.js";
 
+/** @typedef {import("./symbols.js").DOCUMENT_NODE} DOCUMENT_NODE */
+/** @typedef {import("./symbols.js").SECTION_NODE} SECTION_NODE */
+/** @typedef {import("./symbols.js").HEADING_NODE} HEADING_NODE */
+/** @typedef {import("./symbols.js").BLOCK_NODE} BLOCK_NODE */
+/** @typedef {import("./symbols.js").INLINE_NODE} INLINE_NODE */
+/** @typedef {import("./symbols.js").ATTRIBUTE_NODE} ATTRIBUTE_NODE */
+/** @typedef {import("./symbols.js").MIXED_CONTENT} MIXED_CONTENT */
+/** @typedef {import("./symbols.js").TRANSPARENT_CONTENT} TRANSPARENT_CONTENT */
+/** @typedef {import("./symbols.js").INLINE_CONTENT} INLINE_CONTENT */
+/** @typedef {import("./symbols.js").TEXT_CONTENT} TEXT_CONTENT */
+/** @typedef {import("./symbols.js").COMMENT_CONTENT} COMMENT_CONTENT */
+/** @typedef {import("./symbols.js").LITERAL_CONTENT} LITERAL_CONTENT */
+
 /**
  *  A document jargon.
  *
  *  @typedef {Object} DocumentJargon
- *  @property {typeof NODE_TYPE.DOCUMENT} nodeType
- *  @property {typeof CONTENT_MODEL.MIXED} contentModel
+ *  @property {DOCUMENT_NODE} nodeType
+ *  @property {MIXED_CONTENT} contentModel
  *  @property {string} source
  *  @property {XMLDocument} template
  */
@@ -60,8 +73,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  A generic division jargon.
  *
  *  @typedef {Object} DivisionJargon
- *  @property {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE} nodeType
- *  @property {typeof CONTENT_MODEL.MIXED|typeof CONTENT_MODEL.TRANSPARENT|typeof CONTENT_MODEL.INLINE|typeof CONTENT_MODEL.TEXT|typeof CONTENT_MODEL.COMMENT|typeof CONTENT_MODEL.LITERAL} contentModel
+ *  @property {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE} nodeType
+ *  @property {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {?string} sigil
  *  @property {?string} path
  *  @property {string} qualifiedName
@@ -72,8 +85,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  A section jargon.
  *
  *  @typedef {Object} SectionJargon
- *  @property {typeof NODE_TYPE.SECTION} nodeType
- *  @property {typeof CONTENT_MODEL.TEXT|typeof CONTENT_MODEL.MIXED} contentModel
+ *  @property {SECTION_NODE} nodeType
+ *  @property {MIXED_CONTENT|TEXT_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -87,8 +100,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  A heading jargon.
  *
  *  @typedef {Object} HeadingJargon
- *  @property {typeof NODE_TYPE.HEADING} nodeType
- *  @property {typeof CONTENT_MODEL.INLINE} contentModel
+ *  @property {HEADING_NODE} nodeType
+ *  @property {INLINE_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -100,8 +113,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  A block jargon.
  *
  *  @typedef {Object} BlockJargon
- *  @property {typeof NODE_TYPE.BLOCK} nodeType
- *  @property {typeof CONTENT_MODEL.INLINE|typeof CONTENT_MODEL.MIXED|typeof CONTENT_MODEL.COMMENT|typeof CONTENT_MODEL.LITERAL} contentModel
+ *  @property {BLOCK_NODE} nodeType
+ *  @property {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -114,8 +127,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  An inline jargon.
  *
  *  @typedef {Object} InlineJargon
- *  @property {typeof NODE_TYPE.INLINE} nodeType
- *  @property {typeof CONTENT_MODEL.INLINE|typeof CONTENT_MODEL.TEXT|typeof CONTENT_MODEL.COMMENT|typeof CONTENT_MODEL.LITERAL} contentModel
+ *  @property {INLINE_NODE} nodeType
+ *  @property {TRANSPARENT_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -128,8 +141,8 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *  An attribute jargon.
  *
  *  @typedef {Object} AttributeJargon
- *  @property {typeof NODE_TYPE.ATTRIBUTE} nodeType
- *  @property {typeof CONTENT_MODEL.TEXT} contentModel
+ *  @property {ATTRIBUTE_NODE} nodeType
+ *  @property {TEXT_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -577,7 +590,7 @@ function processBlock(source, index) {
       blockSigil,
       blockSpecial,
     } =
-      /** @type {{blockSpecial:"COMMENT"|"LITERAL"|undefined,[index:string]:string|undefined}} */ (
+      /** @type {{blockSpecial:"TRANSPARENT"|"COMMENT"|"LITERAL"|undefined,[index:string]:string|undefined}} */ (
         parseResult.groups
       );
     const definitelyExtantBlockPath = welformedPath(
@@ -668,7 +681,7 @@ function processInline(source, index) {
       inlineTextFrom,
       inlineTextTo,
     } =
-      /** @type {{inlinePath:string,inlineSpecial:"COMMENT"|"LITERAL"|undefined,[index:string]:string|undefined}} */ (
+      /** @type {{inlinePath:string,inlineSpecial:"TRANSPARENT"|"COMMENT"|"LITERAL"|undefined,[index:string]:string|undefined}} */ (
         parseResult.groups
       );
     const possiblyBlockPath = inlineSectionBlockPath ??
@@ -1043,7 +1056,7 @@ export class Jargon {
               });
               for (
                 const nodeType
-                  of /** @type {(typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE)[]} */ (
+                  of /** @type {(SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE)[]} */ (
                     [
                       NODE_TYPE.SECTION,
                       NODE_TYPE.HEADING,
@@ -1246,7 +1259,7 @@ export class Jargon {
     Object.freeze(this.namespaces);
     for (
       const nodeType
-        of /** @type {(typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE)[]} */ (
+        of /** @type {(SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE)[]} */ (
           [
             NODE_TYPE.SECTION,
             NODE_TYPE.HEADING,
@@ -1268,7 +1281,7 @@ export class Jargon {
    *  `path` should be “complete” (contain only sigils, `/` [but not
    *    `//`], or `>`) and normalized.
    *
-   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
+   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
    *  @argument {string} path
    *  @argument {{line?:number}} [options]
    *  @returns {{localName:string,namespace:?string,jargon:Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>}|{localName:string,namespace:?string,jargon:Readonly<AttributeJargon>}[]}
@@ -1499,7 +1512,7 @@ export class Jargon {
    *
    *  These responses are cached internally.
    *
-   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
+   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
    *  @argument {string} path
    *  @returns {string[]}
    */
@@ -1511,7 +1524,9 @@ export class Jargon {
         ([sigil, pathsObject]) => {
           //  This callback spoofs a compactMap by returning an array of
           //    either 0 or 1 value.
-          const pathWithSigil = />$/u.test(path)
+          const pathWithSigil = path == ""
+            ? sigil
+            : />$/u.test(path)
             ? `${path}${sigil}`
             : `${path}/${sigil}`;
           for (const glob of Object.keys(pathsObject)) {

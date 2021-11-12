@@ -17,12 +17,19 @@
 Define node types.
 */
 
-const DOCUMENT_NODE = Symbol("document");
-const SECTION_NODE = Symbol("section");
-const HEADING_NODE = Symbol("heading");
-const BLOCK_NODE = Symbol("block");
-const INLINE_NODE = Symbol("inline");
-const ATTRIBUTE_NODE = Symbol("attribute");
+const DOCUMENT_NODE_SYMBOL = Symbol("document");
+const SECTION_NODE_SYMBOL = Symbol("section");
+const HEADING_NODE_SYMBOL = Symbol("heading");
+const BLOCK_NODE_SYMBOL = Symbol("block");
+const INLINE_NODE_SYMBOL = Symbol("inline");
+const ATTRIBUTE_NODE_SYMBOL = Symbol("attribute");
+
+/** @typedef {typeof DOCUMENT_NODE_SYMBOL} DOCUMENT_NODE */
+/** @typedef {typeof SECTION_NODE_SYMBOL} SECTION_NODE */
+/** @typedef {typeof HEADING_NODE_SYMBOL} HEADING_NODE */
+/** @typedef {typeof BLOCK_NODE_SYMBOL} BLOCK_NODE */
+/** @typedef {typeof INLINE_NODE_SYMBOL} INLINE_NODE */
+/** @typedef {typeof ATTRIBUTE_NODE_SYMBOL} ATTRIBUTE_NODE */
 
 /**
  *  Types of node; either `SECTION`, `HEADING`, `BLOCK`, `INLINE`,
@@ -30,44 +37,44 @@ const ATTRIBUTE_NODE = Symbol("attribute");
  *
  *  These describe Market Commons ⅠⅠ nodes, not D·O·M ones.
  *
- *  @type {{DOCUMENT:typeof DOCUMENT_NODE,SECTION:typeof SECTION_NODE,HEADING:typeof HEADING_NODE,BLOCK:typeof BLOCK_NODE,INLINE:typeof INLINE_NODE,ATTRIBUTE:typeof ATTRIBUTE_NODE}}
+ *  @type {Readonly<{DOCUMENT:DOCUMENT_NODE,SECTION:SECTION_NODE,HEADING:HEADING_NODE,BLOCK:BLOCK_NODE,INLINE:INLINE_NODE,ATTRIBUTE:ATTRIBUTE_NODE}>}
  */
 export const NODE_TYPE = Object.preventExtensions(
   Object.create(null, {
     DOCUMENT: {
       configurable: false,
       enumerable: true,
-      value: DOCUMENT_NODE,
+      value: DOCUMENT_NODE_SYMBOL,
       writable: false,
     },
     SECTION: {
       configurable: false,
       enumerable: true,
-      value: SECTION_NODE,
+      value: SECTION_NODE_SYMBOL,
       writable: false,
     },
     HEADING: {
       configurable: false,
       enumerable: true,
-      value: HEADING_NODE,
+      value: HEADING_NODE_SYMBOL,
       writable: false,
     },
     BLOCK: {
       configurable: false,
       enumerable: true,
-      value: BLOCK_NODE,
+      value: BLOCK_NODE_SYMBOL,
       writable: false,
     },
     INLINE: {
       configurable: false,
       enumerable: true,
-      value: INLINE_NODE,
+      value: INLINE_NODE_SYMBOL,
       writable: false,
     },
     ATTRIBUTE: {
       configurable: false,
       enumerable: true,
-      value: ATTRIBUTE_NODE,
+      value: ATTRIBUTE_NODE_SYMBOL,
       writable: false,
     },
   }),
@@ -77,55 +84,62 @@ export const NODE_TYPE = Object.preventExtensions(
 Define content models.
 */
 
-const MIXED_CONTENT = Symbol("mixed");
-const TRANSPARENT_CONTENT = Symbol("transparent");
-const INLINE_CONTENT = Symbol("inline");
-const TEXT_CONTENT = Symbol("text");
-const COMMENT_CONTENT = Symbol("comment");
-const LITERAL_CONTENT = Symbol("literal");
+const MIXED_CONTENT_SYMBOL = Symbol("mixed");
+const TRANSPARENT_CONTENT_SYMBOL = Symbol("transparent");
+const INLINE_CONTENT_SYMBOL = Symbol("inline");
+const TEXT_CONTENT_SYMBOL = Symbol("text");
+const COMMENT_CONTENT_SYMBOL = Symbol("comment");
+const LITERAL_CONTENT_SYMBOL = Symbol("literal");
+
+/** @typedef {typeof MIXED_CONTENT_SYMBOL} MIXED_CONTENT */
+/** @typedef {typeof TRANSPARENT_CONTENT_SYMBOL} TRANSPARENT_CONTENT */
+/** @typedef {typeof INLINE_CONTENT_SYMBOL} INLINE_CONTENT */
+/** @typedef {typeof TEXT_CONTENT_SYMBOL} TEXT_CONTENT */
+/** @typedef {typeof COMMENT_CONTENT_SYMBOL} COMMENT_CONTENT */
+/** @typedef {typeof LITERAL_CONTENT_SYMBOL} LITERAL_CONTENT */
 
 /**
  *  Types of content; either `MIXED`, `TRANSPARENT`, `INLINE`, `TEXT`,
  *    `COMMENT`, or `LITERAL`.
  *
- *  @type {{MIXED:typeof MIXED_CONTENT,TRANSPARENT:typeof TRANSPARENT_CONTENT,INLINE:typeof INLINE_CONTENT,TEXT:typeof TEXT_CONTENT,COMMENT:typeof COMMENT_CONTENT,LITERAL:typeof LITERAL_CONTENT}}
+ *  @type {Readonly<{MIXED:MIXED_CONTENT,TRANSPARENT:TRANSPARENT_CONTENT,INLINE:INLINE_CONTENT,TEXT:TEXT_CONTENT,COMMENT:COMMENT_CONTENT,LITERAL:LITERAL_CONTENT}>}
  */
 export const CONTENT_MODEL = Object.preventExtensions(
   Object.create(null, {
     MIXED: {
       configurable: false,
       enumerable: true,
-      value: MIXED_CONTENT,
+      value: MIXED_CONTENT_SYMBOL,
       writable: false,
     },
     TRANSPARENT: {
       configurable: false,
       enumerable: true,
-      value: TRANSPARENT_CONTENT,
+      value: TRANSPARENT_CONTENT_SYMBOL,
       writable: false,
     },
     INLINE: {
       configurable: false,
       enumerable: true,
-      value: INLINE_CONTENT,
+      value: INLINE_CONTENT_SYMBOL,
       writable: false,
     },
     TEXT: {
       configurable: false,
       enumerable: true,
-      value: TEXT_CONTENT,
+      value: TEXT_CONTENT_SYMBOL,
       writable: false,
     },
     COMMENT: {
       configurable: false,
       enumerable: true,
-      value: COMMENT_CONTENT,
+      value: COMMENT_CONTENT_SYMBOL,
       writable: false,
     },
     LITERAL: {
       configurable: false,
       enumerable: true,
-      value: LITERAL_CONTENT,
+      value: LITERAL_CONTENT_SYMBOL,
       writable: false,
     },
   }),

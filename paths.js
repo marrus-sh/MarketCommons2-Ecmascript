@@ -14,7 +14,7 @@
 //    utilities.
 
 import { ParseError } from "./errors.js";
-import { CharRef, SigilD·J, SigilD·JPath } from "./syntax.js";
+import { CharRef, NCName, SigilD·J, SigilD·JPath } from "./syntax.js";
 
 /**
  *  Builds a regular expression from the provided `glob` for matching
@@ -47,10 +47,10 @@ export function globRegExp(glob) {
       /\/\//gu,
       "/(?:*/)?",
     ).replace(
-      //  Asterisks match some number of sigils, separated by
-      //    slashes.
+      //  Asterisks match some number of sigils or specials, separated
+      //    by slashes.
       /\*/gu,
-      `${SigilD·J.source}(?:/${SigilD·J.source})*`,
+      `(?:${SigilD·J.source}|#${NCName.source})(?:/(?:${SigilD·J.source}|#${NCName.source}))*`,
     ) + "$",
   );
 }
