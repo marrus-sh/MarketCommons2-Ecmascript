@@ -16,11 +16,12 @@
 import /* for `typeof Jargon` */ "./dj.js";
 import { sigilToRegExp } from "./paths.js";
 import { NODE_TYPE } from "./symbols.js";
+import { trim, trimEnd, trimStart } from "./text.js";
 
 /**
  *  A `String` object with an attached `index`.
  */
-export class Line extends String {
+export class Line extends /** @type {any} */ (String) {
   /**
    *  Creates a `Line` with at provided `index` and which has a value
    *    of the provided `contents`.
@@ -109,5 +110,75 @@ export class Line extends String {
         "",
       )
     ];
+  }
+
+  /**
+   *  Effectively the same as `String::slice`, but returns a `Line`.
+   *
+   *  @argument {number} start
+   *  @argument {number} end
+   *  @returns {Line}
+   */
+  slice(start, end) {
+    return new Line(
+      this.index,
+      String.prototype.slice.call(this, start, end),
+    );
+  }
+
+  /**
+   *  Effectively the same as `String::split`, but returns an array of
+   *    `Line`s.
+   *
+   *  @argument {{[Symbol.split]:(string:string,limit?:number|undefined)=>string[]}} separator
+   *  @argument {number} limit
+   *  @returns {Line[]}
+   */
+  split(separator, limit) {
+    return String.prototype.split.call(this, separator, limit).map(
+      ($) => new Line(this.index, $),
+    );
+  }
+
+  /**
+   *  Effectively the same as `String::substring`, but returns a
+   *    `Line`.
+   *
+   *  @argument {number} start
+   *  @argument {number} end
+   *  @returns {Line}
+   */
+  substring(start, end) {
+    return new Line(
+      this.index,
+      String.prototype.substring.call(this, start, end),
+    );
+  }
+
+  /**
+   *  Effectively the same as `String::trim`, but returns a `Line`.
+   *
+   *  @returns {Line}
+   */
+  trim() {
+    return new Line(this.index, trim(String(this)));
+  }
+
+  /**
+   *  Effectively the same as `String::trimEnd`, but returns a `Line`.
+   *
+   *  @returns {Line}
+   */
+  trimEnd() {
+    return new Line(this.index, trimEnd(String(this)));
+  }
+
+  /**
+   *  Effectively the same as `String::trimStart`, but returns a `Line`.
+   *
+   *  @returns {Line}
+   */
+  trimStart() {
+    return new Line(this.index, trimStart(String(this)));
   }
 }

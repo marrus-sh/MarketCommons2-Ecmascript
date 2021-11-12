@@ -84,6 +84,38 @@ export function trim(text) {
 }
 
 /**
+ *  Trims X·M·L whitespace from the end of the provided `text` and
+ *    returns the result.
+ *
+ *  This differs from `String.prototype.trimEnd()`, which has a more
+ *    expansive definition of “whitespace”.
+ *
+ *  @argument {string} text
+ *  @returns {string}
+ */
+export function trimEnd(text) {
+  return new RegExp(`^([^]*?)${S.source}?$`, "u").exec(
+    text,
+  )?.[1] ?? "";
+}
+
+/**
+ *  Trims X·M·L whitespace from the beginning of the provided `text`
+ *    and returns the result.
+ *
+ *  This differs from `String.prototype.trimStart()`, which has a more
+ *    expansive definition of “whitespace”.
+ *
+ *  @argument {string} text
+ *  @returns {string}
+ */
+export function trimStart(text) {
+  return new RegExp(`^${S.source}?([^]*?)$`, "u").exec(
+    text,
+  )?.[1] ?? "";
+}
+
+/**
  *  Throws an error if the provided `qualifiedName` is not welformed;
  *    otherwise, simply returns it.
  *
