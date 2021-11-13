@@ -52,6 +52,7 @@ export function globRegExp(glob) {
       /\*/gu,
       `(?:${SigilD·J.source}|#${NCName.source})(?:/(?:${SigilD·J.source}|#${NCName.source}))*`,
     ) + "$",
+    "u",
   );
 }
 
