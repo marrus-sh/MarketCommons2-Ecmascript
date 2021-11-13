@@ -26,7 +26,7 @@ import {
   x·m·lNamespace,
   x·m·l·n·sNamespace,
 } from "./names.js";
-import { globRegExp, welformedPath } from "./paths.js";
+import { globRegExp, sigilToRegExp, welformedPath } from "./paths.js";
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 import {
   AttributeD·J,
@@ -1275,6 +1275,197 @@ export class Jargon {
   }
 
   /**
+   *  Returns an object indicating the number of consecutive `sigil`s
+   *    that begin the provided `text`, starting from the offset given
+   *    by the provided `lastIndex`, or `null` if none applies.
+   *
+   *  If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
+   *    `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted:
+   *  The resulting `count` will be `1`.
+   *
+   *  @argument {string} text
+   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
+   *  @argument {string} path
+   *  @argument {number} [lastIndex]
+   *  @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
+   */
+  countSigils(text, nodeType, path, lastIndex = 0) {
+    /** @type {{[index:string]:?{sigil:string,count:number,index:number,lastIndex:number},"":null}} */
+    const matches = Object.create(null, {
+      "": {
+        configurable: false,
+        enumerable: false,
+        value: null,
+        writable: false,
+      },
+    });
+    for (const sigil of this.sigilsInScope(nodeType, path)) {
+      const suffix =
+        nodeType == NODE_TYPE.ATTRIBUTE || nodeType == NODE_TYPE.INLINE
+          ? ""
+          : String.raw`(?!\|)[ \t]*`;
+      const regExp = new RegExp(
+        `${sigilToRegExp(sigil).source}${suffix}`,
+        "uy",
+      );
+      regExp.lastIndex = lastIndex;
+      if (
+        nodeType == NODE_TYPE.SECTION || nodeType == NODE_TYPE.HEADING
+      ) {
+        let count = 0;
+        let nextIndex = lastIndex;
+        //  A section or heading may consist of repeated sigils.
+        while (regExp.test(text)) {
+          //  Increment `count` for as long as there is another sigil.
+          ++count;
+          nextIndex = regExp.lastIndex;
+        }
+        if (count > 0) {
+          matches[sigil] = {
+            sigil,
+            count,
+            index: lastIndex,
+            lastIndex: nextIndex,
+          };
+        } else {
+          continue;
+        }
+      } else if (regExp.test(text)) {
+        matches[sigil] = {
+          sigil,
+          count: 1,
+          index: lastIndex,
+          lastIndex: regExp.lastIndex,
+        };
+      } else {
+        continue;
+      }
+    }
+    return matches[
+      Object.keys(matches).reduce(
+        (best, next) => next.length > best.length ? next : best,
+        "",
+      )
+    ];
+  }
+
+  /**
+   *  Parses an attributes container (wrapped in braces) and returns an
+   *    object mapping attribute names to values.
+   *
+   *  @argument {string} path
+   *  @argument {string} text
+   *  @argument {{line?:number}} [options]
+   *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
+   */
+  parseAttributes(path, text, options = {}) {
+    /** @type {{[index:string]:{localName:string,namespace:?string,value:string}}} */
+    const attributes = Object.create(null);
+    const endIndex = text.length - 1;
+    if (text[0] != "{" || text[endIndex] != "}") {
+      throw new ParseError(
+        `Attributes container "${text}" is not wrapped in curly braces.`,
+        options,
+      );
+    } else {
+      for (let index = 1; index < endIndex;) {
+        testingWhitespace: {
+          //  Skip whtiespace.
+          const sRegExp = /[ \t]+/uy;
+          sRegExp.lastIndex = index;
+          if (sRegExp.test(text)) {
+            index = sRegExp.lastIndex;
+            continue;
+          } else {
+            break testingWhitespace;
+          }
+        }
+        testingNamedAttribute: {
+          //  Check for an attribute name, possibly followed by a
+          //    value.
+          const attributesRegExp = new RegExp(
+            String.raw`(?<name>${QName.source})(?:=(?<value>[^ \t]))?`,
+            "uy",
+          );
+          attributesRegExp.lastIndex = index;
+          const parsedAttributes = attributesRegExp.exec(text);
+          if (parsedAttributes) {
+            const { name: qualifiedName, value: maybeValue } =
+              /** @type {{name:string,value?:string}} */ (
+                parsedAttributes.groups
+              );
+            const value = maybeValue ?? "";
+            if (qualifiedName in attributes) {
+              const existing = attributes[qualifiedName];
+              existing.value = `${existing.value} ${value}`;
+            } else {
+              const { localName, namespace } = this.resolveQName(
+                qualifiedName,
+                false,
+                options,
+              );
+              attributes[qualifiedName] = {
+                localName,
+                namespace,
+                value,
+              };
+            }
+            index = attributesRegExp.lastIndex;
+            continue;
+          } else {
+            break testingNamedAttribute;
+          }
+        }
+        testingSigils: {
+          //  Check for an attribute sigil in the current scope.
+          const sigilInfo = this.countSigils(
+            text,
+            NODE_TYPE.ATTRIBUTE,
+            `${path}>`,
+            index,
+          );
+          if (sigilInfo) {
+            const valueRegExp = /[^ \t]*/uy;
+            valueRegExp.lastIndex = sigilInfo.lastIndex;
+            const value = valueRegExp.exec(text)?.[0] ?? "";
+            for (
+              const { localName, namespace, jargon: { qualifiedName } }
+                of /** @type {{localName:string,namespace:?string,jargon:Readonly<AttributeJargon>}[]} */ (
+                  this.resolve(
+                    NODE_TYPE.ATTRIBUTE,
+                    `${path}>${sigilInfo.sigil}`,
+                    options,
+                  )
+                )
+            ) {
+              if (qualifiedName in attributes) {
+                const existing = attributes[qualifiedName];
+                existing.value = `${existing.value} ${value}`;
+              } else {
+                attributes[qualifiedName] = {
+                  localName,
+                  namespace,
+                  value,
+                };
+              }
+            }
+            index = valueRegExp.lastIndex;
+            continue;
+          } else {
+            break testingSigils;
+          }
+        }
+        throw new ParseError(
+          `Unable to parse attributes container "${text}" at index ${index}: No valid sigil or attribute name found.`,
+          options,
+        );
+      }
+    }
+    Object.values(attributes).forEach(($) => Object.freeze($));
+    return attributes;
+  }
+
+  /**
    *  Resolves the provided `path` for the provided `nodeType` using
    *    this `Jargon`, and returns the corresponding definition.
    *
@@ -1450,14 +1641,14 @@ export class Jargon {
             );
             return jargon instanceof Array
               ? jargon.map((attribute) => ({
-                ...this.resolveQName(attribute.qualifiedName, {
+                ...this.resolveQName(attribute.qualifiedName, false, {
                   ...options,
                   path,
                 }),
                 jargon: attribute,
               }))
               : {
-                ...this.resolveQName(jargon.qualifiedName, {
+                ...this.resolveQName(jargon.qualifiedName, true, {
                   ...options,
                   path,
                 }),
@@ -1477,24 +1668,30 @@ export class Jargon {
         ? error
         : new SigilResolutionError(
           path,
-          { line: options.line, nodeType },
+          { line: options?.line, nodeType },
         );
     }
   }
 
   /**
    *  @argument {string} qualifiedName
+   *  @argument {boolean} [useDefault]
    *  @argument {{line?:number,path?:string}} [options]
    *  @returns {{localName:string,namespace:?string}}
    */
-  resolveQName(qualifiedName, options = {}) {
+  resolveQName(qualifiedName, useDefault = true, options = {}) {
     const [_, prefix, localName] =
       /^(?:([^:]+):)?([^:]+)$/u.exec(qualifiedName) ?? [];
     const usedPrefix = prefix ?? "";
-    if (!(usedPrefix in this.namespaces)) {
+    if (!useDefault && usedPrefix == "") {
+      return {
+        localName: localName ?? "",
+        namespace: null,
+      };
+    } else if (!(usedPrefix in this.namespaces)) {
       throw new NamespaceError(
         options?.path == null
-          ? `No definition found for namespace prefix "${usedPrefix}"`
+          ? `No definition found for namespace prefix "${usedPrefix}".`
           : `No definition found for namespace prefix "${usedPrefix}", referenced by sigil path "${options.path}."`,
         { line: options.line },
       );

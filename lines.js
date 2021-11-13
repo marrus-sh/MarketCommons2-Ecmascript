@@ -14,8 +14,6 @@
 //    source code.
 
 import /* for `typeof Jargon` */ "./dj.js";
-import { sigilToRegExp } from "./paths.js";
-import { NODE_TYPE } from "./symbols.js";
 import { trim, trimEnd, trimStart } from "./text.js";
 
 /**
@@ -33,83 +31,6 @@ export class Line extends /** @type {any} */ (String) {
     super(contents);
     this.index = index >> 0;
     Object.defineProperty(this, index, { writable: false });
-  }
-
-  /**
-   *  Returns an object indicating the number of consecutive `sigil`s
-   *    that begin this `Line`, starting from the offset given by the
-   *    provided `lastIndex`, or `null` if none applies.
-   *
-   *  If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
-   *    `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted:
-   *  The resulting `count` will be `1`.
-   *
-   *  @argument {import("./dj.js").Jargon} jargon
-   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
-   *  @argument {string} path
-   *  @argument {number} [lastIndex]
-   *  @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
-   */
-  countSigils(jargon, nodeType, path, lastIndex = 0) {
-    const index = lastIndex >> 0;
-    /** @type {{[index:string]:?{sigil:string,count:number,index:number,lastIndex:number},"":null}} */
-    const matches = Object.create(null, {
-      "": {
-        configurable: false,
-        enumerable: false,
-        value: null,
-        writable: false,
-      },
-    });
-    const string = String(this);
-    for (const sigil of jargon.sigilsInScope(nodeType, path)) {
-      const suffix =
-        nodeType == NODE_TYPE.ATTRIBUTE || nodeType == NODE_TYPE.INLINE
-          ? ""
-          : String.raw`(?!\|)[ \t]*`;
-      const regExp = new RegExp(
-        `${sigilToRegExp(sigil).source}${suffix}`,
-        "uy",
-      );
-      regExp.lastIndex = lastIndex;
-      if (
-        nodeType == NODE_TYPE.SECTION || nodeType == NODE_TYPE.HEADING
-      ) {
-        let count = 0;
-        let nextIndex = index;
-        //  A section or heading may consist of repeated sigils.
-        while (regExp.test(string)) {
-          //  Increment `count` for as long as there is another sigil.
-          ++count;
-          nextIndex = regExp.lastIndex;
-        }
-        if (count > 0) {
-          matches[sigil] = {
-            sigil,
-            count,
-            index,
-            lastIndex: nextIndex,
-          };
-        } else {
-          continue;
-        }
-      } else if (regExp.test(string)) {
-        matches[sigil] = {
-          sigil,
-          count: 1,
-          index,
-          lastIndex: regExp.lastIndex,
-        };
-      } else {
-        continue;
-      }
-    }
-    return matches[
-      Object.keys(matches).reduce(
-        (best, next) => next.length > best.length ? next : best,
-        "",
-      )
-    ];
   }
 
   /**
