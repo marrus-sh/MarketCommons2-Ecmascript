@@ -18,7 +18,7 @@
 
 import "./window.js";
 import //  This is an old, archived script but it seems to do the job.
-"./treewalker.js";
+"./polyfillTreeWalker.js";
 
 //  The above `TreeWalker` polyfill isn’t very good and only assigns
 //    `createTreeWalker()` as a method on `window.document`.
