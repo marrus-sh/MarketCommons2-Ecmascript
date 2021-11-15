@@ -1429,8 +1429,8 @@ export class Jargon {
             valueRegExp.lastIndex = sigilInfo.lastIndex;
             const value = valueRegExp.exec(text)?.[0] ?? "";
             for (
-              const { localName, namespace, jargon: { qualifiedName } }
-                of /** @type {{localName:string,namespace:?string,jargon:Readonly<AttributeJargon>}[]} */ (
+              const { qualifiedName }
+                of /** @type {Readonly<Readonly<AttributeJargon>[]>} */ (
                   this.resolve(
                     NODE_TYPE.ATTRIBUTE,
                     `${path}>${sigilInfo.sigil}`,
@@ -1442,6 +1442,10 @@ export class Jargon {
                 const existing = attributes[qualifiedName];
                 existing.value = `${existing.value} ${value}`;
               } else {
+                const {
+                  localName,
+                  namespace,
+                } = this.resolveQName(qualifiedName, false, options)
                 attributes[qualifiedName] = {
                   localName,
                   namespace,
@@ -1475,7 +1479,7 @@ export class Jargon {
    *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
    *  @argument {string} path
    *  @argument {{line?:number}} [options]
-   *  @returns {{localName:string,namespace:?string,jargon:Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>}|{localName:string,namespace:?string,jargon:Readonly<AttributeJargon>}[]}
+   *  @returns {ResolvedJargon}
    */
   resolve(nodeType, path, options = {}) {
     //  Because most any failure to resolve ought to produce a
@@ -1632,30 +1636,10 @@ export class Jargon {
             //deno-lint-ignore no-unused-vars
             ([index, [key, value]]) => value,
           );
-          if (sortedMatchingDefinitions.length > 0) {
-            //  There is a final result; clone it and add an
-            //    appropriate `namespace` and `localName` based on
-            //    its `qualifiedName` and the defined namespaces.
-            const jargon = /** @type {ResolvedJargon} */ (
-              sortedMatchingDefinitions.pop()
-            );
-            return jargon instanceof Array
-              ? jargon.map((attribute) => ({
-                ...this.resolveQName(attribute.qualifiedName, false, {
-                  ...options,
-                  path,
-                }),
-                jargon: attribute,
-              }))
-              : {
-                ...this.resolveQName(jargon.qualifiedName, true, {
-                  ...options,
-                  path,
-                }),
-                jargon,
-              };
+          const bestMatch = sortedMatchingDefinitions.pop()
+          if (bestMatch != null) {
+            return bestMatch;
           } else {
-            //  Resolution failed to produce a result.
             throw new TypeError(
               "The list of matching definitions was empty.",
             );
@@ -1692,7 +1676,7 @@ export class Jargon {
       throw new NamespaceError(
         options?.path == null
           ? `No definition found for namespace prefix "${usedPrefix}".`
-          : `No definition found for namespace prefix "${usedPrefix}", referenced by sigil path "${options.path}."`,
+          : `No definition found for namespace prefix "${usedPrefix}", referenced by sigil path "${options.path}".`,
         { line: options.line },
       );
     } else {
