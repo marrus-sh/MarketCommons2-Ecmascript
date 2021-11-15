@@ -13,7 +13,6 @@
 //  This module contains code pertaining to lines of Market Commons ⅠⅠ
 //    source code.
 
-import /* for `typeof Jargon` */ "./dj.js";
 import { trim, trimEnd, trimStart } from "./text.js";
 
 /**
