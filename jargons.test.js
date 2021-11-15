@@ -1,4 +1,4 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: dj.test.js
+//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: jargons.test.js
 //  ===================================================================
 //
 //  Copyright © 2021 Margaret KIBI.
@@ -12,7 +12,7 @@
 //deno-lint-ignore-file ban-ts-comment
 
 import { SigilResolutionError } from "./errors.js";
-import { Jargon } from "./dj.js";
+import { Jargon } from "./jargons.js";
 import {
   assertEquals,
   assertThrows,

@@ -12,7 +12,7 @@
 //deno-lint-ignore-file ban-ts-comment
 
 import "../fauxbrowser/mod.js";
-import { Jargon } from "../dj.js";
+import { Jargon } from "../jargons.js";
 import htmlD·J from "./html.marketdj.js";
 import {
   //deno-lint-ignore camelcase
