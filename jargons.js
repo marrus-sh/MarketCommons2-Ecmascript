@@ -1445,7 +1445,7 @@ export class Jargon {
                 const {
                   localName,
                   namespace,
-                } = this.resolveQName(qualifiedName, false, options)
+                } = this.resolveQName(qualifiedName, false, options);
                 attributes[qualifiedName] = {
                   localName,
                   namespace,
@@ -1636,7 +1636,7 @@ export class Jargon {
             //deno-lint-ignore no-unused-vars
             ([index, [key, value]]) => value,
           );
-          const bestMatch = sortedMatchingDefinitions.pop()
+          const bestMatch = sortedMatchingDefinitions.pop();
           if (bestMatch != null) {
             return bestMatch;
           } else {
