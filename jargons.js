@@ -1360,20 +1360,14 @@ export class Jargon {
    *  @argument {ErrorOptions} [options]
    *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
    */
-  parseAttributes(path, text, intoObject = undefined, options = {}) {
+  parseAttributesContainer(
+    path,
+    text,
+    intoObject = undefined,
+    options = {},
+  ) {
     /** @type {{[index:string]:{localName:string,namespace:?string,value:string}}} */
-    const attributes = intoObject === undefined
-      ? Object.create(null)
-      : Object.assign(
-        Object.create(null),
-        Object.fromEntries(
-          Object.entries(intoObject).map(
-            (
-              [key, attribute],
-            ) => [key, Object.assign(Object.create(null), attribute)],
-          ),
-        ),
-      );
+    const attributes = Object.create(null);
     const endIndex = text.length - 1;
     if (text[0] != "{" || text[endIndex] != "}") {
       throw new ParseError(
@@ -1411,11 +1405,24 @@ export class Jargon {
             if (qualifiedName in attributes) {
               const existing = attributes[qualifiedName];
               existing.value = `${existing.value} ${value}`;
+            } else if (
+              intoObject != null && qualifiedName in intoObject
+            ) {
+              const {
+                localName,
+                namespace,
+                value: existing,
+              } = intoObject[qualifiedName];
+              attributes[qualifiedName] = {
+                localName,
+                namespace,
+                value: `${existing} ${value}`,
+              };
             } else {
               const { localName, namespace } = this.resolveQName(
                 qualifiedName,
                 false,
-                options,
+                { ...options, path },
               );
               attributes[qualifiedName] = {
                 localName,
@@ -1454,11 +1461,25 @@ export class Jargon {
               if (qualifiedName in attributes) {
                 const existing = attributes[qualifiedName];
                 existing.value = `${existing.value} ${value}`;
-              } else {
+              } else if (
+                intoObject != null && qualifiedName in intoObject
+              ) {
                 const {
                   localName,
                   namespace,
-                } = this.resolveQName(qualifiedName, false, options);
+                  value: existing,
+                } = intoObject[qualifiedName];
+                attributes[qualifiedName] = {
+                  localName,
+                  namespace,
+                  value: `${existing} ${value}`,
+                };
+              } else {
+                const { localName, namespace } = this.resolveQName(
+                  qualifiedName,
+                  false,
+                  { ...options, path },
+                );
                 attributes[qualifiedName] = {
                   localName,
                   namespace,
