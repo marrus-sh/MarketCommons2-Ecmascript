@@ -1355,12 +1355,24 @@ export class Jargon {
    *
    *  @argument {string} path
    *  @argument {string} text
+   *  @argument {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} [intoObject]
    *  @argument {{line?:number}} [options]
    *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
    */
-  parseAttributes(path, text, options = {}) {
+  parseAttributes(path, text, intoObject = undefined, options = {}) {
     /** @type {{[index:string]:{localName:string,namespace:?string,value:string}}} */
-    const attributes = Object.create(null);
+    const attributes = intoObject === undefined
+      ? Object.create(null)
+      : Object.assign(
+        Object.create(null),
+        Object.fromEntries(
+          Object.entries(intoObject).map(
+            (
+              [key, attribute],
+            ) => [key, Object.assign(Object.create(null), attribute)],
+          ),
+        ),
+      );
     const endIndex = text.length - 1;
     if (text[0] != "{" || text[endIndex] != "}") {
       throw new ParseError(
@@ -1465,8 +1477,11 @@ export class Jargon {
         );
       }
     }
-    Object.values(attributes).forEach(($) => Object.freeze($));
-    return attributes;
+    const result = intoObject ?? Object.create(null);
+    for (const [key, value] of Object.entries(attributes)) {
+      result[key] = Object.freeze(value);
+    }
+    return result;
   }
 
   /**
@@ -1655,6 +1670,35 @@ export class Jargon {
           { line: options?.line, nodeType },
         );
     }
+  }
+
+  /**
+   *  @argument {{[index:string]:string}} attributes
+   *  @argument {{line?:number,path?:string}} [options]
+   *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
+   */
+  resolveAttributes(attributes, options = {}) {
+    return Object.assign(
+      Object.create(null),
+      Object.fromEntries(
+        Object.entries(attributes).map(([key, value]) => {
+          const {
+            localName,
+            namespace,
+          } = this.resolveQName(key, false, options);
+          return [
+            key,
+            Object.freeze(
+              Object.assign(Object.create(null), {
+                localName,
+                namespace,
+                value,
+              }),
+            ),
+          ];
+        }),
+      ),
+    );
   }
 
   /**
