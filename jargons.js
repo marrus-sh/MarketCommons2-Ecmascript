@@ -16,7 +16,7 @@ import { systemIdentifiers as defaultSystemIdentifiers } from "./defaults.js";
 import {
   ConfigurationError,
   MarketCommonsⅠⅠError,
-  NamespaceError,
+  NamespaceResolutionError,
   ParseError,
   SigilResolutionError,
 } from "./errors.js";
@@ -46,6 +46,7 @@ import {
 } from "./syntax.js";
 import { prepareAsX·M·L, welformedName } from "./text.js";
 
+/** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
 /** @typedef {import("./symbols.js").DOCUMENT_NODE} DOCUMENT_NODE */
 /** @typedef {import("./symbols.js").SECTION_NODE} SECTION_NODE */
 /** @typedef {import("./symbols.js").HEADING_NODE} HEADING_NODE */
@@ -167,7 +168,7 @@ const nestedWithin = Symbol();
  *    attribute names with values.
  *
  *  @argument {?string} attributesDeclaration
- *  @argument {{index?:number}} [options]
+ *  @argument {ErrorOptions} [options]
  *  @returns {Readonly<{[index:string]:string}>}
  */
 function parseAttributes(attributesDeclaration, options = {}) {
@@ -191,7 +192,7 @@ function parseAttributes(attributesDeclaration, options = {}) {
         //    the same attribute name twice [🆐A‐1].
         throw new ParseError(
           `Attribute @${name} declared twice.`,
-          { index: options?.index },
+          options,
         );
       } else {
         //  Set the attribute.
@@ -1356,7 +1357,7 @@ export class Jargon {
    *  @argument {string} path
    *  @argument {string} text
    *  @argument {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} [intoObject]
-   *  @argument {{line?:number}} [options]
+   *  @argument {ErrorOptions} [options]
    *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
    */
   parseAttributes(path, text, intoObject = undefined, options = {}) {
@@ -1493,7 +1494,7 @@ export class Jargon {
    *
    *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
    *  @argument {string} path
-   *  @argument {{line?:number}} [options]
+   *  @argument {ErrorOptions} [options]
    *  @returns {ResolvedJargon}
    */
   resolve(nodeType, path, options = {}) {
@@ -1667,14 +1668,14 @@ export class Jargon {
         ? error
         : new SigilResolutionError(
           path,
-          { line: options?.line, nodeType },
+          { ...options, nodeType },
         );
     }
   }
 
   /**
    *  @argument {{[index:string]:string}} attributes
-   *  @argument {{line?:number,path?:string}} [options]
+   *  @argument {ErrorOptions&{path?:string}} [options]
    *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
    */
   resolveAttributes(attributes, options = {}) {
@@ -1704,7 +1705,7 @@ export class Jargon {
   /**
    *  @argument {string} qualifiedName
    *  @argument {boolean} [useDefault]
-   *  @argument {{line?:number,path?:string}} [options]
+   *  @argument {ErrorOptions&{path?:string}} [options]
    *  @returns {{localName:string,namespace:?string}}
    */
   resolveQName(qualifiedName, useDefault = true, options = {}) {
@@ -1717,12 +1718,7 @@ export class Jargon {
         namespace: null,
       };
     } else if (!(usedPrefix in this.namespaces)) {
-      throw new NamespaceError(
-        options?.path == null
-          ? `No definition found for namespace prefix "${usedPrefix}".`
-          : `No definition found for namespace prefix "${usedPrefix}", referenced by sigil path "${options.path}".`,
-        { line: options.line },
-      );
+      throw new NamespaceResolutionError(usedPrefix, options);
     } else {
       return {
         localName: localName ?? "",

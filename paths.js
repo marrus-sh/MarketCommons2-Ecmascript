@@ -16,6 +16,8 @@
 import { ParseError } from "./errors.js";
 import { CharRef, NCName, SigilD·J, SigilD·JPath } from "./syntax.js";
 
+/** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
+
 /**
  *  Builds a regular expression from the provided `glob` for matching
  *    (completely specified) paths.
@@ -105,7 +107,7 @@ export function sigilToRegExp(sigil) {
  *    returns the normalized form.
  *
  *  @argument {string} path
- *  @argument {{index?:number}} [options]
+ *  @argument {ErrorOptions} [options]
  *  @returns {string}
  */
 export function welformedPath(path, options = {}) {

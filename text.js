@@ -16,6 +16,8 @@
 import { ParseError } from "./errors.js";
 import { NSAttName, QName, RestrictedChar, S } from "./syntax.js";
 
+/** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
+
 /**
  *  Normalizes line endings in the provided `text` according to X·M·L
  *    rules and returns the result.
@@ -120,7 +122,7 @@ export function trimStart(text) {
  *    otherwise, simply returns it.
  *
  *  @argument {string} qualifiedName
- *  @argument {{index?:number,line?:number}} [options]
+ *  @argument {ErrorOptions} [options]
  *  @returns {string}
  */
 export function welformedName(qualifiedName, options = {}) {

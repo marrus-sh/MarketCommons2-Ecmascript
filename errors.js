@@ -12,6 +12,8 @@
 //
 //  This module contains Market Commons ⅠⅠ error types.
 
+/** @typedef {{index?:number}|{line?:number}} ErrorOptions */
+
 /**
  *  A generic Market Commons ⅠⅠ error.
  *
@@ -24,7 +26,7 @@ export class MarketCommonsⅠⅠError extends Error {
    *  Create a `MarketCommonsⅠⅠError` from the provided `message`.
    *
    *  @argument {string} message
-   *  @argument {{index?:number}|{line?:number}} [options]
+   *  @argument {ErrorOptions} [options]
    *  @argument {...any} additionalArguments
    */
   constructor(message, options, ...additionalArguments) {
@@ -59,9 +61,33 @@ export class ConfigurationError extends MarketCommonsⅠⅠError {}
 export class ParseError extends MarketCommonsⅠⅠError {}
 
 /**
- *  A error pertaining to Market Commons ⅠⅠ namespace processing.
+ *  A error pertaining to Market Commons ⅠⅠ namespace resolution.
  */
-export class NamespaceError extends MarketCommonsⅠⅠError {}
+export class NamespaceResolutionError extends MarketCommonsⅠⅠError {
+  /**
+   *  Create a `NamespaceResolutionError` at the provided `line` and
+   *    with the provided `options`.
+   *
+   *  @argument {string} prefix
+   *  @argument {ErrorOptions&{path?:string}} [options]
+   *  @argument {...any} additionalArguments
+   */
+  constructor(prefix, options, ...additionalArguments) {
+    const {
+      path,
+      ...remainingOptions
+    } = options ?? {};
+    super(
+      path == null
+        ? `No definition found for namespace prefix "${prefix}".`
+        : `No definition found for namespace prefix "${prefix}", referenced by sigil path "${path}".`,
+      remainingOptions,
+      ...additionalArguments,
+    );
+    this.prefix = String(prefix);
+    this.path = path == null ? null : String(path);
+  }
+}
 
 /**
  *  A error pertaining to Market Commons ⅠⅠ sigil resolution.
@@ -72,7 +98,7 @@ export class SigilResolutionError extends MarketCommonsⅠⅠError {
    *    with the provided `nodeType` and `path`.
    *
    *  @argument {string} path
-   *  @argument {{line?:number,nodeType:Symbol}} options
+   *  @argument {ErrorOptions&{nodeType:Symbol}} options
    *  @argument {...any} additionalArguments
    */
   constructor(path, options, ...additionalArguments) {
