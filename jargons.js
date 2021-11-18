@@ -56,7 +56,6 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
 /** @typedef {import("./symbols.js").INLINE_NODE} INLINE_NODE */
 /** @typedef {import("./symbols.js").ATTRIBUTE_NODE} ATTRIBUTE_NODE */
 /** @typedef {import("./symbols.js").MIXED_CONTENT} MIXED_CONTENT */
-/** @typedef {import("./symbols.js").TRANSPARENT_CONTENT} TRANSPARENT_CONTENT */
 /** @typedef {import("./symbols.js").INLINE_CONTENT} INLINE_CONTENT */
 /** @typedef {import("./symbols.js").TEXT_CONTENT} TEXT_CONTENT */
 /** @typedef {import("./symbols.js").COMMENT_CONTENT} COMMENT_CONTENT */
@@ -77,7 +76,7 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *
  *  @typedef {Object} DivisionJargon
  *  @property {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE} nodeType
- *  @property {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ *  @property {MIXED_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {?string} sigil
  *  @property {?string} path
  *  @property {string} qualifiedName
@@ -117,7 +116,7 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *
  *  @typedef {Object} BlockJargon
  *  @property {BLOCK_NODE} nodeType
- *  @property {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ *  @property {MIXED_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -131,7 +130,7 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  *
  *  @typedef {Object} InlineJargon
  *  @property {INLINE_NODE} nodeType
- *  @property {TRANSPARENT_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ *  @property {INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
  *  @property {string} sigil
  *  @property {string} path
  *  @property {string} qualifiedName
@@ -604,7 +603,7 @@ function processBlock(source, index) {
         nodeType: NODE_TYPE.BLOCK,
         contentModel: blockFinal != null
           ? CONTENT_MODEL.INLINE
-          : blockSpecial != null
+          : blockSpecial != null && blockSpecial != "TRANSPARENT"
           ? CONTENT_MODEL[blockSpecial]
           : CONTENT_MODEL.MIXED,
         sigil: welformedPath(
@@ -694,7 +693,7 @@ function processInline(source, index) {
         nodeType: NODE_TYPE.INLINE,
         contentModel: inlineFinal != null || inlineTextTo
           ? CONTENT_MODEL.TEXT
-          : inlineSpecial != null
+          : inlineSpecial != null && inlineSpecial != "TRANSPARENT"
           ? CONTENT_MODEL[inlineSpecial]
           : CONTENT_MODEL.INLINE,
         sigil: welformedPath(

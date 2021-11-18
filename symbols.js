@@ -85,24 +85,22 @@ Define content models.
 */
 
 const MIXED_CONTENT_SYMBOL = Symbol("mixed");
-const TRANSPARENT_CONTENT_SYMBOL = Symbol("transparent");
 const INLINE_CONTENT_SYMBOL = Symbol("inline");
 const TEXT_CONTENT_SYMBOL = Symbol("text");
 const COMMENT_CONTENT_SYMBOL = Symbol("comment");
 const LITERAL_CONTENT_SYMBOL = Symbol("literal");
 
 /** @typedef {typeof MIXED_CONTENT_SYMBOL} MIXED_CONTENT */
-/** @typedef {typeof TRANSPARENT_CONTENT_SYMBOL} TRANSPARENT_CONTENT */
 /** @typedef {typeof INLINE_CONTENT_SYMBOL} INLINE_CONTENT */
 /** @typedef {typeof TEXT_CONTENT_SYMBOL} TEXT_CONTENT */
 /** @typedef {typeof COMMENT_CONTENT_SYMBOL} COMMENT_CONTENT */
 /** @typedef {typeof LITERAL_CONTENT_SYMBOL} LITERAL_CONTENT */
 
 /**
- *  Types of content; either `MIXED`, `TRANSPARENT`, `INLINE`, `TEXT`,
- *    `COMMENT`, or `LITERAL`.
+ *  Types of content; either `MIXED`, `INLINE`, `TEXT`, `COMMENT`, or
+ *    `LITERAL`.
  *
- *  @type {Readonly<{MIXED:MIXED_CONTENT,TRANSPARENT:TRANSPARENT_CONTENT,INLINE:INLINE_CONTENT,TEXT:TEXT_CONTENT,COMMENT:COMMENT_CONTENT,LITERAL:LITERAL_CONTENT}>}
+ *  @type {Readonly<{MIXED:MIXED_CONTENT,INLINE:INLINE_CONTENT,TEXT:TEXT_CONTENT,COMMENT:COMMENT_CONTENT,LITERAL:LITERAL_CONTENT}>}
  */
 export const CONTENT_MODEL = Object.preventExtensions(
   Object.create(null, {
@@ -110,12 +108,6 @@ export const CONTENT_MODEL = Object.preventExtensions(
       configurable: false,
       enumerable: true,
       value: MIXED_CONTENT_SYMBOL,
-      writable: false,
-    },
-    TRANSPARENT: {
-      configurable: false,
-      enumerable: true,
-      value: TRANSPARENT_CONTENT_SYMBOL,
       writable: false,
     },
     INLINE: {

@@ -29,7 +29,6 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 /** @typedef {import("./symbols.js").HEADING_NODE} HEADING_NODE */
 /** @typedef {import("./symbols.js").BLOCK_NODE} BLOCK_NODE */
 /** @typedef {import("./symbols.js").MIXED_CONTENT} MIXED_CONTENT */
-/** @typedef {import("./symbols.js").TRANSPARENT_CONTENT} TRANSPARENT_CONTENT */
 /** @typedef {import("./symbols.js").INLINE_CONTENT} INLINE_CONTENT */
 /** @typedef {import("./symbols.js").TEXT_CONTENT} TEXT_CONTENT */
 /** @typedef {import("./symbols.js").COMMENT_CONTENT} COMMENT_CONTENT */
@@ -76,6 +75,8 @@ function addValueToAttributes(
 }
 
 export class Chunk {
+  #open = true;
+
   /**
    *  Makes a new “chunk” object from the provided (trimmed) `line` at
    *    the provided `path`.
@@ -93,15 +94,13 @@ export class Chunk {
     //  Define initial values for instance properties.
     const defaultSigil = hint == NODE_TYPE.HEADING
       ? "#HEADING"
-      : hint == NODE_TYPE.BLOCK
-      ? "#CONTENT"
       : "#DEFAULT";
     this.jargon = jargon;
     /** @type {SECTION_NODE|HEADING_NODE|BLOCK_NODE} */
     this.nodeType = hint == NODE_TYPE.HEADING
       ? NODE_TYPE.HEADING
       : NODE_TYPE.BLOCK;
-    /** @type {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} */
+    /** @type {MIXED_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} */
     this.contentModel = hint == NODE_TYPE.SECTION
       ? CONTENT_MODEL.MIXED
       : CONTENT_MODEL.INLINE;
@@ -178,10 +177,12 @@ export class Chunk {
             switch (nodeType) {
               case NODE_TYPE.SECTION: {
                 this.#configureAsSectionFromFirstLine(line, lastIndex);
+                this.#open = false;
                 break processingSigil;
               }
               case NODE_TYPE.HEADING: {
                 this.#configureAsHeadingFromFirstLine(line, lastIndex);
+                this.#open = false;
                 break processingSigil;
               }
               case NODE_TYPE.BLOCK: {
@@ -500,7 +501,7 @@ export class Chunk {
     const definition = /** @type {Readonly<BlockJargon>} */ (
       jargon.resolve(NODE_TYPE.BLOCK, path, { line: line.index })
     );
-    /** @type {MIXED_CONTENT|TRANSPARENT_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} */
+    /** @type {MIXED_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} */
     const contentModel = definition.contentModel;
     const qualifiedName = definition.qualifiedName;
     const { localName, namespace } = jargon.resolveQName(
@@ -552,10 +553,8 @@ export class Chunk {
 
     //  Process block first line content.
     if (
-      sigil != "#DEFAULT" && [
-        CONTENT_MODEL.MIXED,
-        CONTENT_MODEL.TRANSPARENT,
-      ].includes(contentModel) && String(remainder) != ""
+      sigil != "#DEFAULT" && contentModel == CONTENT_MODEL.MIXED &&
+      String(remainder) != ""
     ) {
       try {
         this.children = Object.freeze([
@@ -588,6 +587,79 @@ export class Chunk {
           { line: line.index, path },
         ),
       });
+    }
+  }
+
+  /**
+   *  Adds the provided `line` to the correct (i.e., potentially
+   *    nested) place within this `Chunk`.
+   *
+   *  @argument {Line} line
+   *  @returns {Chunk}
+   */
+  addLine(line) {
+    if (this.#open == false) {
+      //  This `Chunk` is not open; a line cannot be added.
+      throw new ParseError(
+        "Cannot add line: Chunk is not open.",
+        { line: line.index },
+      );
+    } else {
+      //  This `Chunk` is open.
+      const { sigil } = this;
+      const contentModel = this.contentModel;
+      const sigilRegExp = new RegExp(
+        String.raw`${
+          sigil == "#DEFAULT" ? "" : sigilToRegExp(sigil).source
+        }(?!\|)[ \t]*`,
+        "uy",
+      );
+      sigilRegExp.test(String(line));
+      const innerLine = Object.freeze(
+        line.substring(sigilRegExp.lastIndex),
+      );
+      if (contentModel != CONTENT_MODEL.MIXED) {
+        //  This `Chunk` does not support mixed content; just add the
+        //    `innerLine`.
+        Object.defineProperty(this, "content", {
+          value: Object.freeze([...this.content, innerLine]),
+        });
+      } else {
+        //  This `Chunk` supports mixed content.
+        const lastChild = this.content[this.content.length - 1];
+        if (
+          lastChild != null && "#open" in lastChild && lastChild.#open
+        ) {
+          //  `lastChild` is open.
+          if (String(innerLine) == "") {
+            //  `innerLine` is empty; `lastChild` should be closed.
+            lastChild.#open = false;
+          } else {
+            //  `innerLine` is not empty; it should be added to
+            //    `lastChild`.
+            lastChild.addLine(line);
+          }
+        } else if (String(innerLine) != "") {
+          //  `lastChild` is closed and `innerLine` is not empty; a
+          //    new child must be added.
+          try {
+            //  Attempt to see if a child `Chunk` can be created from
+            //    the `innerLine`.
+            Object.defineProperty(this, "content", {
+              value: Object.freeze([
+                ...this.content,
+                new Chunk(this.jargon, this.path, innerLine),
+              ]),
+            });
+          } catch {
+            //  `innerLine` is text, not a `Chunk`.
+            Object.defineProperty(this, "content", {
+              value: Object.freeze([...this.content, innerLine]),
+            });
+          }
+        }
+      }
+      return this;
     }
   }
 }
