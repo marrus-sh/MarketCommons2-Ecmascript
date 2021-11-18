@@ -75,7 +75,14 @@ function addValueToAttributes(
 }
 
 export class Chunk {
+  /** @type {(Readonly<Chunk>|Readonly<Line>)[]} */
+  #children = [];
   #open = true;
+
+  get children() {
+    const children = this.#children;
+    return Object.isFrozen(children) ? children : Array.from(children);
+  }
 
   /**
    *  Makes a new “chunk” object from the provided (trimmed) `line` at
@@ -116,7 +123,6 @@ export class Chunk {
     /** @type {?{localName:string,qualifiedName:string,namespace:?string,attributes:Readonly<{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}>}} */
     this.listWrapper = null;
     /** @type {Readonly<Readonly<Chunk>[]>|Readonly<Readonly<Line>[]>} */
-    this.children = Object.freeze([]);
 
     //  Process the chunk.
     if (hint == NODE_TYPE.HEADING) {
@@ -224,7 +230,6 @@ export class Chunk {
       count: { writable: false },
       level: { writable: false },
       attributes: { writable: false },
-      children: { writable: false },
     });
   }
 
@@ -390,29 +395,21 @@ export class Chunk {
             headingAttributes,
             { line: line.index },
           );
-          Object.defineProperty(heading, "children", {
-            value: Object.freeze([
-              Object.freeze(
-                remainder.substring(0, suffixMatch?.index),
-              ),
-            ]),
-          });
+          heading.#children = [
+            Object.freeze(remainder.substring(0, suffixMatch?.index)),
+          ];
         } catch {
-          this.children = Object.freeze([remainder]);
+          heading.#children = [remainder];
         }
       } else {
-        Object.defineProperty(heading, "children", {
-          value: Object.freeze([
-            Object.freeze(
-              remainder.substring(0, suffixMatch?.index),
-            ),
-          ]),
-        });
+        heading.#children = [
+          Object.freeze(remainder.substring(0, suffixMatch?.index)),
+        ];
       }
       Object.freeze(headingAttributes);
 
       //  Nest heading inside section.
-      this.children = Object.freeze([Object.freeze(heading)]);
+      this.#children = [Object.freeze(heading)];
     }
   }
 
@@ -474,16 +471,16 @@ export class Chunk {
           attributes,
           { line: line.index },
         );
-        this.children = Object.freeze([
+        this.#children = [
           Object.freeze(remainder.substring(0, suffixMatch?.index)),
-        ]);
+        ];
       } catch {
-        this.children = Object.freeze([remainder]);
+        this.#children = [remainder];
       }
     } else {
-      this.children = Object.freeze([
+      this.#children = [
         Object.freeze(remainder.substring(0, suffixMatch?.index)),
-      ]);
+      ];
     }
     Object.freeze(attributes);
   }
@@ -557,14 +554,12 @@ export class Chunk {
       String(remainder) != ""
     ) {
       try {
-        this.children = Object.freeze([
-          new Chunk(jargon, path, remainder, NODE_TYPE.BLOCK),
-        ]);
+        this.#children = [new Chunk(jargon, path, remainder)];
       } catch {
-        this.children = Object.freeze([remainder]);
+        this.#children = [remainder];
       }
     } else {
-      this.children = Object.freeze([remainder]);
+      this.#children = [remainder];
     }
 
     //  Handle `inList`.
@@ -621,14 +616,12 @@ export class Chunk {
       if (contentModel != CONTENT_MODEL.MIXED) {
         //  This `Chunk` does not support mixed content; just add the
         //    `innerLine`.
-        Object.defineProperty(this, "content", {
-          value: Object.freeze([...this.content, innerLine]),
-        });
+        this.#children = [...this.#children, innerLine];
       } else {
         //  This `Chunk` supports mixed content.
-        const lastChild = this.content[this.content.length - 1];
+        const lastChild = this.#children[this.#children.length - 1];
         if (
-          lastChild != null && "#open" in lastChild && lastChild.#open
+          lastChild instanceof Chunk && lastChild.#open
         ) {
           //  `lastChild` is open.
           if (String(innerLine) == "") {
@@ -645,17 +638,15 @@ export class Chunk {
           try {
             //  Attempt to see if a child `Chunk` can be created from
             //    the `innerLine`.
-            Object.defineProperty(this, "content", {
-              value: Object.freeze([
-                ...this.content,
+            this.#children = [
+              ...this.#children,
+              Object.freeze(
                 new Chunk(this.jargon, this.path, innerLine),
-              ]),
-            });
+              ),
+            ];
           } catch {
             //  `innerLine` is text, not a `Chunk`.
-            Object.defineProperty(this, "content", {
-              value: Object.freeze([...this.content, innerLine]),
-            });
+            this.#children = [...this.#children, innerLine];
           }
         }
       }
