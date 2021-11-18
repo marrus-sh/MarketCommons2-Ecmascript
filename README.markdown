@@ -7,7 +7,7 @@ browsers).
 [Deno]: https://deno.land/
 
 Market Commons ⅠⅠ is a sort of “extensible Markdown for X·M·L”; an
-example follows :—
+example follows&#x202F;:—
 
 ```market
 <?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
@@ -25,7 +25,7 @@ It is titled '|My Market Commons ⅠⅠ Document|' {.ARTICLE} and it is *|very|*
 🌈|Wow!!|🌈 { data-rainbow-level=Infinity }
 ```
 
-This produces the following X·M·L:
+This produces the following X·M·L&#x202F;:—
 
 ```xml
 <!DOCTYPE html>
@@ -73,13 +73,31 @@ A·P·Is. In Deno (1.13+), the missing pieces are suitably filled in by
 importing `./fauxbrowser/mod.js` from this directory.
 
 This script will exhibit improper behaviour in environments where the
-following test fails :—
+following test fails&#x202F;:—
 
 ```js
 const re = /fails/uy;
 re.lastIndex = "this test ".length;
 "this test fails".replace(re, "succeeds");
 ```
+
+## Limitations
+
+In order to reduce the overall complexity and increase the
+maintainability of this library, all X·M·L operations are routed
+through the D·O·M. This results in certain limitations, which would
+ideally be resolved in a more complete Market Commons ⅠⅠ
+implementation&#x202F;:—
+
+- Only X·M·L 1·0, not 1·1, documents are supported. Environments may
+  throw errors when attempting to process Fifth Edition documents which
+  are invalid in Fourth Edition.
+
+- X·M·L entities are replaced, rather than preserved, during
+  processing. There is no support for unparsed entities.
+
+- The exact serialization of Market Commons ⅠⅠ documents may not be
+  well‐defined, particularly with respect to such things as namespaces.
 
 ## Usage
 
@@ -109,7 +127,7 @@ syntax. They should be served with a mediatype of `application/xml` or
 
 You can use X·M·L entity references to define re·usable components for
 your webpage. This requires overriding the default document template,
-but is fairly straightforward to do :—
+but is fairly straightforward to do&#x202F;:—
 
 ```market
 <?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
@@ -172,7 +190,7 @@ Commons ⅠⅠ markup language follows.
 ### Prologue
 
 The prologue of a Market Commons ⅠⅠ document consists of one, both, or
-neither of the following (in order) :—
+neither of the following (in order)&#x202F;:—
 
 1. **A Declaration of Jargon (D·J).** A document is deemed to contain a
    Declaration of Jargon if it begins with the string
@@ -234,7 +252,7 @@ separated from inline content, or further sigils, by whitespace.
 Certain locations in the Market Commons ⅠⅠ syntax allow for the
 specification of attributes. Attributes are wrapped in curly braces and
 consist of zero or more of the following syntaxes, separated by
-A·S·C·I·I spaces or tabs :—
+A·S·C·I·I spaces or tabs&#x202F;:—
 
 - `<sigil>value`: Assigns `value` to the attribute name defined by
   `sigil`.
@@ -244,7 +262,7 @@ A·S·C·I·I spaces or tabs :—
 - `name`: Assigns the empty string to the attribute `name`.
 
 Attribute values can include whitespace through either of the following
-mechanisms :—
+mechanisms&#x202F;:—
 
 - Escaping the whitespace using an X·M·L character reference (`&#x20;`
   or `&#x9;`).
@@ -252,15 +270,17 @@ mechanisms :—
 - Specifying the same attribute multiple times, in which case the
   values will be joined (preserving order) with single spaces.
 
-      ]|NASA|]{/National /Aeronautics /and /Space /Administration}
+  ```market
+  ]|NASA|]{/National /Aeronautics /and /Space /Administration}
 
-      ; Produces:
-      ;
-      ; ` <p><abbr title="National Aeronautics and Space Administration">NASA</abbr>
-      ; ` </p>
+  ; Produces:
+  ;
+  ; ` <p><abbr title="National Aeronautics and Space Administration">NASA</abbr>
+  ; ` </p>
+  ```
 
 The default (H·T·M·L) Declaration of Jargon defines the following
-attribute sigils :—
+attribute sigils&#x202F;:—
 
 |      Sigil       | Attribute Name |
 | :--------------: | :------------: |
@@ -324,62 +344,72 @@ a close tag, which take the form of a sigil followed or preceded by a
 `|` pipe character, respectively. Whitespace which surrounds inline
 content is ignored.
 
-    This is some *| inline |* content.
+```market
+This is some *| inline |* content.
 
-    ; Produces:
-    ;
-    ; ` <p>This is some <em>inline</em> content.
-    ; ` </p>
+; Produces:
+;
+; ` <p>This is some <em>inline</em> content.
+; ` </p>
+```
 
 Attributes can be attached to an inline following the close tag.
 Whitespace may be placed between the two.
 
-    An :| inline |: { data-with="attributes" }.
+```market
+An :| inline |: { data-with="attributes" }.
 
-    ; Produces:
-    ;
-    ; ` <p>An <span data-with="attributes">inline</span>.
-    ; ` </p>
+; Produces:
+;
+; ` <p>An <span data-with="attributes">inline</span>.
+; ` </p>
+```
 
 An empty inline can be indicated using a `#` hash between two sigils,
-like so :—
+like so&#x202F;:—
 
-    These are the same:
-    @||@ {!http://www.example.com}
-    @#@ {!http://www.example.com}
+```market
+These are the same:
+@||@ {!http://www.example.com}
+@#@ {!http://www.example.com}
 
-    ; Produces:
-    ;
-    ; ` <p>These are the same:
-    ; ` <a href="http://www.example.com">http://www.example.com</a>
-    ; ` <a href="http://www.example.com">http://www.example.com</a>
-    ; ` </p>
+; Produces:
+;
+; ` <p>These are the same:
+; ` <a href="http://www.example.com">http://www.example.com</a>
+; ` <a href="http://www.example.com">http://www.example.com</a>
+; ` </p>
+```
 
-These have slightly different behaviours in the case of TEXTTO inlines
-:—
+These have slightly different behaviours in the case of TEXTTO
+inlines&#x202F;:—
 
-    These are slightly different:
-    &||& { &./image.png }
-    &#& { &./image.png }
+```market
+These are slightly different:
+&||& { &./image.png }
+&#& { &./image.png }
 
-    ; Produces:
-    ;
-    ; ` <p>These are slightly different:
-    ; ` <img alt="" src="./image.png"/>
-    ; ` <img src="./image.png"/>
-    ; ` </p>
+; Produces:
+;
+; ` <p>These are slightly different:
+; ` <img alt="" src="./image.png"/>
+; ` <img src="./image.png"/>
+; ` </p>
+```
 
-Hash has a lower precedence than pipe :—
+Hash has a lower precedence than pipe&#x202F;:—
 
-    :#:||:
+```market
+:#:||:
 
-    ; Produces:
-    ;
-    ; ` <p>:#<span></span>
-    ; ` </p>
+; Produces:
+;
+; ` <p>:#<span></span>
+; ` </p>
+```
 
 The default (H·T·M·L) Declaration of Jargon defines the following
-inline sigils :—
+inline sigils&#x202F;:—
 
 |      Sigil       | Inline Name | Notes                                                         |
 | :--------------: | :---------: | ------------------------------------------------------------- |
@@ -415,8 +445,9 @@ inline sigils :—
 
 Market Commons ⅠⅠ (as well as the original Market Commons) was designed
 by [Margaret KIBI](https://go.KIBI.family/About/#me). This
-implementation, 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript, is made available
-under the terms of [the Mozilla Public License, v. 2.0](./LICENSE).
+implementation, <cite>🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript</cite>, is
+made available under the terms of
+[the Mozilla Public License, v. 2.0](./LICENSE).
 
 Market Commons documents have historically been distributed using the
 `text/x.market` mediatype. However, `application/x.market` is likely a
@@ -433,7 +464,7 @@ Jargon documents.
 
 Make your source files available! Including a `<link>` element in the
 preamble of your document will help others find the original Market
-Commons ⅠⅠ source. The following is an example :—
+Commons ⅠⅠ source. The following is an example&#x202F;:—
 
 ```xml
 <link rel="alternate" type="application/x.market" href="index.market"/>
