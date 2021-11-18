@@ -19,6 +19,7 @@ import "./lines.js";
 import { sigilToRegExp } from "./paths.js";
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 
+/** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
 /** @typedef {import("./jargons.js").Jargon} Jargon */
 /** @typedef {import("./jargons.js").SectionJargon} SectionJargon */
 /** @typedef {import("./jargons.js").HeadingJargon} HeadingJargon */
@@ -33,6 +34,46 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 /** @typedef {import("./symbols.js").TEXT_CONTENT} TEXT_CONTENT */
 /** @typedef {import("./symbols.js").COMMENT_CONTENT} COMMENT_CONTENT */
 /** @typedef {import("./symbols.js").LITERAL_CONTENT} LITERAL_CONTENT */
+
+/**
+ *  @argument {Jargon} jargon
+ *  @argument {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} attributes
+ *  @argument {string} name
+ *  @argument {string} value
+ *  @argument {ErrorOptions&{path?:string}} options
+ */
+function addValueToAttributes(
+  jargon,
+  attributes,
+  name,
+  value,
+  options,
+) {
+  if (name in attributes) {
+    const existing = attributes[name];
+    Object.defineProperty(attributes, name, {
+      value: Object.freeze({
+        ...existing,
+        value: `${existing.value} ${value}`,
+      }),
+    });
+  } else {
+    const {
+      localName,
+      namespace,
+    } = jargon.resolveQName(name, false, options);
+    Object.defineProperty(attributes, name, {
+      configurable: true,
+      enumerable: true,
+      value: Object.freeze({
+        localName,
+        namespace,
+        value,
+      }),
+      writable: false,
+    });
+  }
+}
 
 export class Chunk {
   /**
@@ -251,83 +292,45 @@ export class Chunk {
           }
         })()
       );
-    definition.textTo?.forEach(($) => {
-      if ($ in attributes) {
-        const {
-          localName,
-          namespace,
-          value,
-        } = attributes[$];
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: `${value} ${String(remainder)}`,
-          }),
-        );
-      } else {
-        const { localName, namespace } = jargon.resolveQName(
-          $,
-          false,
-          { line: line.index, path },
-        );
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: String(remainder),
-          }),
-        );
-      }
-    });
-    definition.countTo?.forEach(($) => {
-      if ($ in attributes) {
-        const {
-          localName,
-          namespace,
-          value,
-        } = attributes[$];
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: `${value} ${count}`,
-          }),
-        );
-      } else {
-        const { localName, namespace } = jargon.resolveQName(
-          $,
-          false,
-          { line: line.index, path },
-        );
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: String(count),
-          }),
-        );
-      }
-    });
+    definition.textTo?.forEach((name) =>
+      addValueToAttributes(
+        jargon,
+        attributes,
+        name,
+        String(remainder),
+        { line: line.index, path },
+      )
+    );
+    definition.countTo?.forEach((name) =>
+      addValueToAttributes(
+        jargon,
+        attributes,
+        name,
+        String(count),
+        { line: line.index, path },
+      )
+    );
     if (parsedAttributes != null) {
-      Object.entries(parsedAttributes).forEach(([key, attribute]) => {
+      for (
+        const [key, attribute] of Object.entries(parsedAttributes)
+      ) {
         if (key in attributes) {
-          const {
-            localName,
-            namespace,
-            value,
-          } = attributes[key];
-          attributes[key] = Object.freeze(
-            Object.assign(Object.create(null), {
-              localName,
-              namespace,
-              value: `${value} ${attribute.value}`,
+          const existing = attributes[key];
+          Object.defineProperty(attributes, key, {
+            value: Object.freeze({
+              ...existing,
+              value: `${existing.value} ${attribute.value}`,
             }),
-          );
+          });
         } else {
-          attributes[key] = attribute;
+          Object.defineProperty(attributes, key, {
+            configurable: true,
+            enumerable: true,
+            value: attribute,
+            writable: false,
+          });
         }
-      });
+      }
     }
     Object.freeze(attributes);
 
@@ -353,6 +356,15 @@ export class Chunk {
         headingDefinition.attributes,
         { line: line.index, path: heading.path },
       );
+      headingDefinition.countTo?.forEach((name) =>
+        addValueToAttributes(
+          jargon,
+          headingAttributes,
+          name,
+          String(count),
+          { line: line.index, path: heading.path },
+        )
+      );
       Object.defineProperties(heading, {
         count: { value: count },
         localName: { value: headingLocalName },
@@ -372,7 +384,7 @@ export class Chunk {
       if (headingAttributesText != null) {
         try {
           jargon.parseAttributesContainer(
-            path,
+            heading.path,
             headingAttributesText,
             headingAttributes,
             { line: line.index },
@@ -435,35 +447,15 @@ export class Chunk {
       definition.attributes,
       { line: line.index, path },
     );
-    definition.countTo?.forEach(($) => {
-      if ($ in attributes) {
-        const {
-          localName,
-          namespace,
-          value,
-        } = attributes[$];
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: `${value} ${count}`,
-          }),
-        );
-      } else {
-        const { localName, namespace } = jargon.resolveQName(
-          $,
-          false,
-          { line: line.index, path },
-        );
-        attributes[$] = Object.freeze(
-          Object.assign(Object.create(null), {
-            localName,
-            namespace,
-            value: String(count),
-          }),
-        );
-      }
-    });
+    definition.countTo?.forEach((name) =>
+      addValueToAttributes(
+        jargon,
+        attributes,
+        name,
+        String(count),
+        { line: line.index, path },
+      )
+    );
 
     //  Handle heading attributes and content.
     const suffixMatch = new RegExp(

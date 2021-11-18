@@ -38,7 +38,9 @@ import {
   Eq,
   HeadingD·J,
   InlineD·J,
+  LocalPart,
   NamespaceD·J,
+  Prefix,
   QName,
   S,
   SectionD·J,
@@ -307,9 +309,9 @@ function processDocument(source, index, DOMParser) {
     return null;
   } else {
     //  Process the document declaration.
-    const documentSource =
-      //@ts-ignore: Object definitely is defined.
-      parseResult.groups.documentTemplate;
+    const {
+      documentTemplate: documentSource,
+    } = /** @type {{documentTemplate:string}} */ (parseResult.groups);
     const document = (new DOMParser()).parseFromString(
       documentSource,
       "application/xml",
@@ -969,7 +971,7 @@ export class Jargon {
     //  Parse and process.
     const regExp = new RegExp(D·J.source, "duy");
     const parseResult = regExp.exec(source);
-    if (!parseResult) {
+    if (parseResult == null) {
       //  Declarations of Jargon must match the `D·J` production.
       throw new ParseError(
         "Declaration of Jargon does not match expected grammar.",
@@ -977,12 +979,18 @@ export class Jargon {
       );
     } else {
       //  Process the parsed Declaration of Jargon.
+      const parseGroups =
+        /** @type {{externalName?:string,externalSubset?:string,internalDeclarations?:string}} */ (
+          parseResult.groups
+        );
+      const parseGroupIndices =
+        /** @type {{externalName?:[number,number],externalSubset?:[number,number],internalDeclarations?:[number,number]}} */ (
+          //@ts-ignore: `RegExpExecArray/indices` not implemented.
+          parseResult.indices.groups
+        );
       /** @type {string|undefined} */
-      const quotedExternalName =
-        //@ts-ignore: Object definitely is defined.
-        parseResult.groups.externalName ??
-          //@ts-ignore: Object definitely is defined.
-          parseResult.groups.externalSubset;
+      const quotedExternalName = parseGroups.externalName ??
+        parseGroups.externalSubset;
       const externalName = quotedExternalName != null
         ? quotedExternalName.substring(
           1,
@@ -991,11 +999,9 @@ export class Jargon {
         : null;
       /** @type {number|undefined} */
       const nameIndex = (
-        //@ts-ignore: RegExpExecArray.indicies not implemented.
-        parseResult.indices.groups.externalName ??
-          //@ts-ignore: RegExpExecArray.indicies not implemented.
-          parseResult.indices.groups.externalSubset
-      );
+        parseGroupIndices.externalName ??
+          parseGroupIndices.externalSubset
+      )?.[0];
       if (externalName != null) {
         //  (Attempt to) handle the referenced external Declaration
         //    of Jargon.
@@ -1006,34 +1012,21 @@ export class Jargon {
             { index: nameIndex },
           );
         } else {
-          /** @type {string|undefined} */
-          let externalD·J;
-          switch (false) {
-            //  Resolve the system identifier.
-            case (
-              externalD·J = systemIdentifiers[externalName]
-            ) == null: {
-              break;
-            }
-            case (
-              externalD·J = defaultSystemIdentifiers[externalName]
-            ) == null: {
-              break;
-            }
-            default: {
-              //  (Attempt to) fetch the system identifier.
-              /*  TODO  */
-              throw new ParseError(
-                "Fetching external Declarations of Jargon is not yet supported.",
-                { index: nameIndex },
-              );
-            }
-          }
+          const externalD·J = prepareAsX·M·L(
+            systemIdentifiers[externalName] ??
+              defaultSystemIdentifiers[externalName] ?? (() => {
+                //  (Attempt to) fetch the system identifier.
+                /*  TODO  */
+                throw new ParseError(
+                  "Fetching external Declarations of Jargon is not yet supported.",
+                  { index: nameIndex },
+                );
+              })(),
+          );
           try {
             //  Attempt to process the external Declaration of Jargon
             //    and assign to the properties of this instance those
             //    of the result.
-            externalD·J = prepareAsX·M·L(externalD·J ?? "");
             const externalResult = new Jargon(externalD·J, {
               ...options,
               [nestedWithin]: new Set(
@@ -1093,20 +1086,12 @@ export class Jargon {
           }
         }
       }
-      /** @type {?string} */
-      const internalDeclarations =
-        //@ts-ignore: Object definitely is defined.
-        parseResult.groups.internalDeclarations;
+      const { internalDeclarations } = parseGroups;
       if (internalDeclarations != null) {
         //  Iterate over each internal declaration.
-        /** @type {number} */
-        let index =
-          //@ts-ignore: RegExpExecArray.indicies not implemented.
-          parseResult.indices.groups.internalDeclarations[0];
-        /** @type {number} */
-        const endIndex =
-          //@ts-ignore: RegExpExecArray.indicies not implemented.
-          parseResult.indices.groups.internalDeclarations[1];
+        let [index, endIndex] = /** @type {[number, number]} */ (
+          parseGroupIndices.internalDeclarations
+        );
         while (index < endIndex) {
           //  Process the internal declaration and advance the index to
           //    the next.
@@ -1280,12 +1265,15 @@ export class Jargon {
    *    that begin the provided `text`, starting from the offset given
    *    by the provided `lastIndex`, or `null` if none applies.
    *
+   *  If there are multiple possible sigils at the provided `lastIndex`
+   *    in `text`, the longest will be chosen.
+   *
    *  If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
    *    `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted:
    *  The resulting `count` will be `1`.
    *
    *  @argument {string} text
-   *  @argument {typeof NODE_TYPE.SECTION|typeof NODE_TYPE.HEADING|typeof NODE_TYPE.BLOCK|typeof NODE_TYPE.INLINE|typeof NODE_TYPE.ATTRIBUTE} nodeType
+   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
    *  @argument {string} path
    *  @argument {number} [lastIndex]
    *  @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
@@ -1301,6 +1289,7 @@ export class Jargon {
       },
     });
     for (const sigil of this.sigilsInScope(nodeType, path)) {
+      //  Test each sigil in scope and see if it begins the `text`.
       const suffix =
         nodeType == NODE_TYPE.ATTRIBUTE || nodeType == NODE_TYPE.INLINE
           ? ""
@@ -1313,9 +1302,9 @@ export class Jargon {
       if (
         nodeType == NODE_TYPE.SECTION || nodeType == NODE_TYPE.HEADING
       ) {
+        //  A section or heading may consist of repeated sigils.
         let count = 0;
         let nextIndex = lastIndex;
-        //  A section or heading may consist of repeated sigils.
         while (regExp.test(text)) {
           //  Increment `count` for as long as there is another sigil.
           ++count;
@@ -1332,6 +1321,7 @@ export class Jargon {
           continue;
         }
       } else if (regExp.test(text)) {
+        //  Other node types have a `count` limited to 1.
         matches[sigil] = {
           sigil,
           count: 1,
@@ -1351,8 +1341,9 @@ export class Jargon {
   }
 
   /**
-   *  Parses an attributes container (wrapped in braces) and returns an
-   *    object mapping attribute names to values.
+   *  Parses the attributes container (wrapped in braces) provided as
+   *    `text` into the provided `intoObject`, or returns a new object
+   *    mapping attribute names to values.
    *
    *  @argument {string} path
    *  @argument {string} text
@@ -1370,44 +1361,56 @@ export class Jargon {
     const attributes = Object.create(null);
     const endIndex = text.length - 1;
     if (text[0] != "{" || text[endIndex] != "}") {
+      //  This is not a valid attributes container.
       throw new ParseError(
         `Attributes container "${text}" is not wrapped in curly braces.`,
         options,
       );
     } else {
+      //  Process the contents of the attributes container, collecting
+      //    any attributes into `attributes`.
       for (let index = 1; index < endIndex;) {
         testingWhitespace: {
           //  Skip whtiespace.
           const sRegExp = /[ \t]+/uy;
           sRegExp.lastIndex = index;
           if (sRegExp.test(text)) {
+            //  There is whitespace at `index` in `text`; ignore it.
             index = sRegExp.lastIndex;
             continue;
           } else {
+            //  There is no whitespace at `index` in `text`.
             break testingWhitespace;
           }
         }
         testingNamedAttribute: {
           //  Check for an attribute name, possibly followed by a
-          //    value.
-          const attributesRegExp = new RegExp(
+          //    value, and add it if present.
+          const attributeRegExp = new RegExp(
             String.raw`(?<name>${QName.source})(?:=(?<value>[^ \t]))?`,
             "uy",
           );
-          attributesRegExp.lastIndex = index;
-          const parsedAttributes = attributesRegExp.exec(text);
-          if (parsedAttributes) {
-            const { name: qualifiedName, value: maybeValue } =
+          attributeRegExp.lastIndex = index;
+          const parsedAttribute = attributeRegExp.exec(text);
+          if (parsedAttribute) {
+            //  There is a named attribute at `index` in `text`.
+            const { name: qualifiedName, value } =
               /** @type {{name:string,value?:string}} */ (
-                parsedAttributes.groups
+                parsedAttribute.groups
               );
-            const value = maybeValue ?? "";
             if (qualifiedName in attributes) {
+              //  There is already an attribute by this name in
+              //    `attributes`:
+              //  Append the value to the existing object.
               const existing = attributes[qualifiedName];
-              existing.value = `${existing.value} ${value}`;
+              existing.value = [existing.value, value ?? ""].join(" ");
             } else if (
               intoObject != null && qualifiedName in intoObject
             ) {
+              //  There is not an attribute by this name in
+              //    `attributes`, but there is one in `intoObject`:
+              //  Copy the existing value into a new object with the
+              //    new value appended to it.
               const {
                 localName,
                 namespace,
@@ -1416,9 +1419,13 @@ export class Jargon {
               attributes[qualifiedName] = {
                 localName,
                 namespace,
-                value: `${existing} ${value}`,
+                value: [existing, value ?? ""].join(" "),
               };
             } else {
+              //  An attribute by this name does not exist in
+              //    `attributes` or `intoObject`:
+              //  Resolve the qualified name of the attribute and
+              //    construct a new object with the value.
               const { localName, namespace } = this.resolveQName(
                 qualifiedName,
                 false,
@@ -1427,12 +1434,13 @@ export class Jargon {
               attributes[qualifiedName] = {
                 localName,
                 namespace,
-                value,
+                value: value ?? "",
               };
             }
-            index = attributesRegExp.lastIndex;
+            index = attributeRegExp.lastIndex;
             continue;
           } else {
+            //  There is no named attribute at `index` in `text`.
             break testingNamedAttribute;
           }
         }
@@ -1445,6 +1453,7 @@ export class Jargon {
             index,
           );
           if (sigilInfo) {
+            //  There is a sigil at `index` in `text`.
             const valueRegExp = /[^ \t]*/uy;
             valueRegExp.lastIndex = sigilInfo.lastIndex;
             const value = valueRegExp.exec(text)?.[0] ?? "";
@@ -1458,12 +1467,21 @@ export class Jargon {
                   )
                 )
             ) {
+              //  Iterate over the qualified names in the sigil
+              //    definition and add the value to each one.
               if (qualifiedName in attributes) {
+                //  There is already an attribute by this name in
+                //    `attributes`:
+                //  Append the value to the existing object.
                 const existing = attributes[qualifiedName];
                 existing.value = `${existing.value} ${value}`;
               } else if (
                 intoObject != null && qualifiedName in intoObject
               ) {
+                //  There is not an attribute by this name in
+                //    `attributes`, but there is one in `intoObject`:
+                //  Copy the existing value into a new object with the
+                //    new value appended to it.
                 const {
                   localName,
                   namespace,
@@ -1475,6 +1493,10 @@ export class Jargon {
                   value: `${existing} ${value}`,
                 };
               } else {
+                //  An attribute by this name does not exist in
+                //    `attributes` or `intoObject`:
+                //  Resolve the qualified name of the attribute and
+                //    construct a new object with the value.
                 const { localName, namespace } = this.resolveQName(
                   qualifiedName,
                   false,
@@ -1490,6 +1512,7 @@ export class Jargon {
             index = valueRegExp.lastIndex;
             continue;
           } else {
+            //  There is no sigil at `index` in `text`.
             break testingSigils;
           }
         }
@@ -1499,11 +1522,17 @@ export class Jargon {
         );
       }
     }
-    const result = intoObject ?? Object.create(null);
-    for (const [key, value] of Object.entries(attributes)) {
-      result[key] = Object.freeze(value);
-    }
-    return result;
+    return Object.defineProperties(
+      intoObject ?? Object.create(null),
+      Object.fromEntries(
+        Object.entries(attributes).map(([key, value]) => [key, {
+          configurable: true,
+          enumerable: true,
+          value: Object.freeze(value),
+          writable: false,
+        }]),
+      ),
+    );
   }
 
   /**
@@ -1695,13 +1724,17 @@ export class Jargon {
   }
 
   /**
+   *  Resolves the qualified name keys of the provided `attributes` and
+   *    returns an object mapping them to an attributes object with
+   *    `localName`, `namespace`, and `value`.
+   *
    *  @argument {{[index:string]:string}} attributes
    *  @argument {ErrorOptions&{path?:string}} [options]
    *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
    */
   resolveAttributes(attributes, options = {}) {
-    return Object.assign(
-      Object.create(null),
+    return Object.create(
+      null,
       Object.fromEntries(
         Object.entries(attributes).map(([key, value]) => {
           const {
@@ -1710,13 +1743,16 @@ export class Jargon {
           } = this.resolveQName(key, false, options);
           return [
             key,
-            Object.freeze(
-              Object.assign(Object.create(null), {
+            {
+              configurable: true,
+              enumerable: true,
+              value: Object.freeze({
                 localName,
                 namespace,
                 value,
               }),
-            ),
+              writable: false,
+            },
           ];
         }),
       ),
@@ -1724,27 +1760,46 @@ export class Jargon {
   }
 
   /**
+   *  Resolves the provided `qualifiedName` using the namespaces
+   *    declared for this `Jargon`.
+   *
+   *  If `useDefault` is `true`, then a `qualifiedName` with no
+   *    namespace component will be assigned the default namespace.
+   *
    *  @argument {string} qualifiedName
    *  @argument {boolean} [useDefault]
    *  @argument {ErrorOptions&{path?:string}} [options]
    *  @returns {{localName:string,namespace:?string}}
    */
   resolveQName(qualifiedName, useDefault = true, options = {}) {
-    const [_, prefix, localName] =
-      /^(?:([^:]+):)?([^:]+)$/u.exec(qualifiedName) ?? [];
-    const usedPrefix = prefix ?? "";
-    if (!useDefault && usedPrefix == "") {
-      return {
-        localName: localName ?? "",
-        namespace: null,
-      };
-    } else if (!(usedPrefix in this.namespaces)) {
-      throw new NamespaceResolutionError(usedPrefix, options);
+    const parsedQualifiedName = new RegExp(
+      `^(?:(?<prefix>${Prefix.source}):)?(?<localName>${LocalPart.source})$`,
+      "u",
+    ).exec(qualifiedName);
+    if (parsedQualifiedName == null) {
+      throw new ParseError(
+        `Name "${qualifiedName}" is not a valid qualified name.`,
+        options,
+      );
     } else {
-      return {
-        localName: localName ?? "",
-        namespace: this.namespaces[usedPrefix] || null,
-      };
+      const { prefix, localName } =
+        /** @type {{prefix?:string,localName:string}} */ (
+          parsedQualifiedName.groups
+        );
+      const usedPrefix = prefix ?? "";
+      if (!useDefault && usedPrefix == "") {
+        return {
+          localName: localName,
+          namespace: null,
+        };
+      } else if (!(usedPrefix in this.namespaces)) {
+        throw new NamespaceResolutionError(usedPrefix, options);
+      } else {
+        return {
+          localName: localName,
+          namespace: this.namespaces[usedPrefix] || null,
+        };
+      }
     }
   }
 
