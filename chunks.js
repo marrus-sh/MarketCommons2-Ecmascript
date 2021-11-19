@@ -77,7 +77,8 @@ function addValueToAttributes(
 export class Chunk {
   /** @type {(Readonly<Chunk>|Readonly<Line>)[]} */
   #children = [];
-  #open = true;
+  /** @type {?Readonly<Chunk>} */
+  #open = null;
 
   get children() {
     const children = this.#children;
@@ -183,12 +184,10 @@ export class Chunk {
             switch (nodeType) {
               case NODE_TYPE.SECTION: {
                 this.#configureAsSectionFromFirstLine(line, lastIndex);
-                this.#open = false;
                 break processingSigil;
               }
               case NODE_TYPE.HEADING: {
                 this.#configureAsHeadingFromFirstLine(line, lastIndex);
-                this.#open = false;
                 break processingSigil;
               }
               case NODE_TYPE.BLOCK: {
@@ -231,6 +230,14 @@ export class Chunk {
       level: { writable: false },
       attributes: { writable: false },
     });
+  }
+
+  #close() {
+    const open = /** @type {?Chunk} */ (this.#open);
+    if (open) {
+      open.#close();
+    }
+    this.#open = null;
   }
 
   /**
@@ -395,21 +402,21 @@ export class Chunk {
             headingAttributes,
             { line: line.index },
           );
-          heading.#children = [
+          heading.#children.push(
             Object.freeze(remainder.substring(0, suffixMatch?.index)),
-          ];
+          );
         } catch {
-          heading.#children = [remainder];
+          heading.#children.push(remainder);
         }
       } else {
-        heading.#children = [
+        heading.#children.push(
           Object.freeze(remainder.substring(0, suffixMatch?.index)),
-        ];
+        );
       }
       Object.freeze(headingAttributes);
 
       //  Nest heading inside section.
-      this.#children = [Object.freeze(heading)];
+      this.#children.push(Object.freeze(heading));
     }
   }
 
@@ -471,16 +478,16 @@ export class Chunk {
           attributes,
           { line: line.index },
         );
-        this.#children = [
+        this.#children.push(
           Object.freeze(remainder.substring(0, suffixMatch?.index)),
-        ];
+        );
       } catch {
-        this.#children = [remainder];
+        this.#children.push(remainder);
       }
     } else {
-      this.#children = [
+      this.#children.push(
         Object.freeze(remainder.substring(0, suffixMatch?.index)),
-      ];
+      );
     }
     Object.freeze(attributes);
   }
@@ -554,12 +561,15 @@ export class Chunk {
       String(remainder) != ""
     ) {
       try {
-        this.#children = [new Chunk(jargon, path, remainder)];
+        const child = Object.freeze(
+          new Chunk(jargon, path, remainder),
+        );
+        this.#children.push(this.#open = child);
       } catch {
-        this.#children = [remainder];
+        this.#children.push(remainder);
       }
     } else {
-      this.#children = [remainder];
+      this.#children.push(remainder);
     }
 
     //  Handle `inList`.
@@ -593,64 +603,52 @@ export class Chunk {
    *  @returns {Chunk}
    */
   addLine(line) {
-    if (this.#open == false) {
-      //  This `Chunk` is not open; a line cannot be added.
-      throw new ParseError(
-        "Cannot add line: Chunk is not open.",
-        { line: line.index },
-      );
+    const { sigil } = this;
+    const contentModel = this.contentModel;
+    const sigilRegExp = new RegExp(
+      String.raw`${
+        sigil == "#DEFAULT" ? "" : sigilToRegExp(sigil).source
+      }(?!\|)[ \t]*`,
+      "uy",
+    );
+    sigilRegExp.test(String(line));
+    const innerLine = Object.freeze(
+      line.substring(sigilRegExp.lastIndex),
+    );
+    if (contentModel != CONTENT_MODEL.MIXED) {
+      //  This `Chunk` does not support mixed content; just add the
+      //    `innerLine`.
+      this.#children.push(innerLine);
     } else {
-      //  This `Chunk` is open.
-      const { sigil } = this;
-      const contentModel = this.contentModel;
-      const sigilRegExp = new RegExp(
-        String.raw`${
-          sigil == "#DEFAULT" ? "" : sigilToRegExp(sigil).source
-        }(?!\|)[ \t]*`,
-        "uy",
-      );
-      sigilRegExp.test(String(line));
-      const innerLine = Object.freeze(
-        line.substring(sigilRegExp.lastIndex),
-      );
-      if (contentModel != CONTENT_MODEL.MIXED) {
-        //  This `Chunk` does not support mixed content; just add the
-        //    `innerLine`.
-        this.#children = [...this.#children, innerLine];
-      } else {
-        //  This `Chunk` supports mixed content.
-        const lastChild = this.#children[this.#children.length - 1];
-        if (
-          lastChild instanceof Chunk && lastChild.#open
-        ) {
-          //  `lastChild` is open.
-          if (String(innerLine) == "") {
-            //  `innerLine` is empty; `lastChild` should be closed.
-            lastChild.#open = false;
-          } else {
-            //  `innerLine` is not empty; it should be added to
-            //    `lastChild`.
-            lastChild.addLine(line);
-          }
-        } else if (String(innerLine) != "") {
-          //  `lastChild` is closed and `innerLine` is not empty; a
-          //    new child must be added.
-          try {
-            //  Attempt to see if a child `Chunk` can be created from
-            //    the `innerLine`.
-            this.#children = [
-              ...this.#children,
-              Object.freeze(
-                new Chunk(this.jargon, this.path, innerLine),
-              ),
-            ];
-          } catch {
-            //  `innerLine` is text, not a `Chunk`.
-            this.#children = [...this.#children, innerLine];
-          }
+      //  This `Chunk` supports mixed content.
+      const open = this.#open;
+      if (open != null) {
+        //  This `Chunk` has a currently open child.
+        if (String(innerLine) == "") {
+          //  `innerLine` is empty; `lastChild` should be closed.
+          this.#close();
+        } else {
+          //  `innerLine` is not empty; it should be added to
+          //    `lastChild`.
+          open.addLine(line);
+        }
+      } else if (String(innerLine) != "") {
+        //  This `Chunk` has no open child and `innerLine` is not
+        //    empty; a new child must be added.
+        try {
+          //  Attempt to see if a child `Chunk` can be created from
+          //    the `innerLine`.
+          this.#children.push(
+            this.#open = Object.freeze(
+              new Chunk(this.jargon, this.path, innerLine),
+            ),
+          );
+        } catch {
+          //  `innerLine` is text, not a `Chunk`.
+          this.#children.push(innerLine);
         }
       }
-      return this;
     }
+    return this;
   }
 }
