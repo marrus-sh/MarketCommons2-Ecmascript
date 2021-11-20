@@ -57,14 +57,20 @@ namespaceResolutionTesting: {
       () => myJargon.resolveQName("foo:bar"),
       NamespaceResolutionError,
     ));
+  Deno.test("can’t resolve X·M·L·N·S", () => {
+    assertThrows(
+      () => myJargon.resolveQName("xmlns"),
+      ParseError,
+    );
+    assertThrows(
+      () => myJargon.resolveQName("xmlns:foo"),
+      ParseError,
+    );
+  });
   Deno.test("resolves defined namespaces", () => {
     assertEquals(myJargon.resolveQName("xml:foo"), {
       localName: "foo",
       namespace: x·m·lNamespace,
-    });
-    assertEquals(myJargon.resolveQName("xmlns:bar"), {
-      localName: "bar",
-      namespace: x·m·l·n·sNamespace,
     });
     assertEquals(myJargon.resolveQName("baz"), {
       localName: "baz",
@@ -95,7 +101,6 @@ namespaceResolutionTesting: {
     assertEquals(
       myJargonWithDefaultNamespace.resolveAttributes({
         "xml:foo": "FOO",
-        "xmlns:bar": "BAR",
         baz: "BAZ",
       }),
       {
@@ -103,11 +108,6 @@ namespaceResolutionTesting: {
           localName: "foo",
           namespace: x·m·lNamespace,
           value: "FOO",
-        },
-        "xmlns:bar": {
-          localName: "bar",
-          namespace: x·m·l·n·sNamespace,
-          value: "BAR",
         },
         "baz": {
           localName: "baz",

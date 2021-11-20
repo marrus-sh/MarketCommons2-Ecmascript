@@ -24,6 +24,7 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 /** @typedef {import("./jargons.js").SectionJargon} SectionJargon */
 /** @typedef {import("./jargons.js").HeadingJargon} HeadingJargon */
 /** @typedef {import("./jargons.js").BlockJargon} BlockJargon */
+/** @typedef {import("./jargons.js").ResolvedAttributes} Jargon */
 /** @typedef {import("./lines.js").Line} Line */
 /** @typedef {import("./symbols.js").SECTION_NODE} SECTION_NODE */
 /** @typedef {import("./symbols.js").HEADING_NODE} HEADING_NODE */
@@ -36,7 +37,7 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 
 /**
  *  @argument {Jargon} jargon
- *  @argument {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} attributes
+ *  @argument {ResolvedAttributes} attributes
  *  @argument {string} name
  *  @argument {string} value
  *  @argument {ErrorOptions&{path?:string}} options
@@ -121,7 +122,7 @@ export class Chunk {
     this.level = (path.match(/[^/]+/gu)?.length ?? 0) + 1;
     /** @type {Readonly<{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}>} */
     this.attributes = Object.freeze(Object.create(null));
-    /** @type {?{localName:string,qualifiedName:string,namespace:?string,attributes:Readonly<{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}>}} */
+    /** @type {?{localName:string,qualifiedName:string,namespace:?string,attributes:Readonly<ResolvedAttributes>}} */
     this.listWrapper = null;
     /** @type {Readonly<Readonly<Chunk>[]>|Readonly<Readonly<Line>[]>} */
 
@@ -281,7 +282,7 @@ export class Chunk {
     const attributesText = prefixRegExp.exec(String(line))?.groups
       ?.attributes;
     const [parsedAttributes, remainder] =
-      /** @type {[{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}|undefined,Readonly<Line>]} */ (
+      /** @type {[ResolvedAttributes|undefined,Readonly<Line>]} */ (
         (() => {
           if (attributesText != null) {
             try {
@@ -561,10 +562,11 @@ export class Chunk {
       String(remainder) != ""
     ) {
       try {
-        const child = Object.freeze(
-          new Chunk(jargon, path, remainder),
+        this.#children.push(
+          this.#open = Object.freeze(
+            new Chunk(jargon, path, remainder),
+          ),
         );
-        this.#children.push(this.#open = child);
       } catch {
         this.#children.push(remainder);
       }
@@ -587,9 +589,11 @@ export class Chunk {
         localName: listLocalName,
         qualifiedName: listDefinition.qualifiedName,
         namespace: listNamespace,
-        attributes: jargon.resolveAttributes(
-          listDefinition.attributes,
-          { line: line.index, path },
+        attributes: Object.freeze(
+          jargon.resolveAttributes(
+            listDefinition.attributes,
+            { line: line.index, path },
+          )
         ),
       });
     }

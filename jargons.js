@@ -151,6 +151,12 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
  */
 
 /**
+ *  Resolved attributes object.
+ *
+ *  @typedef {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} ResolvedAttributes
+ */
+
+/**
  *  The result produced after resolving a sigil.
  *
  *  @typedef {Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>|Readonly<Readonly<AttributeJargon>[]>} ResolvedJargon
@@ -1346,9 +1352,9 @@ export class Jargon {
    *
    *  @argument {string} path
    *  @argument {string} text
-   *  @argument {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} [intoObject]
+   *  @argument {ResolvedAttributes} [intoObject]
    *  @argument {ErrorOptions} [options]
-   *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
+   *  @returns {ResolvedAttributes}
    */
   parseAttributesContainer(
     path,
@@ -1729,7 +1735,7 @@ export class Jargon {
    *
    *  @argument {{[index:string]:string}} attributes
    *  @argument {ErrorOptions&{path?:string}} [options]
-   *  @returns {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}}
+   *  @returns {ResolvedAttributes}
    */
   resolveAttributes(attributes, options = {}) {
     return Object.create(
@@ -1774,7 +1780,7 @@ export class Jargon {
     const parsedQualifiedName = new RegExp(
       `^(?:(?<prefix>${Prefix.source}):)?(?<localName>${LocalPart.source})$`,
       "u",
-    ).exec(qualifiedName);
+    ).exec(welformedName(qualifiedName, options));
     if (parsedQualifiedName == null) {
       throw new ParseError(
         `Name "${qualifiedName}" is not a valid qualified name.`,
