@@ -103,6 +103,23 @@ export function sigilToRegExp(sigil) {
 }
 
 /**
+ *  Returns the unescaped string representation of the provided
+ *    `sigil`.
+ *
+ *  @argument {string} sigil
+ *  @returns {string}
+ */
+export function sigilValue(sigil) {
+  return Array.from(
+    normalizeReferences(sigil).matchAll(
+      new RegExp(CharRef.source, "gu"),
+    ),
+  ).map((charRef) =>
+    String.fromCodePoint(parseInt(charRef[0].substring(2)))
+  ).join("");
+}
+
+/**
  *  Throws an error if the provided `path` is not welformed; otherwise,
  *    returns the normalized form.
  *
