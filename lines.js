@@ -18,7 +18,9 @@ import { trim, trimEnd, trimStart } from "./text.js";
 /**
  *  A `String` object with an attached `index`.
  */
-export class Line extends /** @type {any} */ (String) {
+export class Line extends /** @type {ObjectConstructor} */ (
+  /** @type {unknown} */ (String)
+) {
   /**
    *  Creates a `Line` with at provided `index` and which has a value
    *    of the provided `contents`.
