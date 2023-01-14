@@ -10,7 +10,7 @@ Market Commons ⅠⅠ is a sort of “extensible Markdown for X·M·L”; an
 example follows&#x202F;:—
 
 ```market
-<?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
+<?market-commons 2.0 "tag:ns.1024.gdn,2023:market/html" [
 	<!-- Defines 🌈| … |🌈 as <mark class="RAINBOW">…</mark>. -->
 	<!-- You must use character references when defining sigils! -->
 	<!INLINE &#x1F308; mark { class="RAINBOW" }>
@@ -130,7 +130,7 @@ your webpage. This requires overriding the default document template,
 but is fairly straightforward to do&#x202F;:—
 
 ```market
-<?market-commons 2.0 "tag:go.KIBI.family,2021:market/html" [
+<?market-commons 2.0 "tag:ns.1024.gdn,2023:market/html" [
 
 	<!DOCUMENT [[
 <!DOCTYPE html [
@@ -138,8 +138,8 @@ but is fairly straightforward to do&#x202F;:—
 	<!ENTITY cutie "(◡ ‿ ◡ ✿)">
 ]>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head><preamble xmlns="tag:go.KIBI.family,2021:market"/></head>
-<body><content xmlns="tag:go.KIBI.family,2021:market"/></body>
+<head><preamble xmlns="tag:ns.1024.gdn,2023:market"/></head>
+<body><content xmlns="tag:ns.1024.gdn,2023:market"/></body>
 </html>
 	]]>
 
@@ -200,7 +200,7 @@ neither of the following (in order)&#x202F;:—
 
    If not provided, the default Declaration of Jargon is as follows:
 
-       <?market-commons 2.0 "tag:go.KIBI.family,2021:market/html"?>
+       <?market-commons 2.0 "tag:ns.1024.gdn,2023:market/html"?>
 
 2. **A preamble.** Preambles _must_ match the `content` production in
    X·M·L and _must not_ contain any successive line·breaks. If no

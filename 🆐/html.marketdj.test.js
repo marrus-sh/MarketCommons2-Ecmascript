@@ -74,12 +74,12 @@ Deno.test({
 	<meta name="generator" content="market-commons 2.0
 ${deno_landXMarket}"/>
 	<!-- BEGIN PREAMBLE -->
-<preamble xmlns="tag:go.KIBI.family,2021:market"></preamble>
+<preamble xmlns="tag:ns.1024.gdn,2023:market"></preamble>
 	<!-- END PREAMBLE -->
 </head>
 <body>
 	<!-- BEGIN CONTENT -->
-<content xmlns="tag:go.KIBI.family,2021:market"></content>
+<content xmlns="tag:ns.1024.gdn,2023:market"></content>
 	<!-- END CONTENT -->
 </body>
 </html>`,

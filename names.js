@@ -20,9 +20,9 @@ export const deno_landXMarket = "https://deno.land/x/market@v⸺";
  * The Market Commons namespace, used by Market Commons ⅠⅠ.
  *
  * Although the original Market Commons markup language was created in
- * 2019, no namespace was set aside for it until 2021.
+ * 2019, this namespace was not formally reserved until 2023.
  */
-export const marketNamespace = "tag:go.KIBI.family,2021:market";
+export const marketNamespace = "tag:ns.1024.gdn,2023:market";
 
 /**
  * The `<parsererror>` namespace, used by `DOMParser`.

@@ -21,7 +21,7 @@ export default String.raw`<?market-commons 2.0 [
 This is the default Declaration of Jargon (D·J) used by
 	Market Commons ⅠⅠ – Ecmascript, if none is specified in a file.
 It can be manually specified with the following ~| SystemLiteral |~:
-	~| "tag:go.KIBI.family,2021:market/html" |~.
+	~| "tag:ns.1024.gdn,2023:market/html" |~.
 -->
 
 <!-- Namespaces -->
