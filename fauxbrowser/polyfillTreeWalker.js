@@ -1,6 +1,7 @@
 //@ts-nocheck
 //deno-lint-ignore-file
 
+import "./window.js";
 /*
 The following function (and *only* the following function) was
 originally published at

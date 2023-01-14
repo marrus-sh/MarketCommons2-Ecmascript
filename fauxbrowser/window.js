@@ -22,7 +22,7 @@ import { xhtmlNamespace } from "../names.js";
 import {
   DOMParser,
   XMLSerializer,
-} from "https://esm.sh/@xmldom/xmldom@0.7.3";
+} from "https://esm.sh/@xmldom/xmldom@0.8.6";
 
 //@ts-ignore
 globalThis.window ??= globalThis;

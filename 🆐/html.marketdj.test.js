@@ -63,16 +63,11 @@ Deno.test({
     assertEquals(contentModel, CONTENT_MODEL.MIXED);
     assertEquals(
       (new XMLSerializer()).serializeToString(template),
-      //  There are “errors” in the following string which result
-      //    from “bugs” in the `XMLSerializer` implementation.
-      //  See <https://github.com/w3c/DOM-Parsing/issues/59> for
-      //    the most egregious.
       `<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta charset="utf-8"/>
-	<meta name="generator" content="market-commons 2.0
-${deno_landXMarket}"/>
+	<meta name="generator" content="market-commons 2.0&#10;${deno_landXMarket}"/>
 	<!-- BEGIN PREAMBLE -->
 <preamble xmlns="tag:ns.1024.gdn,2023:market"></preamble>
 	<!-- END PREAMBLE -->
