@@ -1,16 +1,15 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: jargons.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ jargons.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021–2023 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 //
-//  ___________________________________________________________________
+// ____________________________________________________________________
 //
-//  This module provides Declaration of Jargon processing.
+// This module provides Declaration of Jargon processing.
 
 import { systemIdentifiers as defaultSystemIdentifiers } from "./defaults.js";
 import {
@@ -23,30 +22,35 @@ import {
 import {
   marketNamespace,
   parsererrorNamespace,
-  x·m·lNamespace,
-  x·m·l·n·sNamespace,
+  xmlNamespace,
+  xmlnsNamespace,
 } from "./names.js";
-import { globRegExp, sigilToRegExp, welformedPath } from "./paths.js";
+import {
+  globRegExp,
+  sigilToRegExp,
+  sigilValue,
+  welformedPath,
+} from "./paths.js";
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 import {
-  AttributeD·J,
+  AttributeDJ,
   AttValue,
-  BlockD·J,
+  BlockDJ,
   Comment,
-  DocumentD·J,
-  D·J,
+  DJ,
+  DocumentDJ,
   Eq,
-  HeadingD·J,
-  InlineD·J,
+  HeadingDJ,
+  InlineDJ,
   LocalPart,
-  NamespaceD·J,
+  NamespaceDJ,
   Prefix,
   QName,
   S,
-  SectionD·J,
-  SigilD·J,
+  SectionDJ,
+  SigilDJ,
 } from "./syntax.js";
-import { prepareAsX·M·L, welformedName } from "./text.js";
+import { prepareAsXML, welformedName } from "./text.js";
 
 /** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
 /** @typedef {import("./symbols.js").DOCUMENT_NODE} DOCUMENT_NODE */
@@ -62,132 +66,131 @@ import { prepareAsX·M·L, welformedName } from "./text.js";
 /** @typedef {import("./symbols.js").LITERAL_CONTENT} LITERAL_CONTENT */
 
 /**
- *  A document jargon.
+ * A document jargon.
  *
- *  @typedef {Object} DocumentJargon
- *  @property {DOCUMENT_NODE} nodeType
- *  @property {MIXED_CONTENT} contentModel
- *  @property {string} source
- *  @property {XMLDocument} template
+ * @typedef {Object} DocumentJargon
+ * @property {DOCUMENT_NODE} nodeType
+ * @property {MIXED_CONTENT} contentModel
+ * @property {string} source
+ * @property {XMLDocument} template
  */
 
 /**
- *  A generic division jargon.
+ * A generic division jargon.
  *
- *  @typedef {Object} DivisionJargon
- *  @property {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE} nodeType
- *  @property {MIXED_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
- *  @property {?string} sigil
- *  @property {?string} path
- *  @property {string} qualifiedName
- *  @property {Readonly<{[index:string]:string}>} attributes
+ * @typedef {Object} DivisionJargon
+ * @property {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE} nodeType
+ * @property {MIXED_CONTENT|INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ * @property {?string} sigil
+ * @property {?string} path
+ * @property {string} qualifiedName
+ * @property {Readonly<{[index:string]:string}>} attributes
  */
 
 /**
- *  A section jargon.
+ * A section jargon.
  *
- *  @typedef {Object} SectionJargon
- *  @property {SECTION_NODE} nodeType
- *  @property {MIXED_CONTENT|TEXT_CONTENT} contentModel
- *  @property {string} sigil
- *  @property {string} path
- *  @property {string} qualifiedName
- *  @property {Readonly<{[index:string]:string}>} attributes
- *  @property {?Readonly<string[]>} countTo
- *  @property {?Readonly<string[]>} textTo
- *  @property {?HeadingJargon} heading
+ * @typedef {Object} SectionJargon
+ * @property {SECTION_NODE} nodeType
+ * @property {MIXED_CONTENT|TEXT_CONTENT} contentModel
+ * @property {string} sigil
+ * @property {string} path
+ * @property {string} qualifiedName
+ * @property {Readonly<{[index:string]:string}>} attributes
+ * @property {?Readonly<string[]>} countTo
+ * @property {?Readonly<string[]>} textTo
+ * @property {?HeadingJargon} heading
  */
 
 /**
- *  A heading jargon.
+ * A heading jargon.
  *
- *  @typedef {Object} HeadingJargon
- *  @property {HEADING_NODE} nodeType
- *  @property {INLINE_CONTENT} contentModel
- *  @property {string} sigil
- *  @property {string} path
- *  @property {string} qualifiedName
- *  @property {Readonly<{[index:string]:string}>} attributes
- *  @property {?Readonly<string[]>} countTo
+ * @typedef {Object} HeadingJargon
+ * @property {HEADING_NODE} nodeType
+ * @property {INLINE_CONTENT} contentModel
+ * @property {string} sigil
+ * @property {string} path
+ * @property {string} qualifiedName
+ * @property {Readonly<{[index:string]:string}>} attributes
+ * @property {?Readonly<string[]>} countTo
  */
 
 /**
- *  A block jargon.
+ * A block jargon.
  *
- *  @typedef {Object} BlockJargon
- *  @property {BLOCK_NODE} nodeType
- *  @property {MIXED_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
- *  @property {string} sigil
- *  @property {string} path
- *  @property {string} qualifiedName
- *  @property {Readonly<{[index:string]:string}>} attributes
- *  @property {boolean} isDefault
- *  @property {?Readonly<DivisionJargon>} inList
+ * @typedef {Object} BlockJargon
+ * @property {BLOCK_NODE} nodeType
+ * @property {MIXED_CONTENT|INLINE_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ * @property {string} sigil
+ * @property {string} path
+ * @property {string} qualifiedName
+ * @property {Readonly<{[index:string]:string}>} attributes
+ * @property {boolean} isDefault
+ * @property {?Readonly<DivisionJargon>} inList
  */
 
 /**
- *  An inline jargon.
+ * An inline jargon.
  *
- *  @typedef {Object} InlineJargon
- *  @property {INLINE_NODE} nodeType
- *  @property {INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
- *  @property {string} sigil
- *  @property {string} path
- *  @property {string} qualifiedName
- *  @property {Readonly<{[index:string]:string}>} attributes
- *  @property {?string} textFrom
- *  @property {?Readonly<string[]>} textTo
+ * @typedef {Object} InlineJargon
+ * @property {INLINE_NODE} nodeType
+ * @property {INLINE_CONTENT|TEXT_CONTENT|COMMENT_CONTENT|LITERAL_CONTENT} contentModel
+ * @property {string} sigil
+ * @property {string} path
+ * @property {string} qualifiedName
+ * @property {Readonly<{[index:string]:string}>} attributes
+ * @property {?string} textFrom
+ * @property {?Readonly<string[]>} textTo
  */
 
 /**
- *  An attribute jargon.
+ * An attribute jargon.
  *
- *  @typedef {Object} AttributeJargon
- *  @property {ATTRIBUTE_NODE} nodeType
- *  @property {TEXT_CONTENT} contentModel
- *  @property {string} sigil
- *  @property {string} path
- *  @property {string} qualifiedName
+ * @typedef {Object} AttributeJargon
+ * @property {ATTRIBUTE_NODE} nodeType
+ * @property {TEXT_CONTENT} contentModel
+ * @property {string} sigil
+ * @property {string} path
+ * @property {string} qualifiedName
  */
 
 /**
- *  Resolved attributes object.
+ * Resolved attributes object.
  *
- *  @typedef {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} ResolvedAttributes
+ * @typedef {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} ResolvedAttributes
  */
 
 /**
- *  The result produced after resolving a sigil.
+ * The result produced after resolving a sigil.
  *
- *  @typedef {Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>|Readonly<Readonly<AttributeJargon>[]>} ResolvedJargon
+ * @typedef {Readonly<SectionJargon>|Readonly<HeadingJargon>|Readonly<BlockJargon>|Readonly<InlineJargon>|Readonly<Readonly<AttributeJargon>[]>} ResolvedJargon
  */
 
 /**
- *  A symbol used in options objects to provide a `Set` of document
- *    identifiers which the current declaration is referenced from.
- *  This is intentionally not exported; it should not be available to
- *    users.
+ * A symbol used in options objects to provide a `Set` of document
+ * identifiers which the current declaration is referenced from. This
+ * is intentionally not exported; it should not be available to users.
  */
 const nestedWithin = Symbol();
 
 /**
- *  Parses an attributes declaration into an object associating
- *    attribute names with values.
+ * Parses an attributes declaration into an object associating
+ * attribute names with values.
  *
- *  @argument {?string} attributesDeclaration
- *  @argument {ErrorOptions} [options]
- *  @returns {Readonly<{[index:string]:string}>}
+ * @argument {?string} attributesDeclaration
+ * @argument {ErrorOptions} [options]
+ * @returns {Readonly<{[index:string]:string}>}
  */
-function parseAttributes(attributesDeclaration, options = {}) {
+const parseAttributes = (attributesDeclaration, options = {}) => {
   const regExp = new RegExp(
     `(?<name>${QName.source})${Eq.source}(?<attValue>${AttValue.source})`,
     "gu",
   );
   const result = Object.create(null);
   if (attributesDeclaration != null) {
-    //  Iterate over each `Attribute` in `attributesDeclaration`
-    //    and extract its Name and AttValue, then assign these in
-    //    the result object.
+    // Iterate over each `Attribute` in `attributesDeclaration` and
+    // extract its Name and AttValue, then assign these in the result
+    // object.
     let attribute = null;
     while ((attribute = regExp.exec(attributesDeclaration))) {
       const { name, attValue } =
@@ -195,14 +198,14 @@ function parseAttributes(attributesDeclaration, options = {}) {
           attribute.groups
         );
       if (name in result) {
-        //  An attributes declaration must not declare
-        //    the same attribute name twice [🆐A‐1].
+        // An attributes declaration must not declare the same
+        // attribute name twice [🆐A‐1].
         throw new ParseError(
           `Attribute @${name} declared twice.`,
           options,
         );
       } else {
-        //  Set the attribute.
+        // Set the attribute.
         result[welformedName(name, options)] = attValue.substring(
           1,
           attValue.length - 1,
@@ -211,41 +214,40 @@ function parseAttributes(attributesDeclaration, options = {}) {
     }
   }
   return Object.freeze(result);
-}
+};
 
 /**
- *  Extracts an `S` from `source` at `index`, and returns an object
- *    containing the `lastIndex` of the match.
+ * Extracts an `S` from `source` at `index`, and returns an object
+ * containing the `lastIndex` of the match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{lastIndex:number}}
  */
-function processS(source, index) {
+const processS = (source, index) => {
   const regExp = new RegExp(S.source, "uy");
   regExp.lastIndex = index;
   return regExp.test(source) ? { lastIndex: regExp.lastIndex } : null;
-}
+};
 
 /**
- *  Extracts a `NamespaceD·J` from `source` at `index`, and
- *    returns an object containing the `lastIndex`, `prefix`,
- *    and `literal` of the match.
+ * Extracts a `NamespaceDJ` from `source` at `index`, and returns an
+ * object containing the `lastIndex`, `prefix`, and `literal` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{prefix:string,literal:string,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{prefix:string,literal:string,lastIndex:number}}
  */
-function processNamespace(source, index) {
-  const regExp = new RegExp(NamespaceD·J.source, "uy");
+const processNamespace = (source, index) => {
+  const regExp = new RegExp(NamespaceDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not a namespace declaration at `index` in
-    //    `source`.
+    // There is not a namespace declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the namespace declaration.
+    // Process the namespace declaration.
     const {
       namespacePrefix,
       namespaceLiteral,
@@ -259,33 +261,33 @@ function processNamespace(source, index) {
       namespaceLiteral.length - 1,
     );
     if (prefix == "xmlns") {
-      //  `xmlns` is not usable as a prefix [🆐K‐1].
+      // `xmlns` is not usable as a prefix [🆐K‐1].
       throw new ParseError(
         `"${prefix}" cannot be used as a namespace prefix.`,
         { index },
       );
-    } else if (prefix == "xml" && literal != x·m·lNamespace) {
-      //  The prefix `xml` can only be assigned to the X·M·L
-      //    namespace [🆐K‐2].
+    } else if (prefix == "xml" && literal != xmlNamespace) {
+      // The prefix `xml` can only be assigned to the X·M·L namespace
+      // [🆐K‐2].
       throw new ParseError(
-        `"${prefix}" cannot be assigned to any namespace other than "${x·m·lNamespace}".`,
+        `"${prefix}" cannot be assigned to any namespace other than "${xmlNamespace}".`,
         { index },
       );
-    } else if (prefix != "xml" && literal == x·m·lNamespace) {
-      //  The X·M·L namespace can only be assigned to the prefix
-      //    `xml` [🆐K‐3].
+    } else if (prefix != "xml" && literal == xmlNamespace) {
+      // The X·M·L namespace can only be assigned to the prefix `xml`
+      // [🆐K‐3].
       throw new ParseError(
         `The namespace "${literal}" can only be assigned to the prefix "xml".`,
         { index },
       );
-    } else if (literal == x·m·l·n·sNamespace) {
-      //  The X·M·L·N·S namespace cannot be assigned [🆐K‐3].
+    } else if (literal == xmlnsNamespace) {
+      // The X·M·L·N·S namespace cannot be assigned [🆐K‐3].
       throw new ParseError(
         `The namespace "${literal}" cannot be assigned.`,
         { index },
       );
     } else {
-      //  Return the processed prefix and literal.
+      // Return the processed prefix and literal.
       return {
         prefix,
         literal,
@@ -293,27 +295,27 @@ function processNamespace(source, index) {
       };
     }
   }
-}
+};
 
 /**
- *  Extracts a `DocumentD·J` from `source` at `index`, and
- *    returns an object containing the document `jargon` and
- *    the `lastIndex` of the match.
+ * Extracts a `DocumentDJ` from `source` at `index`, and returns an
+ * object containing the document `jargon` and the `lastIndex` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @argument {typeof globalThis.DOMParser} DOMParser
- *  @returns {?{jargon:Readonly<DocumentJargon>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @argument {typeof globalThis.DOMParser} DOMParser
+ * @returns {?{jargon:Readonly<DocumentJargon>,lastIndex:number}}
  */
-function processDocument(source, index, DOMParser) {
-  const regExp = new RegExp(DocumentD·J.source, "uy");
+const processDocument = (source, index, DOMParser) => {
+  const regExp = new RegExp(DocumentDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not a document declaration at `index` in `source`.
+    // There is not a document declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the document declaration.
+    // Process the document declaration.
     const {
       documentTemplate: documentSource,
     } = /** @type {{documentTemplate:string}} */ (parseResult.groups);
@@ -349,58 +351,57 @@ function processDocument(source, index, DOMParser) {
       root.localName == "parsererror" &&
       root.namespaceURI == parsererrorNamespace
     ) {
-      //  The document template must be a welformed X·M·L
-      //    document [🆐D‐1].
+      // The document template must be a welformed X·M·L document
+      // [🆐D‐1].
       throw new ParseError(
         `Document template not welformed: ${root.textContent}`,
         { index },
       );
     } else {
-      //  Walk the X·M·L tree and process elements in the
-      //    <tag:go.KIBI.family,2021:market> namespace.
+      // Walk the X·M·L tree and process elements in the
+      // <tag:go.KIBI.family,2021:market> namespace.
       const walker = document.createTreeWalker(
         document,
-        0x1, //  NodeFilter.SHOW_ELEMENT
+        0x1, // NodeFilter.SHOW_ELEMENT
         {
           acceptNode: (/** @type {Element} */ node) =>
             node.namespaceURI == marketNamespace
-              ? 1 //  NodeFilter.FILTER_ACCEPT
-              : 3, //  NodeFilter.FILTER_SKIP
+              ? 1 // NodeFilter.FILTER_ACCEPT
+              : 3, // NodeFilter.FILTER_SKIP
         },
       );
       while (walker.nextNode()) {
-        //  Process the element.
+        // Process the element.
         const node = /** @type {Element} */ (walker.currentNode);
         const name = node.localName;
         if (marketNodes[name] != null) {
-          //  An element with this name has already been
-          //    processed [🆐D‐2].
+          // An element with this name has already been processed
+          // [🆐D‐2].
           throw new ParseError(
             `Document template contains multiple ${name} elements in the "${marketNamespace}" namespace.`,
             { index },
           );
         } else if (node.childNodes.length != 0) {
-          //  The element is not empty [🆐D‐2].
+          // The element is not empty [🆐D‐2].
           throw new ParseError(
             `Document template contains nonempty ${name} element in the "${marketNamespace}" namespace.`,
             { index },
           );
         } else if (!(name in marketNodes)) {
-          //  The element is not recognized [🆐D‐3].
+          // The element is not recognized [🆐D‐3].
           throw new ParseError(
             `Document template contains unrecognized ${name} element in the "${marketNamespace}" namespace.`,
             { index },
           );
         } else {
-          //  The element is recognized and has not been
-          //    encountered before.
+          // The element is recognized and has not been encountered
+          // before.
           Object.defineProperty(marketNodes, name, { value: node });
         }
       }
       for (const name of ["preamble", "content"]) {
         if (marketNodes[name] == null) {
-          //  Both `<preamble>` and `<content>` are required
-          //    [🆐D‐2].
+          // Both `<preamble>` and `<content>` are required [🆐D‐2].
           throw new ParseError(
             `Document template lacks a ${name} element in the "${marketNamespace}" namespace.`,
             { index },
@@ -418,27 +419,26 @@ function processDocument(source, index, DOMParser) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts a `SectionD·J` from `source` at `index`, and
- *    returns an object containing the section `jargon` and the
- *    `lastIndex` of the match.
+ * Extracts a `SectionDJ` from `source` at `index`, and returns an
+ * object containing the section `jargon` and the `lastIndex` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{jargon:Readonly<SectionJargon>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{jargon:Readonly<SectionJargon>,lastIndex:number}}
  */
-function processSection(source, index) {
-  const regExp = new RegExp(SectionD·J.source, "uy");
+const processSection = (source, index) => {
+  const regExp = new RegExp(SectionDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not a section declaration at `index` in
-    //    `source`.
+    // There is not a section declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the section declaration.
+    // Process the section declaration.
     const {
       sectionAttributes,
       sectionHeadingAttributes,
@@ -506,27 +506,26 @@ function processSection(source, index) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts a `HeadingD·J` from `source` at `index`, and
- *    returns an object containing the heading `jargon` and the
- *    `lastIndex` of the match.
+ * Extracts a `HeadingDJ` from `source` at `index`, and returns an
+ * object containing the heading `jargon` and the `lastIndex` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{jargon:Readonly<HeadingJargon>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{jargon:Readonly<HeadingJargon>,lastIndex:number}}
  */
-function processHeading(source, index) {
-  const regExp = new RegExp(HeadingD·J.source, "uy");
+const processHeading = (source, index) => {
+  const regExp = new RegExp(HeadingDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not a heading declaration at `index` in
-    //    `source`.
+    // There is not a heading declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the heading declaration.
+    // Process the heading declaration.
     const {
       headingAttributes,
       headingCountTo,
@@ -566,26 +565,25 @@ function processHeading(source, index) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts a `BlockD·J` from `source` at `index`, and returns
- *    an object containing the block `jargon` and the
- *    `lastIndex` of the match.
+ * Extracts a `BlockDJ` from `source` at `index`, and returns an object
+ * containing the block `jargon` and the `lastIndex` of the match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{jargon:Readonly<BlockJargon>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{jargon:Readonly<BlockJargon>,lastIndex:number}}
  */
-function processBlock(source, index) {
-  const regExp = new RegExp(BlockD·J.source, "uy");
+const processBlock = (source, index) => {
+  const regExp = new RegExp(BlockDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not a block declaration at `index` in `source`.
+    // There is not a block declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the block declaration.
+    // Process the block declaration.
     const {
       blockAttributes,
       blockFinal,
@@ -652,19 +650,19 @@ function processBlock(source, index) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts an `InlineD·J` from `source` at `index`, and
- *    returns an object containing the inline `jargon` and the
- *    `lastIndex` of the match.
+ * Extracts an `InlineDJ` from `source` at `index`, and returns an
+ * object containing the inline `jargon` and the `lastIndex` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{jargon:Readonly<InlineJargon>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{jargon:Readonly<InlineJargon>,lastIndex:number}}
  */
-function processInline(source, index) {
-  const regExp = new RegExp(InlineD·J.source, "uy");
+const processInline = (source, index) => {
+  const regExp = new RegExp(InlineDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
@@ -680,7 +678,7 @@ function processInline(source, index) {
       inlineFinal,
       inlineName,
       inlinePath,
-      //  /*  not needed  */ inlineSectionBlockAny,
+      // /* not needed */inlineSectionBlockAny,
       inlineSectionBlockPath,
       inlineSectionBlockStrict,
       inlineSectionSigil,
@@ -736,27 +734,26 @@ function processInline(source, index) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts an `AttributeD·J` from `source` at `index`, and
- *    returns an object containing the attribute `jargon` and
- *    the `lastIndex` of the match.
+ * Extracts an `AttributeDJ` from `source` at `index`, and returns an
+ * object containing the attribute `jargon` and the `lastIndex` of the
+ * match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{path:string,sigil:string,jargons:Readonly<Readonly<AttributeJargon>[]>,lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{path:string,sigil:string,jargons:Readonly<Readonly<AttributeJargon>[]>,lastIndex:number}}
  */
-function processAttribute(source, index) {
-  const regExp = new RegExp(AttributeD·J.source, "uy");
+const processAttribute = (source, index) => {
+  const regExp = new RegExp(AttributeDJ.source, "uy");
   regExp.lastIndex = index;
   const parseResult = regExp.exec(source);
   if (parseResult == null) {
-    //  There is not an attribute declaration at `index` in
-    //    `source`.
+    // There is not an attribute declaration at `index` in `source`.
     return null;
   } else {
-    //  Process the attribute declaration.
+    // Process the attribute declaration.
     const {
       attributeBlockOrInlinePath,
       attributeBlockOrInlineStrict,
@@ -764,7 +761,7 @@ function processAttribute(source, index) {
       attributeInlinePath,
       attributeInlineStrict,
       attributeNames,
-      //  /*  not needed  */ attributeSectionBlockOrInlineAny,
+      // /* not needed */attributeSectionBlockOrInlineAny,
       attributeSectionBlockOrInlinePath,
       attributeSectionBlockOrInlineStrict,
       attributeSectionInlineAny,
@@ -801,8 +798,9 @@ function processAttribute(source, index) {
         ? attributeSectionBlockOrInlineStrict ??
           attributeBlockOrInlineStrict ?? " "
         : " ",
-      possiblyInlinePath == null ? "*"
-      : welformedPath(possiblyInlinePath),
+      possiblyInlinePath == null
+        ? "*"
+        : welformedPath(possiblyInlinePath),
       blockDefined
         ? attributeSectionInlineStrict ?? attributeInlineStrict ??
           " "
@@ -827,25 +825,25 @@ function processAttribute(source, index) {
       lastIndex: regExp.lastIndex,
     };
   }
-}
+};
 
 /**
- *  Extracts a `Comment` from `source` at `index`, and returns an
- *    object containing the `lastIndex` of the match.
+ * Extracts a `Comment` from `source` at `index`, and returns an object
+ * containing the `lastIndex` of the match.
  *
- *  @argument {string} source
- *  @argument {number} index
- *  @returns {?{lastIndex:number}}
+ * @argument {string} source
+ * @argument {number} index
+ * @returns {?{lastIndex:number}}
  */
-function processComment(source, index) {
+const processComment = (source, index) => {
   const regExp = new RegExp(Comment.source, "uy");
   regExp.lastIndex = index;
   return regExp.test(source) ? { lastIndex: regExp.lastIndex } : null;
-}
+};
 
 /**
- *  Adds the provided `jargon` to the correct location in the provided
- *    `object`.
+ * Adds the provided `jargon` to the correct location in the provided
+ * `object`.
  *
  * @argument {{[index:string]:{[index:string]:object}}} object
  * @argument {any} jargon
@@ -865,10 +863,10 @@ function addJargonToObject(
 }
 
 /**
- *  The class of parsed Declaration of Jargon objects.
+ * The class of parsed Declaration of Jargon objects.
  *
- *  Instances of this class must not be modified after processing
- *    begins.
+ * Instances of this class must not be modified after processing
+ * begins.
  */
 export class Jargon {
   #cachedSigilsForPath = {
@@ -895,13 +893,13 @@ export class Jargon {
     "xml": {
       configurable: false,
       enumerable: true,
-      value: x·m·lNamespace,
+      value: xmlNamespace,
       writable: false,
     },
     "xmlns": {
       configurable: false,
       enumerable: true,
-      value: x·m·l·n·sNamespace,
+      value: xmlnsNamespace,
       writable: false,
     },
   });
@@ -932,19 +930,18 @@ export class Jargon {
   [NODE_TYPE.ATTRIBUTE] = Object.create(null);
 
   /**
-   *  Reads the Declaration of Jargon from the beginning of the
-   *    provided `source` and creates a new `Jargon` object
-   *    representing it.
+   * Reads the Declaration of Jargon from the beginning of the provided
+   * `source` and creates a new `Jargon` object representing it.
    *
-   *  @argument {string} source
-   *  @argument {{DOMParser:typeof globalThis.DOMParser,systemIdentifiers:{[index:string]:string},[nestedWithin]?:Set<string>}} [options]
+   * @argument {string} source
+   * @argument {{DOMParser:typeof globalThis.DOMParser,systemIdentifiers:{[index:string]:string},[nestedWithin]?:Set<string>}} [options]
    */
   constructor(source, options = {
     DOMParser: globalThis.DOMParser,
     systemIdentifiers: {},
   }) {
-    //  Protect instance properties from being accidentally overwritten
-    //    during processing.
+    // Protect instance properties from being accidentally overwritten
+    // during processing.
     Object.defineProperties(this, {
       namespaces: { writable: false },
       [NODE_TYPE.DOCUMENT]: { writable: false },
@@ -955,8 +952,8 @@ export class Jargon {
       [NODE_TYPE.ATTRIBUTE]: { writable: false },
     });
 
-    //  Ensure source begins with a Declaration of Jargon.
-    //  Otherwise, throw.
+    // Ensure source begins with a Declaration of Jargon. Otherwise,
+    // throw.
     if (!source.startsWith("<?market-commons")) {
       throw new ParseError(
         "Source did not begin with a Declaration of Jargon.",
@@ -964,7 +961,7 @@ export class Jargon {
       );
     }
 
-    //  Handle options.
+    // Handle options.
     const DOMParser = options?.DOMParser ?? globalThis?.DOMParser;
     if (typeof DOMParser != "function") {
       throw new ConfigurationError(
@@ -973,17 +970,17 @@ export class Jargon {
     }
     const systemIdentifiers = options?.systemIdentifiers ?? {};
 
-    //  Parse and process.
-    const regExp = new RegExp(D·J.source, "duy");
+    // Parse and process.
+    const regExp = new RegExp(DJ.source, "duy");
     const parseResult = regExp.exec(source);
     if (parseResult == null) {
-      //  Declarations of Jargon must match the `D·J` production.
+      // Declarations of Jargon must match the `DJ` production.
       throw new ParseError(
         "Declaration of Jargon does not match expected grammar.",
         { index: 0 },
       );
     } else {
-      //  Process the parsed Declaration of Jargon.
+      // Process the parsed Declaration of Jargon.
       const parseGroups =
         /** @type {{externalName?:string,externalSubset?:string,internalDeclarations?:string}} */ (
           parseResult.groups
@@ -1008,20 +1005,20 @@ export class Jargon {
           parseGroupIndices.externalSubset
       )?.[0];
       if (externalName != null) {
-        //  (Attempt to) handle the referenced external Declaration
-        //    of Jargon.
+        // (Attempt to) handle the referenced external Declaration of
+        // Jargon.
         if (options?.[nestedWithin]?.has(externalName) ?? false) {
-          //  There is a recursive external reference [🆐J‐2].
+          // There is a recursive external reference [🆐J‐2].
           throw new ParseError(
             `Recursive reference to "${externalName}" in Declaration of Jargon.`,
             { index: nameIndex },
           );
         } else {
-          const externalD·J = prepareAsX·M·L(
+          const externalDJ = prepareAsXML(
             systemIdentifiers[externalName] ??
               defaultSystemIdentifiers[externalName] ?? (() => {
-                //  (Attempt to) fetch the system identifier.
-                /*  TODO  */
+                // (Attempt to) fetch the system identifier.
+                /* TODO */
                 throw new ParseError(
                   "Fetching external Declarations of Jargon is not yet supported.",
                   { index: nameIndex },
@@ -1029,10 +1026,10 @@ export class Jargon {
               })(),
           );
           try {
-            //  Attempt to process the external Declaration of Jargon
-            //    and assign to the properties of this instance those
-            //    of the result.
-            const externalResult = new Jargon(externalD·J, {
+            // Attempt to process the external Declaration of Jargon
+            // and assign to the properties of this instance those of
+            // the result.
+            const externalResult = new Jargon(externalDJ, {
               ...options,
               [nestedWithin]: new Set(
                 options?.[nestedWithin] ?? [],
@@ -1040,10 +1037,10 @@ export class Jargon {
             });
             if (
               externalResult == null ||
-              externalResult.source.length != externalD·J.length
+              externalResult.source.length != externalDJ.length
             ) {
-              //  External Declarations of Jargon must consist of
-              //    *only* and *exactly* one `D·J`.
+              // External Declarations of Jargon must consist of *only*
+              // and *exactly* one `DJ`.
               throw new ParseError("Not welformed.", { index: 0 });
             } else {
               Object.assign(
@@ -1082,8 +1079,8 @@ export class Jargon {
               );
             }
           } catch {
-            //  The external Declaration of Jargon does not match
-            //    the `D·J` production [🆐J‐2].
+            // The external Declaration of Jargon does not match the
+            // `DJ` production [🆐J‐2].
             throw new ParseError(
               `The external Declaration of Jargon "${externalName}" is not welformed.`,
               { index: nameIndex },
@@ -1098,13 +1095,13 @@ export class Jargon {
           parseGroupIndices.internalDeclarations
         );
         while (index < endIndex) {
-          //  Process the internal declaration and advance the index to
-          //    the next.
+          // Process the internal declaration and advance the index to
+          // the next.
           processingDeclaration: {
             attemptingS: {
               const result = processS(source, index);
               if (result != null) {
-                //  White·space is ignored.
+                // White·space is ignored.
                 index = result.lastIndex;
                 break processingDeclaration;
               } else {
@@ -1133,7 +1130,7 @@ export class Jargon {
             attemptingDocument: {
               const result = processDocument(source, index, DOMParser);
               if (result != null) {
-                //  Overwrites any previous document declaration.
+                // Overwrites any previous document declaration.
                 Object.defineProperty(
                   this,
                   NODE_TYPE.DOCUMENT,
@@ -1180,8 +1177,8 @@ export class Jargon {
                   value,
                 );
                 if (value.isDefault) {
-                  //  This is a default block declaration.
-                  //  Record it in the defaults map!
+                  // This is a default block declaration. Record it in
+                  // the defaults map!
                   this[NODE_TYPE.BLOCK]["#DEFAULT"][
                     value.path.substring(
                       0,
@@ -1212,8 +1209,8 @@ export class Jargon {
             attemptingAttribute: {
               const result = processAttribute(source, index);
               if (result != null) {
-                //  This is not additive; it overwrites any existing
-                //    array.
+                // This is not additive; it overwrites any existing
+                // array.
                 addJargonToObject(
                   this[NODE_TYPE.ATTRIBUTE],
                   result.jargons,
@@ -1229,7 +1226,7 @@ export class Jargon {
             attemptingComment: {
               const result = processComment(source, index);
               if (result != null) {
-                //  Comments are ignored.
+                // Comments are ignored.
                 index = result.lastIndex;
                 break processingDeclaration;
               } else {
@@ -1245,7 +1242,7 @@ export class Jargon {
       }
     }
 
-    //  Store the source and freeze.
+    // Store the source and freeze.
     this.source = source.substring(0, regExp.lastIndex);
     Object.freeze(this.namespaces);
     for (
@@ -1266,24 +1263,23 @@ export class Jargon {
   }
 
   /**
-   *  Returns an object indicating the number of consecutive `sigil`s
-   *    that begin the provided `text`, starting from the offset given
-   *    by the provided `lastIndex`, or `null` if none applies.
+   * Returns an object of results for `countSigils()`, for each
+   * possible sigil.
    *
-   *  If there are multiple possible sigils at the provided `lastIndex`
-   *    in `text`, the longest will be chosen.
+   * If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
+   * `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted: The
+   * resulting `count` will be `1`.
    *
-   *  If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
-   *    `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted:
-   *  The resulting `count` will be `1`.
+   * If `nodeType` is `NODE_TYPE.INLINE`, the count will be made
+   * backwards.
    *
-   *  @argument {string} text
-   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
-   *  @argument {string} path
-   *  @argument {number} [lastIndex]
-   *  @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
+   * @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
+   * @argument {string} path
+   * @argument {string} text
+   * @argument {number} [lastIndex]
+   * @returns {{[index:string]:?{sigil:string,count:number,index:number,lastIndex:number},"":null}}
    */
-  countSigils(text, nodeType, path, lastIndex = 0) {
+  #countAllSigils(nodeType, path, text, lastIndex = 0) {
     /** @type {{[index:string]:?{sigil:string,count:number,index:number,lastIndex:number},"":null}} */
     const matches = Object.create(null, {
       "": {
@@ -1294,24 +1290,27 @@ export class Jargon {
       },
     });
     for (const sigil of this.sigilsInScope(nodeType, path)) {
-      //  Test each sigil in scope and see if it begins the `text`.
-      const suffix =
-        nodeType == NODE_TYPE.ATTRIBUTE || nodeType == NODE_TYPE.INLINE
-          ? ""
-          : String.raw`(?!\|)[ \t]*`;
+      // Test each sigil in scope and see if it begins the `text`.
+      const index = nodeType == NODE_TYPE.INLINE
+        ? lastIndex - sigilValue(sigil).length
+        : lastIndex;
       const regExp = new RegExp(
-        `${sigilToRegExp(sigil).source}${suffix}`,
+        `${sigilToRegExp(sigil).source}${
+          [NODE_TYPE.ATTRIBUTE, NODE_TYPE.INLINE].includes(nodeType)
+            ? ""
+            : String.raw`(?!\|)[ \t]*`
+        }`,
         "uy",
       );
-      regExp.lastIndex = lastIndex;
+      regExp.lastIndex = index;
       if (
         nodeType == NODE_TYPE.SECTION || nodeType == NODE_TYPE.HEADING
       ) {
-        //  A section or heading may consist of repeated sigils.
+        // A section or heading may consist of repeated sigils.
         let count = 0;
-        let nextIndex = lastIndex;
+        let nextIndex = index;
         while (regExp.test(text)) {
-          //  Increment `count` for as long as there is another sigil.
+          // Increment `count` for as long as there is another sigil.
           ++count;
           nextIndex = regExp.lastIndex;
         }
@@ -1319,24 +1318,52 @@ export class Jargon {
           matches[sigil] = {
             sigil,
             count,
-            index: lastIndex,
+            index,
             lastIndex: nextIndex,
           };
         } else {
           continue;
         }
       } else if (regExp.test(text)) {
-        //  Other node types have a `count` limited to 1.
+        // Other node types have a `count` limited to 1.
         matches[sigil] = {
           sigil,
           count: 1,
-          index: lastIndex,
+          index,
           lastIndex: regExp.lastIndex,
         };
       } else {
         continue;
       }
     }
+    return matches;
+  }
+
+  /**
+   * Returns an object indicating the number of consecutive `sigil`s
+   * that begin the provided `text`, starting from the offset given by
+   * the provided `lastIndex`, or `null` if none applies.
+   *
+   * If there are multiple possible sigils at the provided `lastIndex`
+   * in `text`, the longest will be chosen.
+   *
+   * If `nodeType` is `NODE_TYPE.BLOCK`, `NODE_TYPE.INLINE`, or
+   * `NODE_TYPE.ATTRIBUTE`, a maximum of one sigil will be counted: The
+   * resulting `count` will be `1`.
+   *
+   * @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
+   * @argument {string} path
+   * @argument {string} text
+   * @argument {number} [lastIndex]
+   * @returns {?{sigil:string,count:number,index:number,lastIndex:number}}
+   */
+  countSigils(nodeType, path, text, lastIndex = 0) {
+    const matches = this.#countAllSigils(
+      nodeType,
+      path,
+      text,
+      lastIndex,
+    );
     return matches[
       Object.keys(matches).reduce(
         (best, next) => next.length > best.length ? next : best,
@@ -1346,15 +1373,15 @@ export class Jargon {
   }
 
   /**
-   *  Parses the attributes container (wrapped in braces) provided as
-   *    `text` into the provided `intoObject`, or returns a new object
-   *    mapping attribute names to values.
+   * Parses the attributes container (wrapped in braces) provided as
+   * `text` into the provided `intoObject`, or returns a new object
+   * mapping attribute names to values.
    *
-   *  @argument {string} path
-   *  @argument {string} text
-   *  @argument {ResolvedAttributes} [intoObject]
-   *  @argument {ErrorOptions} [options]
-   *  @returns {ResolvedAttributes}
+   * @argument {string} path
+   * @argument {string} text
+   * @argument {ResolvedAttributes} [intoObject]
+   * @argument {ErrorOptions} [options]
+   * @returns {ResolvedAttributes}
    */
   parseAttributesContainer(
     path,
@@ -1366,31 +1393,31 @@ export class Jargon {
     const attributes = Object.create(null);
     const endIndex = text.length - 1;
     if (text[0] != "{" || text[endIndex] != "}") {
-      //  This is not a valid attributes container.
+      // This is not a valid attributes container.
       throw new ParseError(
         `Attributes container "${text}" is not wrapped in curly braces.`,
         options,
       );
     } else {
-      //  Process the contents of the attributes container, collecting
-      //    any attributes into `attributes`.
+      // Process the contents of the attributes container, collecting
+      // any attributes into `attributes`.
       for (let index = 1; index < endIndex;) {
         testingWhitespace: {
-          //  Skip whtiespace.
+          // Skip whtiespace.
           const sRegExp = /[ \t]+/uy;
           sRegExp.lastIndex = index;
           if (sRegExp.test(text)) {
-            //  There is whitespace at `index` in `text`; ignore it.
+            // There is whitespace at `index` in `text`; ignore it.
             index = sRegExp.lastIndex;
             continue;
           } else {
-            //  There is no whitespace at `index` in `text`.
+            // There is no whitespace at `index` in `text`.
             break testingWhitespace;
           }
         }
         testingNamedAttribute: {
-          //  Check for an attribute name, possibly followed by a
-          //    value, and add it if present.
+          // Check for an attribute name, possibly followed by a value,
+          // and add it if present.
           const attributeRegExp = new RegExp(
             String.raw`(?<name>${QName.source})(?:=(?<value>[^ \t]))?`,
             "uy",
@@ -1398,24 +1425,23 @@ export class Jargon {
           attributeRegExp.lastIndex = index;
           const parsedAttribute = attributeRegExp.exec(text);
           if (parsedAttribute) {
-            //  There is a named attribute at `index` in `text`.
+            // There is a named attribute at `index` in `text`.
             const { name: qualifiedName, value } =
               /** @type {{name:string,value?:string}} */ (
                 parsedAttribute.groups
               );
             if (qualifiedName in attributes) {
-              //  There is already an attribute by this name in
-              //    `attributes`:
-              //  Append the value to the existing object.
+              // There is already an attribute by this name in
+              // `attributes`: Append the value to the existing object.
               const existing = attributes[qualifiedName];
               existing.value = [existing.value, value ?? ""].join(" ");
             } else if (
               intoObject != null && qualifiedName in intoObject
             ) {
-              //  There is not an attribute by this name in
-              //    `attributes`, but there is one in `intoObject`:
-              //  Copy the existing value into a new object with the
-              //    new value appended to it.
+              // There is not an attribute by this name in
+              // `attributes`, but there is one in `intoObject`: Copy
+              // the existing value into a new object with the new
+              // value appended to it.
               const {
                 localName,
                 namespace,
@@ -1427,10 +1453,10 @@ export class Jargon {
                 value: [existing, value ?? ""].join(" "),
               };
             } else {
-              //  An attribute by this name does not exist in
-              //    `attributes` or `intoObject`:
-              //  Resolve the qualified name of the attribute and
-              //    construct a new object with the value.
+              // An attribute by this name does not exist in
+              // `attributes` or `intoObject`: Resolve the qualified
+              // name of the attribute and construct a new object with
+              // the value.
               const { localName, namespace } = this.resolveQName(
                 qualifiedName,
                 false,
@@ -1445,20 +1471,20 @@ export class Jargon {
             index = attributeRegExp.lastIndex;
             continue;
           } else {
-            //  There is no named attribute at `index` in `text`.
+            // There is no named attribute at `index` in `text`.
             break testingNamedAttribute;
           }
         }
         testingSigils: {
-          //  Check for an attribute sigil in the current scope.
+          // Check for an attribute sigil in the current scope.
           const sigilInfo = this.countSigils(
-            text,
             NODE_TYPE.ATTRIBUTE,
             `${path}>`,
+            text,
             index,
           );
           if (sigilInfo) {
-            //  There is a sigil at `index` in `text`.
+            // There is a sigil at `index` in `text`.
             const valueRegExp = /[^ \t]*/uy;
             valueRegExp.lastIndex = sigilInfo.lastIndex;
             const value = valueRegExp.exec(text)?.[0] ?? "";
@@ -1472,21 +1498,21 @@ export class Jargon {
                   )
                 )
             ) {
-              //  Iterate over the qualified names in the sigil
-              //    definition and add the value to each one.
+              // Iterate over the qualified names in the sigil
+              // definition and add the value to each one.
               if (qualifiedName in attributes) {
-                //  There is already an attribute by this name in
-                //    `attributes`:
-                //  Append the value to the existing object.
+                // There is already an attribute by this name in
+                // `attributes`: Append the value to the existing
+                // object.
                 const existing = attributes[qualifiedName];
                 existing.value = `${existing.value} ${value}`;
               } else if (
                 intoObject != null && qualifiedName in intoObject
               ) {
-                //  There is not an attribute by this name in
-                //    `attributes`, but there is one in `intoObject`:
-                //  Copy the existing value into a new object with the
-                //    new value appended to it.
+                // There is not an attribute by this name in
+                // `attributes`, but there is one in `intoObject`: Copy
+                // the existing value into a new object with the new
+                // value appended to it.
                 const {
                   localName,
                   namespace,
@@ -1498,10 +1524,10 @@ export class Jargon {
                   value: `${existing} ${value}`,
                 };
               } else {
-                //  An attribute by this name does not exist in
-                //    `attributes` or `intoObject`:
-                //  Resolve the qualified name of the attribute and
-                //    construct a new object with the value.
+                // An attribute by this name does not exist in
+                // `attributes` or `intoObject`: Resolve the qualified
+                // name of the attribute and construct a new object
+                // with the value.
                 const { localName, namespace } = this.resolveQName(
                   qualifiedName,
                   false,
@@ -1517,7 +1543,7 @@ export class Jargon {
             index = valueRegExp.lastIndex;
             continue;
           } else {
-            //  There is no sigil at `index` in `text`.
+            // There is no sigil at `index` in `text`.
             break testingSigils;
           }
         }
@@ -1541,29 +1567,29 @@ export class Jargon {
   }
 
   /**
-   *  Resolves the provided `path` for the provided `nodeType` using
-   *    this `Jargon`, and returns the corresponding definition.
+   * Resolves the provided `path` for the provided `nodeType` using
+   * this `Jargon`, and returns the corresponding definition.
    *
-   *  `path` should be “complete” (contain only sigils, `/` [but not
-   *    `//`], or `>`) and normalized.
+   * `path` should be “complete” (contain only sigils, `/` [but not
+   * `//`], or `>`) and normalized.
    *
-   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
-   *  @argument {string} path
-   *  @argument {ErrorOptions} [options]
-   *  @returns {ResolvedJargon}
+   * @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
+   * @argument {string} path
+   * @argument {ErrorOptions} [options]
+   * @returns {ResolvedJargon}
    */
   resolve(nodeType, path, options = {}) {
-    //  Because most any failure to resolve ought to produce a
-    //    `SigilResolutionError`, the body of this function is
-    //    is written as a massive `try‐catch`.
+    // Because most any failure to resolve ought to produce a
+    // `SigilResolutionError`, the body of this function is is written
+    // as a massive `try‐catch`.
     try {
-      //  Find the appropriate mapping of paths to jargons.
-      //  Then filter entries based on which keys match the provided
-      //    `path`, and finally sort by “accuracy”.
-      //  If the resulting array is not empty, the final entry will
-      //    contain the resolution of the symbol.
+      // Find the appropriate mapping of paths to jargons. Then filter
+      // entries based on which keys match the provided `path`, and
+      // finally sort by “accuracy”. If the resulting array is not
+      // empty, the final entry will contain the resolution of the
+      // symbol.
       const sigil = String(path).match(
-        new RegExp(`(?:${SigilD·J.source}|#DEFAULT)$`, "u"),
+        new RegExp(`(?:${SigilDJ.source}|#DEFAULT)$`, "u"),
       )?.[0];
       if (sigil == null) {
         throw new TypeError("No sigil in path.");
@@ -1580,8 +1606,8 @@ export class Jargon {
           ).filter(
             //deno-lint-ignore no-unused-vars
             ([index, [key, value]]) =>
-              //  Build a regular expression from the key and test
-              //    `path` against it.
+              // Build a regular expression from the key and test
+              // `path` against it.
               globRegExp(key).test(path),
           ).sort(
             (
@@ -1590,64 +1616,60 @@ export class Jargon {
               //deno-lint-ignore no-unused-vars
               [indexB, [keyB, valueB]],
             ) => {
-              //  Sort the matching keys by accuracy, in ascending
-              //    order.
-              //  Keys are considered more “accurate” if they
-              //    contain a (non·asterisk) component which matches
-              //    an element closer to the end of the path than
-              //    the key they are being compared against.
-              //  Parent relations are more accurate than ancestor
-              //    relations.
+              // Sort the matching keys by accuracy, in ascending
+              // order. Keys are considered more “accurate” if they
+              // contain a (non·asterisk) component which matches an
+              // element closer to the end of the path than the key
+              // they are being compared against. Parent relations are
+              // more accurate than ancestor relations.
               //
-              //  The path & keys are split on (space &) greaterthan
-              //    to ensure sigils are only compared against like
-              //    sigils.
-              //  For the keys, the space & greaterthan are
-              //    preserved at the beginning of the split strings.
+              // The path & keys are split on (space &) greaterthan to
+              // ensure sigils are only compared against like sigils.
+              // For the keys, the space & greaterthan are preserved at
+              // the beginning of the split strings.
               const splitPath = String(path).split(/>/gu).reverse();
-              const splitA = `>${keyA}` //  add `>` prefix to first
+              const splitA = `>${keyA}` // add `>` prefix to first
                 .split(/(?=[ >])/gu)
-                .slice(1) //  drop empty first
+                .slice(1) // drop empty first
                 .reverse();
-              const splitB = `>${keyB}` //  add `>` prefix to first
+              const splitB = `>${keyB}` // add `>` prefix to first
                 .split(/(?=[ >])/gu)
-                .slice(1) //  drop empty first
+                .slice(1) // drop empty first
                 .reverse();
               for (
                 let indexOfLevel = 0;
                 indexOfLevel < splitPath.length;
                 indexOfLevel++
               ) {
-                //  Iterate over each “level” (node type) in the
-                //    split path and see if one key is more
-                //    “accurate” than the other.
-                //  If a key’s levels are exhausted, it is treated
-                //    as an empty descendant relation (and will thus
-                //    always result in a match for the other key.)
+                // Iterate over each “level” (node type) in the split
+                // path and see if one key is more “accurate” than the
+                // other. If a key’s levels are exhausted, it is
+                // treated as an empty descendant relation (and will
+                // thus always result in a match for the other key.)
                 const level = splitPath[indexOfLevel];
                 const splitLevel = level.split(/\//gu).reverse();
                 const levelA = splitA[indexOfLevel] ?? " ";
                 const splitLevelA = levelA
-                  .substring(1) //  deprefix
+                  .substring(1) // deprefix
                   .split(/(?=\/(?=\/))|\/(?!\/)/gu)
                   .reverse();
                 const levelB = splitB[indexOfLevel] ?? " ";
                 const splitLevelB = levelB
-                  .substring(1) //  deprefix
+                  .substring(1) // deprefix
                   .split(/(?=\/(?=\/))|\/(?!\/)/gu)
                   .reverse();
                 for (const sigil of splitLevel) {
-                  //  Iterate over each sigil in the level and check
-                  //    for a match from one key or the other.
-                  //  If this loop completes without returning, A & B
-                  //    have the same components at this level.
+                  // Iterate over each sigil in the level and check for
+                  // a match from one key or the other. If this loop
+                  // completes without returning, A & B have the same
+                  // components at this level.
                   if (
                     splitLevelA[0] == sigil && splitLevelB[0] == sigil
                   ) {
-                    //  A and B are both direct matches.
+                    // A and B are both direct matches.
                     do {
-                      //  Shift A and B, ensuring that they aren’t
-                      //    both ancestor matches.
+                      // Shift A and B, ensuring that they aren’t both
+                      // ancestor matches.
                       splitLevelA.shift();
                       splitLevelB.shift();
                     } while (
@@ -1655,30 +1677,27 @@ export class Jargon {
                     );
                     continue;
                   } else if (splitLevelA[0] == sigil) {
-                    //  A is a direct match and B isn’t.
+                    // A is a direct match and B isn’t.
                     return 1;
                   } else if (splitLevelB[0] == sigil) {
-                    //  B is a direct match and A isn’t.
+                    // B is a direct match and A isn’t.
                     return -1;
                   } else if (
                     splitLevelA.find(($) => $ != "/") == sigil
                   ) {
-                    //  A is an ancestor match and B isn’t.
-                    //  Note that A and B can’t both be ancestor
-                    //    matches at the same time (because of the
-                    //    do‐while above).
+                    // A is an ancestor match and B isn’t. Note that A
+                    // and B can’t both be ancestor matches at the same
+                    // time (because of the do‐while above).
                     return 1;
                   } else if (
                     splitLevelB.find(($) => $ != "/") == sigil
                   ) {
-                    //  B is an ancestor match and A isn’t.
-                    //  Note that A and B can’t both be ancestor
-                    //    matches at the same time (because of the
-                    //    do‐while above).
+                    // B is an ancestor match and A isn’t. Note that A
+                    // and B can’t both be ancestor matches at the same
+                    // time (because of the do‐while above).
                     return -1;
                   } else {
-                    //  Neither A nor B match.
-                    //  Try the next symbol.
+                    // Neither A nor B match. Try the next symbol.
                     continue;
                   }
                 }
@@ -1689,21 +1708,20 @@ export class Jargon {
                   //  B is a direct descendant and B isn’t.
                   return -1;
                 } else {
-                  //  A and B both change levels in the same fashion.
+                  // A and B both change levels in the same fashion.
                   continue;
                 }
               }
               return (
-                //  Fallback; when A and B are equivalent, sort by
-                //    index.
-                //  This isn’t strictly necessary; it is the default
-                //    behaviour if `0` is returned (although not in
-                //    previous versions of Ecmascript).
+                // Fallback; when A and B are equivalent, sort by
+                // index. This isn’t strictly necessary; it is the
+                // default behaviour if `0` is returned (although not
+                // in previous versions of Ecmascript).
                 indexA < indexB ? -1 : indexA > indexB ? 1 : 0
               );
             },
           ).map(
-            //  Map each entry to its value.
+            // Map each entry to its value.
             //deno-lint-ignore no-unused-vars
             ([index, [key, value]]) => value,
           );
@@ -1718,7 +1736,7 @@ export class Jargon {
         }
       }
     } catch (error) {
-      //  Resolution failed.
+      // Resolution failed.
       throw error instanceof MarketCommonsⅠⅠError
         ? error
         : new SigilResolutionError(
@@ -1729,13 +1747,13 @@ export class Jargon {
   }
 
   /**
-   *  Resolves the qualified name keys of the provided `attributes` and
-   *    returns an object mapping them to an attributes object with
-   *    `localName`, `namespace`, and `value`.
+   * Resolves the qualified name keys of the provided `attributes` and
+   * returns an object mapping them to an attributes object with
+   * `localName`, `namespace`, and `value`.
    *
-   *  @argument {{[index:string]:string}} attributes
-   *  @argument {ErrorOptions&{path?:string}} [options]
-   *  @returns {ResolvedAttributes}
+   * @argument {{[index:string]:string}} attributes
+   * @argument {ErrorOptions&{path?:string}} [options]
+   * @returns {ResolvedAttributes}
    */
   resolveAttributes(attributes, options = {}) {
     return Object.create(
@@ -1765,16 +1783,16 @@ export class Jargon {
   }
 
   /**
-   *  Resolves the provided `qualifiedName` using the namespaces
-   *    declared for this `Jargon`.
+   * Resolves the provided `qualifiedName` using the namespaces
+   * declared for this `Jargon`.
    *
-   *  If `useDefault` is `true`, then a `qualifiedName` with no
-   *    namespace component will be assigned the default namespace.
+   * If `useDefault` is `true`, then a `qualifiedName` with no
+   * namespace component will be assigned the default namespace.
    *
-   *  @argument {string} qualifiedName
-   *  @argument {boolean} [useDefault]
-   *  @argument {ErrorOptions&{path?:string}} [options]
-   *  @returns {{localName:string,namespace:?string}}
+   * @argument {string} qualifiedName
+   * @argument {boolean} [useDefault]
+   * @argument {ErrorOptions&{path?:string}} [options]
+   * @returns {{localName:string,namespace:?string}}
    */
   resolveQName(qualifiedName, useDefault = true, options = {}) {
     const parsedQualifiedName = new RegExp(
@@ -1809,14 +1827,14 @@ export class Jargon {
   }
 
   /**
-   *  Returns an `Array` of all the sigils for the provided `nodeType`
-   *    which can match the provided `path` in at least some fashion.
+   * Returns an `Array` of all the sigils for the provided `nodeType`
+   * which can match the provided `path` in at least some fashion.
    *
-   *  These responses are cached internally.
+   * These responses are cached internally.
    *
-   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
-   *  @argument {string} path
-   *  @returns {string[]}
+   * @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE|INLINE_NODE|ATTRIBUTE_NODE} nodeType
+   * @argument {string} path
+   * @returns {string[]}
    */
   sigilsInScope(nodeType, path) {
     if (path in this.#cachedSigilsForPath[nodeType]) {
@@ -1824,8 +1842,8 @@ export class Jargon {
     } else {
       const result = Object.entries(this[nodeType]).flatMap(
         ([sigil, pathsObject]) => {
-          //  This callback spoofs a compactMap by returning an array of
-          //    either 0 or 1 value.
+          // This callback spoofs a compactMap by returning an array of
+          // either 0 or 1 value.
           const pathWithSigil = path == ""
             ? sigil
             : />$/u.test(path)

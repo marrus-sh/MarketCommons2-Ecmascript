@@ -1,45 +1,43 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: errors.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ errors.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021–2022 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 //
-//  ___________________________________________________________________
+// ____________________________________________________________________
 //
-//  This module contains Market Commons ⅠⅠ error types.
+// This module contains Market Commons ⅠⅠ error types.
 
 /** @typedef {{index?:number}|{line?:number}} ErrorOptions */
 
 /**
- *  A generic Market Commons ⅠⅠ error.
+ * A generic Market Commons ⅠⅠ error.
  *
- *  Note that the spelling of `ⅠⅠ` in the name of this class uses
- *    `U+2160 Ⅰ ROMAN NUMERAL ONE`, not
- *    `U+0049 I LATIN CAPITAL LETTER I`.
+ * Note that the spelling of `ⅠⅠ` in the name of this class uses
+ * `U+2160 Ⅰ ROMAN NUMERAL ONE`, not `U+0049 I LATIN CAPITAL LETTER I`.
  */
 export class MarketCommonsⅠⅠError extends Error {
   /**
-   *  Create a `MarketCommonsⅠⅠError` from the provided `message`.
+   * Create a `MarketCommonsⅠⅠError` from the provided `message`.
    *
-   *  @argument {string} message
-   *  @argument {ErrorOptions} [options]
-   *  @argument {...any} additionalArguments
+   * @argument {string} message
+   * @argument {ErrorOptions} [options]
+   * @argument {...any} additionalArguments
    */
   constructor(message, options, ...additionalArguments) {
     const { index, line } = /** @type {any} */ (options ?? {});
-    super(String(message), ...additionalArguments);
+    super(`${message}`, ...additionalArguments);
     this.index = index == null ? null : index >>> 0;
     this.line = line == null ? null : line >>> 0;
   }
 
   /**
-   *  Generate a string describing this `MarketCommonsⅠⅠError`.
+   * Generate a string describing this `MarketCommonsⅠⅠError`.
    *
-   *  @returns {string}
+   * @returns {string}
    */
   toString() {
     return this.index != null
@@ -50,27 +48,21 @@ export class MarketCommonsⅠⅠError extends Error {
   }
 }
 
-/**
- *  A error pertaining to Market Commons ⅠⅠ configuration.
- */
+/** A error pertaining to Market Commons ⅠⅠ configuration. */
 export class ConfigurationError extends MarketCommonsⅠⅠError {}
 
-/**
- *  A error pertaining to Market Commons ⅠⅠ parsing.
- */
+/** A error pertaining to Market Commons ⅠⅠ parsing. */
 export class ParseError extends MarketCommonsⅠⅠError {}
 
-/**
- *  A error pertaining to Market Commons ⅠⅠ namespace resolution.
- */
+/** A error pertaining to Market Commons ⅠⅠ namespace resolution. */
 export class NamespaceResolutionError extends MarketCommonsⅠⅠError {
   /**
-   *  Create a `NamespaceResolutionError` at the provided `line` and
-   *    with the provided `options`.
+   * Create a `NamespaceResolutionError` at the provided `line` and
+   * with the provided `options`.
    *
-   *  @argument {string} prefix
-   *  @argument {ErrorOptions&{path?:string}} [options]
-   *  @argument {...any} additionalArguments
+   * @argument {string} prefix
+   * @argument {ErrorOptions&{path?:string}} [options]
+   * @argument {...any} additionalArguments
    */
   constructor(prefix, options, ...additionalArguments) {
     const {
@@ -84,22 +76,20 @@ export class NamespaceResolutionError extends MarketCommonsⅠⅠError {
       remainingOptions,
       ...additionalArguments,
     );
-    this.prefix = String(prefix);
-    this.path = path == null ? null : String(path);
+    this.prefix = `${prefix}`;
+    this.path = path == null ? null : `${path}`;
   }
 }
 
-/**
- *  A error pertaining to Market Commons ⅠⅠ sigil resolution.
- */
+/** A error pertaining to Market Commons ⅠⅠ sigil resolution. */
 export class SigilResolutionError extends MarketCommonsⅠⅠError {
   /**
-   *  Create a `SigilResolutionError` at the provided `line` and
-   *    with the provided `nodeType` and `path`.
+   * Create a `SigilResolutionError` at the provided `line` and with
+   * the provided `nodeType` and `path`.
    *
-   *  @argument {string} path
-   *  @argument {ErrorOptions&{nodeType:Symbol}} options
-   *  @argument {...any} additionalArguments
+   * @argument {string} path
+   * @argument {ErrorOptions&{nodeType:Symbol}} options
+   * @argument {...any} additionalArguments
    */
   constructor(path, options, ...additionalArguments) {
     const nodeType = options.nodeType;
@@ -109,6 +99,6 @@ export class SigilResolutionError extends MarketCommonsⅠⅠError {
       ...additionalArguments,
     );
     this.nodeType = nodeType;
-    this.path = String(path);
+    this.path = `${path}`;
   }
 }

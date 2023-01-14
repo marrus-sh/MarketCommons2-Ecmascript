@@ -1,17 +1,16 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: chunks.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ chunks.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 //
-//  ___________________________________________________________________
+// ____________________________________________________________________
 //
-//  This module contains code pertaining to chunks of Market Commons ⅠⅠ
-//    source code.
+// This module contains code pertaining to chunks of Market Commons ⅠⅠ
+// source code.
 
 import "./jargons.js";
 import { ParseError } from "./errors.js";
@@ -36,11 +35,11 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 /** @typedef {import("./symbols.js").LITERAL_CONTENT} LITERAL_CONTENT */
 
 /**
- *  @argument {Jargon} jargon
- *  @argument {ResolvedAttributes} attributes
- *  @argument {string} name
- *  @argument {string} value
- *  @argument {ErrorOptions&{path?:string}} options
+ * @argument {Jargon} jargon
+ * @argument {ResolvedAttributes} attributes
+ * @argument {string} name
+ * @argument {string} value
+ * @argument {ErrorOptions&{path?:string}} options
  */
 function addValueToAttributes(
   jargon,
@@ -87,20 +86,20 @@ export class Chunk {
   }
 
   /**
-   *  Makes a new “chunk” object from the provided (trimmed) `line` at
-   *    the provided `path`.
+   * Makes a new “chunk” object from the provided (trimmed) `line` at
+   * the provided `path`.
    *
-   *  If `hint` is `NODE_TYPE.HEADING`, this is the `#HEADING` of a
-   *    section block.
-   *  If `hint` is `NODE_TYPE.BLOCK`, this is a nested block.
+   * If `hint` is `NODE_TYPE.HEADING`, this is the `#HEADING` of a
+   * section block. If `hint` is `NODE_TYPE.BLOCK`, this is a nested
+   * block.
    *
-   *  @argument {Jargon} jargon
-   *  @argument {string} path
-   *  @argument {Line} line
-   *  @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE} [hint]
+   * @argument {Jargon} jargon
+   * @argument {string} path
+   * @argument {Line} line
+   * @argument {SECTION_NODE|HEADING_NODE|BLOCK_NODE} [hint]
    */
   constructor(jargon, path, line, hint = NODE_TYPE.BLOCK) {
-    //  Define initial values for instance properties.
+    // Define initial values for instance properties.
     const defaultSigil = hint == NODE_TYPE.HEADING
       ? "#HEADING"
       : "#DEFAULT";
@@ -120,31 +119,31 @@ export class Chunk {
     this.namespace = null;
     this.count = 0;
     this.level = (path.match(/[^/]+/gu)?.length ?? 0) + 1;
-    /** @type {Readonly<{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}>} */
+    /** @type {Readonly<ResolvedAttributes>} */
     this.attributes = Object.freeze(Object.create(null));
     /** @type {?{localName:string,qualifiedName:string,namespace:?string,attributes:Readonly<ResolvedAttributes>}} */
     this.listWrapper = null;
     /** @type {Readonly<Readonly<Chunk>[]>|Readonly<Readonly<Line>[]>} */
 
-    //  Process the chunk.
+    // Process the chunk.
     if (hint == NODE_TYPE.HEADING) {
-      //  Whether nested headings contain attributes or not cannot be
-      //    determined from the presently available information.
-      //  The attributes and children of this chunk will be overwritten
-      //    in `Chunk::#configureAsSectionFromFirstLine()`, below.
+      // Whether nested headings contain attributes or not cannot be
+      // determined from the presently available information. The
+      // attributes and children of this chunk will be overwritten in
+      // `Chunk::#configureAsSectionFromFirstLine()`, below.
       /*  do nothing  */
     } else if (
       hint == NODE_TYPE.SECTION && /^(?:\|[ \t]*)+$/.test(String(line))
     ) {
-      //  This chunk is a section closer.
+      // This chunk is a section closer.
       const count = Array.from(line.matchAll(/\|/gu)).length;
       this.nodeType = NODE_TYPE.SECTION;
       this.path = this.sigil = "#CLOSING";
       this.count = this.level = count;
     } else {
-      //  See if `line` begins with a section, heading, or block sigil.
-      //  If it does, build the chunk accordingly.
-      //  If it doesn’t, the chunk is a default block.
+      // See if `line` begins with a section, heading, or block sigil.
+      // If it does, build the chunk accordingly. If it doesn’t, the
+      // chunk is a default block.
       processingSigil: {
         for (
           const nodeType
@@ -156,20 +155,20 @@ export class Chunk {
               ]
             )
         ) {
-          const sigilInfo = line.countSigils(
-            jargon,
+          const sigilInfo = jargon.countSigils(
             nodeType,
             nodeType == NODE_TYPE.SECTION
               ? ""
               : hint == NODE_TYPE.BLOCK
               ? path
               : `${path}>`,
+            line,
           );
           if (sigilInfo != null) {
-            //  Some sigil matches, so process the resulting first line.
-            //  The `level` of the chunk is one greater than the number
-            //    of items in its path.
-            //  This is set to its `count` for sections.
+            // Some sigil matches, so process the resulting first line.
+            // The `level` of the chunk is one greater than the number
+            // of items in its path. This is set to its `count` for
+            // sections.
             this.nodeType = nodeType;
             const { sigil, count, lastIndex } = sigilInfo;
             this.path = nodeType == NODE_TYPE.SECTION
@@ -203,21 +202,21 @@ export class Chunk {
               }
             }
           } else {
-            //  The sigil does not match.
+            // The sigil does not match.
             continue;
           }
         }
         if (hint == NODE_TYPE.BLOCK) {
-          //  This is not a chunk.
+          // This is not a chunk.
           throw new TypeError("Not a chunk.");
         } else {
-          //  This is a default chunk.
+          // This is a default chunk.
           this.#configureAsBlockFromFirstLine(line, 0);
         }
       }
     }
 
-    //  Make properties nonwritable to prevent accidental setting.
+    // Make properties nonwritable to prevent accidental setting.
     Object.defineProperties(this, {
       jargon: { writable: false },
       nodeType: { writable: false },
@@ -242,14 +241,14 @@ export class Chunk {
   }
 
   /**
-   *  Configures this `Chunk` as a section chunk according to the
-   *    provided `line`.
+   * Configures this `Chunk` as a section chunk according to the
+   * provided `line`.
    *
-   *  @argument {Line} line
-   *  @argument {number} indexAfterSigils
+   * @argument {Line} line
+   * @argument {number} indexAfterSigils
    */
   #configureAsSectionFromFirstLine(line, indexAfterSigils) {
-    //  Set up variables and get the section definition.
+    // Set up variables and get the section definition.
     const { count, jargon, path, sigil } = this;
     const definition = /** @type {Readonly<SectionJargon>} */ (
       jargon.resolve(NODE_TYPE.SECTION, path, { line: line.index })
@@ -263,7 +262,7 @@ export class Chunk {
       { line: line.index, path },
     );
 
-    //  Initial setup.
+    // Initial setup.
     this.localName = localName;
     this.namespace = namespace;
     this.qualifiedName = qualifiedName;
@@ -273,11 +272,8 @@ export class Chunk {
       { line: line.index, path },
     );
 
-    //  Handle section attributes.
-    const prefixRegExp = new RegExp(
-      String.raw`^(?<attributes>\{[^}]*\})[ \t]*`,
-      "yu",
-    );
+    // Handle section attributes.
+    const prefixRegExp = /(?<attributes>\{[^}]*\})[ \t]*/uy;
     prefixRegExp.lastIndex = indexAfterSigils;
     const attributesText = prefixRegExp.exec(String(line))?.groups
       ?.attributes;
@@ -348,10 +344,10 @@ export class Chunk {
     }
     Object.freeze(attributes);
 
-    //  Process section content.
+    // Process section content.
     const headingDefinition = definition.heading;
     if (headingDefinition != null && String(remainder) != "") {
-      //  Set up heading.
+      // Set up heading.
       const heading = new Chunk(
         jargon,
         path,
@@ -387,7 +383,7 @@ export class Chunk {
         attributes: { value: headingAttributes },
       });
 
-      //  Handle heading attributes and content.
+      // Handle heading attributes and content.
       const suffixMatch = new RegExp(
         String.raw`[ \t]*(?:${
           sigilToRegExp(sigil).source
@@ -416,20 +412,20 @@ export class Chunk {
       }
       Object.freeze(headingAttributes);
 
-      //  Nest heading inside section.
+      // Nest heading inside section.
       this.#children.push(Object.freeze(heading));
     }
   }
 
   /**
-   *  Configures this `Chunk` as a heading chunk according to the
-   *    provided `line`.
+   * Configures this `Chunk` as a heading chunk according to the
+   * provided `line`.
    *
-   *  @argument {Line} line
-   *  @argument {number} indexAfterSigils
+   * @argument {Line} line
+   * @argument {number} indexAfterSigils
    */
   #configureAsHeadingFromFirstLine(line, indexAfterSigils) {
-    //  Set up variables and get the heading definition.
+    // Set up variables and get the heading definition.
     const { count, jargon, path, sigil } = this;
     const definition = /** @type {Readonly<HeadingJargon>} */ (
       jargon.resolve(NODE_TYPE.HEADING, path, { line: line.index })
@@ -442,7 +438,7 @@ export class Chunk {
     );
     const remainder = Object.freeze(line.substring(indexAfterSigils));
 
-    //  Initial setup.
+    // Initial setup.
     this.localName = localName;
     this.namespace = namespace;
     this.qualifiedName = qualifiedName;
@@ -463,7 +459,7 @@ export class Chunk {
       )
     );
 
-    //  Handle heading attributes and content.
+    // Handle heading attributes and content.
     const suffixMatch = new RegExp(
       String.raw`[ \t]*(?:${
         sigilToRegExp(sigil).source
@@ -494,14 +490,14 @@ export class Chunk {
   }
 
   /**
-   *  Configures this `Chunk` as a block chunk according to the
-   *    provided `line`.
+   * Configures this `Chunk` as a block chunk according to the provided
+   * `line`.
    *
-   *  @argument {Line} line
-   *  @argument {number} indexAfterSigils
+   * @argument {Line} line
+   * @argument {number} indexAfterSigils
    */
   #configureAsBlockFromFirstLine(line, indexAfterSigils) {
-    //  Set up variables and get the block definition.
+    // Set up variables and get the block definition.
     const { jargon, path, sigil } = this;
     const definition = /** @type {Readonly<BlockJargon>} */ (
       jargon.resolve(NODE_TYPE.BLOCK, path, { line: line.index })
@@ -515,7 +511,7 @@ export class Chunk {
       { line: line.index, path },
     );
 
-    //  Initial setup.
+    // Initial setup.
     this.localName = localName;
     this.namespace = namespace;
     this.qualifiedName = qualifiedName;
@@ -525,14 +521,11 @@ export class Chunk {
       { line: line.index, path },
     );
 
-    //  Handle block attributes.
+    // Handle block attributes.
     const remainder = sigil == "#DEFAULT"
       ? Object.freeze(line.substring(indexAfterSigils))
       : (() => {
-        const prefixRegExp = new RegExp(
-          String.raw`^(?<attributes>\{[^}]*\})[ \t]*`,
-          "yu",
-        );
+        const prefixRegExp = /(?<attributes>\{[^}]*\})[ \t]*/uy;
         prefixRegExp.lastIndex = indexAfterSigils;
         const attributesText = prefixRegExp.exec(String(line))?.groups
           ?.attributes;
@@ -556,7 +549,7 @@ export class Chunk {
       })();
     Object.freeze(attributes);
 
-    //  Process block first line content.
+    // Process block first line content.
     if (
       sigil != "#DEFAULT" && contentModel == CONTENT_MODEL.MIXED &&
       String(remainder) != ""
@@ -574,7 +567,7 @@ export class Chunk {
       this.#children.push(remainder);
     }
 
-    //  Handle `inList`.
+    // Handle `inList`.
     const listDefinition = definition.inList;
     if (listDefinition != null) {
       const listQName = listDefinition.qualifiedName;
@@ -593,18 +586,18 @@ export class Chunk {
           jargon.resolveAttributes(
             listDefinition.attributes,
             { line: line.index, path },
-          )
+          ),
         ),
       });
     }
   }
 
   /**
-   *  Adds the provided `line` to the correct (i.e., potentially
-   *    nested) place within this `Chunk`.
+   * Adds the provided `line` to the correct (i·e, potentially nested)
+   * place within this `Chunk`.
    *
-   *  @argument {Line} line
-   *  @returns {Chunk}
+   * @argument {Line} line
+   * @returns {Chunk}
    */
   addLine(line) {
     const { sigil } = this;
@@ -620,35 +613,35 @@ export class Chunk {
       line.substring(sigilRegExp.lastIndex),
     );
     if (contentModel != CONTENT_MODEL.MIXED) {
-      //  This `Chunk` does not support mixed content; just add the
-      //    `innerLine`.
+      // This `Chunk` does not support mixed content; just add the
+      // `innerLine`.
       this.#children.push(innerLine);
     } else {
-      //  This `Chunk` supports mixed content.
+      // This `Chunk` supports mixed content.
       const open = this.#open;
       if (open != null) {
-        //  This `Chunk` has a currently open child.
+        // This `Chunk` has a currently open child.
         if (String(innerLine) == "") {
-          //  `innerLine` is empty; `lastChild` should be closed.
+          // `innerLine` is empty; `lastChild` should be closed.
           this.#close();
         } else {
-          //  `innerLine` is not empty; it should be added to
-          //    `lastChild`.
+          // `innerLine` is not empty; it should be added to
+          // `lastChild`.
           open.addLine(line);
         }
       } else if (String(innerLine) != "") {
-        //  This `Chunk` has no open child and `innerLine` is not
-        //    empty; a new child must be added.
+        // This `Chunk` has no open child and `innerLine` is not empty;
+        // a new child must be added.
         try {
-          //  Attempt to see if a child `Chunk` can be created from
-          //    the `innerLine`.
+          // Attempt to see if a child `Chunk` can be created from the
+          // `innerLine`.
           this.#children.push(
             this.#open = Object.freeze(
               new Chunk(this.jargon, this.path, innerLine),
             ),
           );
         } catch {
-          //  `innerLine` is text, not a `Chunk`.
+          // `innerLine` is text, not a `Chunk`.
           this.#children.push(innerLine);
         }
       }

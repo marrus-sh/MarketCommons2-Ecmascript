@@ -4,9 +4,5 @@
     "lib": ["deno.ns", "deno.unstable", "dom"],
     "strict": true
   },
-  "fmt": {
-    "options": {
-      "lineWidth": 71
-    }
-  }
+  "fmt": { "options": { "lineWidth": 71 } }
 }

@@ -13,13 +13,13 @@
 
 import "../fauxbrowser/mod.js";
 import { Jargon } from "../jargons.js";
-import htmlD·J from "./html.marketdj.js";
+import htmlDJ from "./html.marketdj.js";
 import {
   //deno-lint-ignore camelcase
   deno_landXMarket,
-  x·h·t·m·lNamespace,
-  x·m·lNamespace,
-  x·m·l·n·sNamespace,
+  xhtmlNamespace,
+  xmlNamespace,
+  xmlnsNamespace,
 } from "../names.js";
 import { CONTENT_MODEL, NODE_TYPE } from "../symbols.js";
 import {
@@ -28,8 +28,8 @@ import {
   assertStrictEquals,
 } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 
-const D·J = htmlD·J;
-const jargon = new Jargon(D·J);
+const DJ = htmlDJ;
+const jargon = new Jargon(DJ);
 
 Deno.test({
   name: "H·T·M·L D·J processing produced jargon.",
@@ -38,7 +38,7 @@ Deno.test({
 
 Deno.test({
   name: "H·T·M·L D·J processing consumed entire string.",
-  fn: () => assertEquals(jargon.source.length, D·J.length),
+  fn: () => assertEquals(jargon.source.length, DJ.length),
 });
 
 Deno.test({
@@ -47,9 +47,9 @@ Deno.test({
     assertEquals(
       jargon.namespaces,
       {
-        "": x·h·t·m·lNamespace,
-        xml: x·m·lNamespace,
-        xmlns: x·m·l·n·sNamespace,
+        "": xhtmlNamespace,
+        xml: xmlNamespace,
+        xmlns: xmlnsNamespace,
       },
     ),
 });

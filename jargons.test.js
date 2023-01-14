@@ -1,12 +1,11 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: jargons.test.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ jargons.test.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
 //@ts-nocheck
 //deno-lint-ignore-file ban-ts-comment no-unused-labels
@@ -17,26 +16,22 @@ import {
   SigilResolutionError,
 } from "./errors.js";
 import { Jargon } from "./jargons.js";
-import { x·m·lNamespace, x·m·l·n·sNamespace } from "./names.js";
+import { xmlNamespace, xmlnsNamespace } from "./names.js";
 import {
   assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 
 namespaceResolutionTesting: {
-  //  Test setup.
+  // Test setup.
   const myJargon = {
-    namespaces: {
-      "": "",
-      "xml": x·m·lNamespace,
-      "xmlns": x·m·l·n·sNamespace,
-    },
+    namespaces: { "": "", xml: xmlNamespace, xmlns: xmlnsNamespace },
   };
   const myJargonWithDefaultNamespace = {
     namespaces: {
       "": "example:default",
-      "xml": x·m·lNamespace,
-      "xmlns": x·m·l·n·sNamespace,
+      xml: xmlNamespace,
+      xmlns: xmlnsNamespace,
     },
   };
   Object.setPrototypeOf(myJargon, Jargon.prototype);
@@ -45,7 +40,7 @@ namespaceResolutionTesting: {
     Jargon.prototype,
   );
 
-  //  Tests.
+  // Tests.
   Deno.test("can’t resolve non‐qname", () => {
     assertThrows(() => myJargon.resolveQName("foo:"), ParseError);
     assertThrows(() => myJargon.resolveQName(":bar"), ParseError);
@@ -70,7 +65,7 @@ namespaceResolutionTesting: {
   Deno.test("resolves defined namespaces", () => {
     assertEquals(myJargon.resolveQName("xml:foo"), {
       localName: "foo",
-      namespace: x·m·lNamespace,
+      namespace: xmlNamespace,
     });
     assertEquals(myJargon.resolveQName("baz"), {
       localName: "baz",
@@ -106,7 +101,7 @@ namespaceResolutionTesting: {
       {
         "xml:foo": {
           localName: "foo",
-          namespace: x·m·lNamespace,
+          namespace: xmlNamespace,
           value: "FOO",
         },
         "baz": {
@@ -120,7 +115,7 @@ namespaceResolutionTesting: {
 }
 
 sigilResolutionTesting: {
-  //  Test setup.
+  // Test setup.
   const myBadNodeType = Symbol("my bad node type");
   const myNodeType = Symbol("my node type");
   const myJargon = {
@@ -149,7 +144,7 @@ sigilResolutionTesting: {
   Object.setPrototypeOf(myJargon, Jargon.prototype);
   const resolve = Jargon.prototype.resolve.bind(myJargon);
 
-  //  Tests.
+  // Tests.
   Deno.test("can’t resolve nonsymbol nodeType", () =>
     assertThrows(
       () => resolve(null, "&#1;"),

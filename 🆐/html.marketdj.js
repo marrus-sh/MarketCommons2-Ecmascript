@@ -1,18 +1,17 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: 🆐/html.marketdj.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ 🆐/html.marketdj.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 
 import {
   //deno-lint-ignore camelcase
   deno_landXMarket,
   marketNamespace,
-  x·h·t·m·lNamespace,
+  xhtmlNamespace,
 } from "../names.js";
 
 export default String.raw`<?market-commons 2.0 [
@@ -26,11 +25,11 @@ It can be manually specified with the following ~| SystemLiteral |~:
 -->
 
 <!-- Namespaces -->
-<!NAMESPACE "${x·h·t·m·lNamespace}">
+<!NAMESPACE "${xhtmlNamespace}">
 
 <!-- Document Template -->
 <!DOCUMENT [[<!DOCTYPE html>
-<html xmlns="${x·h·t·m·lNamespace}">
+<html xmlns="${xhtmlNamespace}">
 <head>
 	<meta charset="utf-8"/>
 	<meta name="generator" content="market-commons 2.0&#xA;${deno_landXMarket}"/>
@@ -54,7 +53,7 @@ It can be manually specified with the following ~| SystemLiteral |~:
 <!-- @ --><!SECTION &#x40; article    | h1 COUNTTO aria-level>
 <!-- ^ --><!SECTION &#x5E; header     | h1 COUNTTO aria-level>
 <!-- _ --><!SECTION &#x5F; footer     | h1 COUNTTO aria-level>
-	
+
 <!-- For (semi)backcompat with the original Market Commons: -->
 <!-- / --><!SECTION &#x2F; div TEXTTO data-title>
 

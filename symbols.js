@@ -1,21 +1,18 @@
-//  🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript :: symbols.js
-//  ===================================================================
+// 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ symbols.js
+// ====================================================================
 //
-//  Copyright © 2021 Margaret KIBI.
+// Copyright © 2021 Margaret KIBI.
 //
-//  This Source Code Form is subject to the terms of the Mozilla
-//    Public License, v. 2.0.
-//  If a copy of the MPL was not distributed with this file, You can
-//    obtain one at <https://mozilla.org/MPL/2.0/>.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at <https://mozilla.org/MPL/2.0/>.
 //
-//  ___________________________________________________________________
+// ____________________________________________________________________
 //
-//  This module contains various symbols used as constants during
-//    Market Commons ⅠⅠ processing.
+// This module contains various symbols used as constants during Market
+// Commons ⅠⅠ processing.
 
-/*
-Define node types.
-*/
+// Define node types.
 
 const DOCUMENT_NODE_SYMBOL = Symbol("document");
 const SECTION_NODE_SYMBOL = Symbol("section");
@@ -32,12 +29,12 @@ const ATTRIBUTE_NODE_SYMBOL = Symbol("attribute");
 /** @typedef {typeof ATTRIBUTE_NODE_SYMBOL} ATTRIBUTE_NODE */
 
 /**
- *  Types of node; either `SECTION`, `HEADING`, `BLOCK`, `INLINE`,
- *    or `ATTRIBUTE`.
+ * Types of node; either `SECTION`, `HEADING`, `BLOCK`, `INLINE`, or
+ * `ATTRIBUTE`.
  *
- *  These describe Market Commons ⅠⅠ nodes, not D·O·M ones.
+ * These describe Market Commons ⅠⅠ nodes, not D·O·M ones.
  *
- *  @type {Readonly<{DOCUMENT:DOCUMENT_NODE,SECTION:SECTION_NODE,HEADING:HEADING_NODE,BLOCK:BLOCK_NODE,INLINE:INLINE_NODE,ATTRIBUTE:ATTRIBUTE_NODE}>}
+ * @type {Readonly<{DOCUMENT:DOCUMENT_NODE,SECTION:SECTION_NODE,HEADING:HEADING_NODE,BLOCK:BLOCK_NODE,INLINE:INLINE_NODE,ATTRIBUTE:ATTRIBUTE_NODE}>}
  */
 export const NODE_TYPE = Object.preventExtensions(
   Object.create(null, {
@@ -80,9 +77,7 @@ export const NODE_TYPE = Object.preventExtensions(
   }),
 );
 
-/*
-Define content models.
-*/
+// Define content models.
 
 const MIXED_CONTENT_SYMBOL = Symbol("mixed");
 const INLINE_CONTENT_SYMBOL = Symbol("inline");
@@ -97,10 +92,10 @@ const LITERAL_CONTENT_SYMBOL = Symbol("literal");
 /** @typedef {typeof LITERAL_CONTENT_SYMBOL} LITERAL_CONTENT */
 
 /**
- *  Types of content; either `MIXED`, `INLINE`, `TEXT`, `COMMENT`, or
- *    `LITERAL`.
+ * Types of content; either `MIXED`, `INLINE`, `TEXT`, `COMMENT`, or
+ * `LITERAL`.
  *
- *  @type {Readonly<{MIXED:MIXED_CONTENT,INLINE:INLINE_CONTENT,TEXT:TEXT_CONTENT,COMMENT:COMMENT_CONTENT,LITERAL:LITERAL_CONTENT}>}
+ * @type {Readonly<{MIXED:MIXED_CONTENT,INLINE:INLINE_CONTENT,TEXT:TEXT_CONTENT,COMMENT:COMMENT_CONTENT,LITERAL:LITERAL_CONTENT}>}
  */
 export const CONTENT_MODEL = Object.preventExtensions(
   Object.create(null, {
