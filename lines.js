@@ -1,7 +1,7 @@
 // 🏪2️⃣🟠 Market Commons ⅠⅠ – Ecmascript ∷ lines.js
 // ====================================================================
 //
-// Copyright © 2021 Margaret KIBI.
+// Copyright © 2021, 2023 Margaret KIBI.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,7 @@ export class Line extends /** @type {ObjectConstructor} */ (
    */
   constructor(index, contents) {
     super(contents);
-    this.index = index >> 0;
+    this.index = index | 0;
     Object.defineProperty(this, index, { writable: false });
   }
 
@@ -76,27 +76,36 @@ export class Line extends /** @type {ObjectConstructor} */ (
   /**
    * Effectively the same as `String::trim`, but returns a `Line`.
    *
+   * This uses the X·M·L definition of whitespace, not the Ecmascript
+   * one.
+   *
    * @returns {Line}
    */
   trim() {
-    return new Line(this.index, trim(String(this)));
+    return new Line(this.index, trim(`${this}`));
   }
 
   /**
    * Effectively the same as `String::trimEnd`, but returns a `Line`.
    *
+   * This uses the X·M·L definition of whitespace, not the Ecmascript
+   * one.
+   *
    * @returns {Line}
    */
   trimEnd() {
-    return new Line(this.index, trimEnd(String(this)));
+    return new Line(this.index, trimEnd(`${this}`));
   }
 
   /**
    * Effectively the same as `String::trimStart`, but returns a `Line`.
    *
+   * This uses the X·M·L definition of whitespace, not the Ecmascript
+   * one.
+   *
    * @returns {Line}
    */
   trimStart() {
-    return new Line(this.index, trimStart(String(this)));
+    return new Line(this.index, trimStart(`${this}`));
   }
 }
