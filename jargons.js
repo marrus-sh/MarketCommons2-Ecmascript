@@ -11,6 +11,7 @@
 //
 // This module provides Declaration of Jargon processing.
 
+import { addValueToAttributes } from "./attributes.js";
 import { systemIdentifiers as defaultSystemIdentifiers } from "./defaults.js";
 import {
   ConfigurationError,
@@ -52,6 +53,7 @@ import {
 } from "./syntax.js";
 import { prepareAsXML, welformedName } from "./text.js";
 
+/** @typedef {import("./attributes.js").ResolvedAttributes} ResolvedAttributes */
 /** @typedef {import("./errors.js").ErrorOptions} ErrorOptions */
 /** @typedef {import("./symbols.js").DOCUMENT_NODE} DOCUMENT_NODE */
 /** @typedef {import("./symbols.js").SECTION_NODE} SECTION_NODE */
@@ -152,12 +154,6 @@ import { prepareAsXML, welformedName } from "./text.js";
  * @property {string} sigil
  * @property {string} path
  * @property {string} qualifiedName
- */
-
-/**
- * Resolved attributes object.
- *
- * @typedef {{[index:string]:Readonly<{localName:string,namespace:?string,value:string}>}} ResolvedAttributes
  */
 
 /**
@@ -1389,7 +1385,7 @@ export class Jargon {
     intoObject = undefined,
     options = {},
   ) {
-    /** @type {{[index:string]:{localName:string,namespace:?string,value:string}}} */
+    /** @type {{[index:string]:string}} */
     const attributes = Object.create(null);
     const endIndex = text.length - 1;
     if (text[0] != "{" || text[endIndex] != "}") {
@@ -1434,39 +1430,11 @@ export class Jargon {
               // There is already an attribute by this name in
               // `attributes`: Append the value to the existing object.
               const existing = attributes[qualifiedName];
-              existing.value = [existing.value, value ?? ""].join(" ");
-            } else if (
-              intoObject != null && qualifiedName in intoObject
-            ) {
-              // There is not an attribute by this name in
-              // `attributes`, but there is one in `intoObject`: Copy
-              // the existing value into a new object with the new
-              // value appended to it.
-              const {
-                localName,
-                namespace,
-                value: existing,
-              } = intoObject[qualifiedName];
-              attributes[qualifiedName] = {
-                localName,
-                namespace,
-                value: [existing, value ?? ""].join(" "),
-              };
+              attributes[qualifiedName] = `${existing} ${value ?? ""}`;
             } else {
               // An attribute by this name does not exist in
-              // `attributes` or `intoObject`: Resolve the qualified
-              // name of the attribute and construct a new object with
-              // the value.
-              const { localName, namespace } = this.resolveQName(
-                qualifiedName,
-                false,
-                { ...options, path },
-              );
-              attributes[qualifiedName] = {
-                localName,
-                namespace,
-                value: value ?? "",
-              };
+              // `attributes`; add a new one.
+              attributes[qualifiedName] = value ?? "";
             }
             index = attributeRegExp.lastIndex;
             continue;
@@ -1505,39 +1473,13 @@ export class Jargon {
                 // `attributes`: Append the value to the existing
                 // object.
                 const existing = attributes[qualifiedName];
-                existing.value = `${existing.value} ${value}`;
-              } else if (
-                intoObject != null && qualifiedName in intoObject
-              ) {
-                // There is not an attribute by this name in
-                // `attributes`, but there is one in `intoObject`: Copy
-                // the existing value into a new object with the new
-                // value appended to it.
-                const {
-                  localName,
-                  namespace,
-                  value: existing,
-                } = intoObject[qualifiedName];
-                attributes[qualifiedName] = {
-                  localName,
-                  namespace,
-                  value: `${existing} ${value}`,
-                };
+                attributes[qualifiedName] = `${existing} ${
+                  value ?? ""
+                }`;
               } else {
                 // An attribute by this name does not exist in
-                // `attributes` or `intoObject`: Resolve the qualified
-                // name of the attribute and construct a new object
-                // with the value.
-                const { localName, namespace } = this.resolveQName(
-                  qualifiedName,
-                  false,
-                  { ...options, path },
-                );
-                attributes[qualifiedName] = {
-                  localName,
-                  namespace,
-                  value,
-                };
+                // `attributes`; add a new one.
+                attributes[qualifiedName] = value ?? "";
               }
             }
             index = valueRegExp.lastIndex;
@@ -1553,17 +1495,14 @@ export class Jargon {
         );
       }
     }
-    return Object.defineProperties(
-      intoObject ?? Object.create(null),
-      Object.fromEntries(
-        Object.entries(attributes).map(([key, value]) => [key, {
-          configurable: true,
-          enumerable: true,
-          value: Object.freeze(value),
-          writable: false,
-        }]),
-      ),
-    );
+    const target = intoObject ?? Object.create(null);
+    for (const [key, value] of Object.entries(attributes)) {
+      addValueToAttributes(this, target, key, value, {
+        ...options,
+        path,
+      });
+    }
+    return target;
   }
 
   /**

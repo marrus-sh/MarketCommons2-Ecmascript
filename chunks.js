@@ -12,8 +12,9 @@
 // This module contains code pertaining to chunks of Market Commons ⅠⅠ
 // source code.
 
-import "./jargons.js";
+import { addValueToAttributes } from "./attributes.js";
 import { ParseError } from "./errors.js";
+import "./jargons.js";
 import "./lines.js";
 import { sigilToRegExp } from "./paths.js";
 import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
@@ -33,46 +34,6 @@ import { CONTENT_MODEL, NODE_TYPE } from "./symbols.js";
 /** @typedef {import("./symbols.js").TEXT_CONTENT} TEXT_CONTENT */
 /** @typedef {import("./symbols.js").COMMENT_CONTENT} COMMENT_CONTENT */
 /** @typedef {import("./symbols.js").LITERAL_CONTENT} LITERAL_CONTENT */
-
-/**
- * @argument {Jargon} jargon
- * @argument {ResolvedAttributes} attributes
- * @argument {string} name
- * @argument {string} value
- * @argument {ErrorOptions&{path?:string}} options
- */
-function addValueToAttributes(
-  jargon,
-  attributes,
-  name,
-  value,
-  options,
-) {
-  if (name in attributes) {
-    const existing = attributes[name];
-    Object.defineProperty(attributes, name, {
-      value: Object.freeze({
-        ...existing,
-        value: `${existing.value} ${value}`,
-      }),
-    });
-  } else {
-    const {
-      localName,
-      namespace,
-    } = jargon.resolveQName(name, false, options);
-    Object.defineProperty(attributes, name, {
-      configurable: true,
-      enumerable: true,
-      value: Object.freeze({
-        localName,
-        namespace,
-        value,
-      }),
-      writable: false,
-    });
-  }
-}
 
 export class Chunk {
   /** @type {(Readonly<Chunk>|Readonly<Line>)[]} */
@@ -131,7 +92,7 @@ export class Chunk {
       // determined from the presently available information. The
       // attributes and children of this chunk will be overwritten in
       // `Chunk::#configureAsSectionFromFirstLine()`, below.
-      /*  do nothing  */
+      /* do nothing */
     } else if (
       hint == NODE_TYPE.SECTION && /^(?:\|[ \t]*)+$/.test(String(line))
     ) {
